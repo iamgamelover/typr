@@ -23,6 +23,7 @@
   display: flex;
   column-gap: 10px;
   align-items: center;
+  margin-bottom: 3px;
 }
 
 .testao-message {
@@ -33,7 +34,6 @@
   background-color: rgb(65, 67, 72);
   border-radius: 20px;
   padding: 5px 15px;
-  margin-bottom: 10px;
   color: white;
   font-size: 16px;
 }
@@ -64,7 +64,7 @@
 
 .testao-msg-address {
   color: gray;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .other-line {
@@ -83,6 +83,13 @@
 .my-message {
   border-bottom-right-radius: 0;
   background-color: green;
+}
+
+.testao-msg-time {
+  display: flex;
+  font-size: 13px;
+  color: gray;
+  margin-top: -3px;
 }
 
 .testao-input-message {

@@ -4,6 +4,7 @@ import { subscribe } from '../util/event';
 import { createDataItemSigner, message, dryrun } from "@permaweb/aoconnect";
 import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
+import { formatTimestamp } from '../util/util';
 
 declare var window: any;
 const CHATROOM = "CAOVqgkWqJRsJYc5JGP7oDbmCjJ-PUzkZtva5s7zrr0";
@@ -113,6 +114,9 @@ class HomePage extends React.Component<{}, HomePageState> {
             <div className={`testao-message ${data.address == this.activeAddress ? 'my-message' : 'other-message'}`}>
               {data.msg}
             </div>
+            <div className={`testao-msg-time ${data.address == this.activeAddress ? 'my-line' : 'other-line'}`}>
+              {data.time ? formatTimestamp(data.time, true) : 'old msg'}
+            </div>
           </div>
           {data.address == this.activeAddress && <img className='testao-msg-portrait' src='portrait-default.png' />}
         </div>
@@ -141,9 +145,12 @@ class HomePage extends React.Component<{}, HomePageState> {
     }
 
     localStorage.setItem('nickname', nickname);
-
     if (!nickname) nickname = 'anonymous';
-    let data = { address, nickname, msg };
+
+    let now = Math.floor(Date.now() / 1000);
+    let time = now.toString();
+
+    let data = { address, nickname, msg, time };
     console.log("Message:", data)
 
     this.setState({ msg: '' });
