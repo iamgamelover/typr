@@ -1,0 +1,139 @@
+:root {
+  --page-color: white;
+  --body-color: white;
+  --button-color: rgb(0, 145, 250);
+  --button-hover-color: rgb(118, 129, 205);;
+  --active-color: rgb(0, 145, 250);
+}
+
+html {
+  font-family: Lato;
+  line-height: 25px;
+}
+
+body {
+  background: var(--body-color);
+  margin: 0px;
+}
+
+svg text {
+  user-select: none;
+}
+
+input {
+  font-size: inherit;
+  font-family: inherit;
+  height: 40px;
+  min-height: 30px;
+  border-radius: 6px;
+  border: 1px solid gray;
+  padding: 0 10px;
+}
+
+.input:disabled, input[disabled] {
+  border: 1px solid lightgray;
+  cursor: not-allowed;
+}
+
+textarea {
+  font-size: inherit;
+  font-family: inherit;
+  height: 40px;
+  min-height: 40px;
+  border-radius: 6px;
+  border: 0px;
+  padding: 5px 10px 5px 10px;
+}
+
+[data-lastpass-icon-root] { display: none !important; }
+
+
+button {
+  font-size: inherit;
+  font-family: inherit;
+  background-color: var(--button-color);
+  border-radius: 10px;
+  border: 0px;
+  cursor: pointer;
+  padding: 0px 20px 0px 20px;
+  min-height: 40px;
+  min-width: 80px;
+  color: white;
+}
+
+.button:disabled, button[disabled] {
+  background-color: gray;
+  cursor: not-allowed;
+}
+
+select {
+  font-size: inherit;
+  font-family: inherit;
+  height: 40px;
+  border-radius: 6px;
+  padding: 0 10px;
+}
+
+.select:disabled, select[disabled] {
+  background-color: var(--page-color);
+  cursor: not-allowed;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--link-color);
+}
+
+/* custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background: rgb(183, 191, 186);
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgb(133, 146, 138);
+}
+
+/* app styles */
+
+.app-container {
+  height: 100vh;
+  max-height: -webkit-fill-available;
+  max-width: 800px;
+  margin: auto;
+}
+
+.app-page {
+  /* height: calc(100vh - 80px); */
+  /* overflow-y: auto; */
+  background-color: var(--page-color);
+}
+
+.app-navbar {
+  background-color: var(--gray-color);
+}
+
+/* @media (max-width: 850px) {
+  .app-content {
+    grid-template-columns: 70px 1fr;
+  }
+} */
+
+/* @media (max-width: 710px) {
+  .app-content {
+    grid-template-columns: 0px 1fr;
+  }
+
+  .app-content {
+    overflow-y: visible;
+  }
+} */
