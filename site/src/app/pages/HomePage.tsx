@@ -147,7 +147,6 @@ class HomePage extends React.Component<{}, HomePageState> {
     console.log("Message:", data)
 
     this.setState({ msg: '' });
-    return;
 
     const messageId = await message({
       process: CHATROOM,
