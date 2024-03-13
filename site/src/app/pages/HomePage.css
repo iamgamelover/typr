@@ -3,7 +3,7 @@
   flex-direction: column;
   max-width: 650px;
   margin: auto;
-  padding: 20px 10px;
+  padding: 20px;
   row-gap: 20px;
 }
 
@@ -15,21 +15,38 @@
   background-color: rgb(227, 248, 227);
   border-radius: 10px;
   border: 1px solid lightgray;
-  padding: 20px;
+  padding: 20px 10px;
   overflow-y: auto;
 }
 
 .testao-msg-line {
   display: flex;
+  column-gap: 10px;
+  align-items: center;
+}
+
+.testao-message {
+  display: flex;
   align-items: center;
   column-gap: 10px;
-  max-width: 370px;
+  max-width: 380px;
   background-color: rgb(65, 67, 72);
   border-radius: 20px;
-  padding: 3px 15px;
+  padding: 5px 15px;
   margin-bottom: 10px;
   color: white;
   font-size: 16px;
+}
+
+.testao-msg-header {
+  display: flex;
+  align-items: center;
+  column-gap: 10px;
+}
+
+.testao-msg-portrait {
+  width: 40px;
+  height: 40px;
 }
 
 .testao-msg-text {
@@ -40,24 +57,30 @@
 }
 
 .testao-msg-nickname {
-  color: yellow;
-  font-weight: 500;
-  font-size: 15px;
+  /* color: yellow; */
+  font-weight: 600;
+  font-size: 16px;
 }
 
 .testao-msg-address {
-  color: lightgray;
+  color: gray;
   font-size: 11px;
-  margin-top: -4px;
+}
+
+.other-line {
+  align-self: flex-start;
+}
+
+.my-line {
+  align-self: flex-end;
+  justify-content: flex-end;
 }
 
 .other-message {
-  align-self: flex-start;
   border-bottom-left-radius: 0;
 }
 
 .my-message {
-  align-self: flex-end;
   border-bottom-right-radius: 0;
   background-color: green;
 }

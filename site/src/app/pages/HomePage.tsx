@@ -99,34 +99,22 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     for (let i = 0; i < this.state.messages.length; i++) {
       let data = JSON.parse(this.state.messages[i]);
-
       let address = data.address;
       address = address.substring(0, 4) + '...' + address.substring(address.length - 4);
 
-      let nickname = data.nickname;
-      if (nickname.length > 15)
-        nickname = nickname.substring(0, 15) + '...';
-
       divs.push(
-        <div key={i} className={`testao-msg-line ${data.address == this.activeAddress ? 'my-message' : 'other-message'}`}>
-          {data.address == this.activeAddress
-            ?
-            <div className='testao-msg-text'>
-              <div>{data.msg}</div>
-              <div>
-                <div className="testao-msg-nickname">{nickname}</div>
-                <div className="testao-msg-address">{address}</div>
-              </div>
+        <div key={i} className={`testao-msg-line ${data.address == this.activeAddress ? 'my-line' : 'other-line'}`}>
+          {data.address != this.activeAddress && <img className='testao-msg-portrait' src='portrait-default.png' />}
+          <div>
+            <div className={`testao-msg-header ${data.address == this.activeAddress ? 'my-line' : 'other-line'}`}>
+              <div className="testao-msg-nickname">{data.nickname}</div>
+              <div className="testao-msg-address">{address}</div>
             </div>
-            :
-            <div className='testao-msg-text'>
-              <div>
-                <div className="testao-msg-nickname">{nickname}</div>
-                <div className="testao-msg-address">{address}</div>
-              </div>
-              <div>{data.msg}</div>
+            <div className={`testao-message ${data.address == this.activeAddress ? 'my-message' : 'other-message'}`}>
+              {data.msg}
             </div>
-          }
+          </div>
+          {data.address == this.activeAddress && <img className='testao-msg-portrait' src='portrait-default.png' />}
         </div>
       )
     }
@@ -136,26 +124,30 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   async sendMessage() {
     let address = await this.connectWallet(false);
-    console.log("address:", address)
 
-    // if (!this.state.nickname.trim()) {
-    //   alert('Please set a nickname!');
-    //   return;
-    // }
-
-    if (!this.state.msg.trim()) {
-      alert('Please input a message!');
+    let nickname = this.state.nickname.trim();
+    if (nickname.length > 25) {
+      this.setState({ alert: 'Nickname can be up to 25 characters long.' })
       return;
     }
 
-    let nickname = this.state.nickname;
+    let msg = this.state.msg.trim();
+    if (!msg) {
+      this.setState({ alert: 'Please input a message.' })
+      return;
+    } else if (msg.length > 500) {
+      this.setState({ alert: 'Message can be up to 500 characters long.' })
+      return;
+    }
+
     localStorage.setItem('nickname', nickname);
 
     if (!nickname) nickname = 'anonymous';
-    let data = { address: address, nickname: nickname, msg: this.state.msg };
+    let data = { address, nickname, msg };
     console.log("Message:", data)
 
     this.setState({ msg: '' });
+    return;
 
     const messageId = await message({
       process: CHATROOM,
