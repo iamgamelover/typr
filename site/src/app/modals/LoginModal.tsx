@@ -3,9 +3,6 @@ import { BsFillXCircleFill } from 'react-icons/bs';
 import AlertModal from './AlertModal';
 import './Modal.css'
 import './LoginModal.css'
-import { ethers } from 'ethers';
-import { publish } from '../util/event';
-import { browserDetect } from '../util/util';
 import MessageModal from './MessageModal';
 
 declare var window: any;
