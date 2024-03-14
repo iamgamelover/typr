@@ -87,7 +87,7 @@ class HomePage extends React.Component<{}, HomePageState> {
     });
 
     let data = result.Messages[0].Data;
-    let messages = data.split("*");
+    let messages = data.split("▲");
     if (messages.length == 1 && messages[0] == '') return;
     this.setState({ messages, loading: false });
   }
@@ -99,6 +99,8 @@ class HomePage extends React.Component<{}, HomePageState> {
     let divs = [];
 
     for (let i = 0; i < this.state.messages.length; i++) {
+      console.log("this.state.messages[i]:", this.state.messages[i])
+
       let data = JSON.parse(this.state.messages[i]);
       let address = data.address;
       address = address.substring(0, 4) + '...' + address.substring(address.length - 4);
