@@ -75,15 +75,10 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   async getPostContent() {
-    // let content = Server.public.getPostContentFromCache(this.props.data.id);
-    // if (!content) {
-    //   content = await Server.public.downloadFromArweave(this.props.data.url);
-    //   content = convertHashTag(content);
-    //   content = convertUrls(content);
-    //   Server.public.addPostContentToCache(this.props.data.id, content);
-    // }
-
-    this.setState({ content: this.props.data.post });
+    let content = this.props.data.post;
+    content = convertHashTag(content);
+    content = convertUrls(content);
+    this.setState({ content });
   }
 
   async getProfile() {

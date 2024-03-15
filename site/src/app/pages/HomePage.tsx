@@ -197,7 +197,7 @@ class HomePage extends React.Component<{}, HomePageState> {
     let time = now.toString();
 
     let data = { id: uuid(), address, nickname, post, range, time };
-    console.log("Post:", data)
+    // console.log("Post:", data)
 
     try {
       const messageId = await message({
@@ -211,6 +211,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       console.log("messageId:", messageId)
       return true;
     } catch (error) {
+      console.log("error:", error)
       return false;
     }
   }
@@ -233,6 +234,7 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     this.setState({ message: 'Posting...' });
     let post = this.quillRef.root.innerHTML;
+    // console.log("post:", post)
     let response = await this.uploadToAO(post, this.state.range);
 
     if (response) {
@@ -240,7 +242,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       this.setState({ message: '', alert: 'Post successful.' });
     }
     else
-      this.setState({ message: '', alert: 'There is an AO issue.' })
+      this.setState({ message: '', alert: 'Is there a picture in the post? Size just up to 4KB for now.' })
   }
 
   render() {
@@ -263,7 +265,7 @@ class HomePage extends React.Component<{}, HomePageState> {
 
         <div className="testao-input-container">
           <SharedQuillEditor
-            placeholder='Whats happening?'
+            placeholder='What is happening?!'
             onChange={this.onContentChange}
             getRef={(ref: any) => this.quillRef = ref}
           />

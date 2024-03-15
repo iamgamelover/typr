@@ -77,7 +77,8 @@
 .activity-post-action-number {
   font-size: 15px;
   margin-bottom: 3px;
-  color: rgb(205, 191, 191);
+  /* color: rgb(205, 191, 191); */
+  color: gray;
 }
 
 .activity-post-hashtag {
