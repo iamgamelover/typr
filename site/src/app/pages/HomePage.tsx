@@ -148,9 +148,6 @@ class HomePage extends React.Component<{}, HomePageState> {
       return;
     }
 
-    // console.log("result:", result)
-    // return;
-    
     let data = result.Messages[0].Data;
     let posts = data.split("▲");
     // console.log("posts:", posts)
@@ -169,17 +166,15 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     let divs = [];
 
-    // for (let i = 0; i < this.state.posts.length; i++) {
     for (let i = this.state.posts.length - 1; i >= 0; i--) {
       let data;
       try {
         data = JSON.parse(this.state.posts[i]);
       } catch (error) {
-        console.log(error)
+        // console.log(error)
         continue;
       }
 
-      // console.log("data:", data)
       divs.push(
         <ActivityPost
           key={i}
@@ -214,11 +209,10 @@ class HomePage extends React.Component<{}, HomePageState> {
       const messageId = await message({
         process: AO_TWITTER,
         signer: createDataItemSigner(window.arweaveWallet),
-        // data: JSON.stringify(data),
+        data: JSON.stringify(data),
         tags: [
           { name: 'Action', value: 'SendPost' },
-          // { name: 'Data', value: 'This is a testing post.' }
-          { name: 'Data', value: JSON.stringify(data) }
+          // { name: 'Data', value: JSON.stringify(data) }
         ],
       });
       console.log("messageId:", messageId)
@@ -254,7 +248,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       this.setState({ message: '', alert: 'Post successful.' });
     }
     else
-      this.setState({ message: '', alert: 'Is there a picture in the post? Size just up to 4KB for now.' })
+      this.setState({ message: '', alert: 'Is there a picture in the post? Size just up to 100KB for now.' })
   }
 
   render() {
