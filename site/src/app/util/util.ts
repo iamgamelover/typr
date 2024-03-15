@@ -334,11 +334,10 @@ export function getTimestamp(exDays: number, hour: number) {
 }
 
 export function checkContent(quillRef: any, wordCount: number) {
-  // console.log('wordCount', wordCount)
   let message = '';
   let mediaAmount = getMediaAmount(quillRef);
-  if (mediaAmount > 1)
-    return 'Only one media is allowed.';
+  if (mediaAmount > 3)
+    return 'Contains up to 3 media files.';
 
   if (wordCount == 0 && mediaAmount == 0)
     message = 'Post is empty.';

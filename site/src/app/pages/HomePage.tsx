@@ -148,8 +148,12 @@ class HomePage extends React.Component<{}, HomePageState> {
       return;
     }
 
+    // console.log("result:", result)
+    // return;
+    
     let data = result.Messages[0].Data;
     let posts = data.split("▲");
+    // console.log("posts:", posts)
 
     if (posts.length == 1 && posts[0] == '') {
       this.setState({ loading: false });
@@ -167,7 +171,14 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     // for (let i = 0; i < this.state.posts.length; i++) {
     for (let i = this.state.posts.length - 1; i >= 0; i--) {
-      let data = JSON.parse(this.state.posts[i]);
+      let data;
+      try {
+        data = JSON.parse(this.state.posts[i]);
+      } catch (error) {
+        console.log(error)
+        continue;
+      }
+
       // console.log("data:", data)
       divs.push(
         <ActivityPost
@@ -203,8 +214,10 @@ class HomePage extends React.Component<{}, HomePageState> {
       const messageId = await message({
         process: AO_TWITTER,
         signer: createDataItemSigner(window.arweaveWallet),
+        // data: JSON.stringify(data),
         tags: [
           { name: 'Action', value: 'SendPost' },
+          // { name: 'Data', value: 'This is a testing post.' }
           { name: 'Data', value: JSON.stringify(data) }
         ],
       });
@@ -234,7 +247,6 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     this.setState({ message: 'Posting...' });
     let post = this.quillRef.root.innerHTML;
-    // console.log("post:", post)
     let response = await this.uploadToAO(post, this.state.range);
 
     if (response) {

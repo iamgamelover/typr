@@ -67,7 +67,6 @@
   align-items: center;
   cursor: pointer;
   margin-top: 15px;
-  /* background-color: rgb(74, 64, 147); */
 }
 
 .activity-post-action-icon {
@@ -77,7 +76,6 @@
 .activity-post-action-number {
   font-size: 15px;
   margin-bottom: 3px;
-  /* color: rgb(205, 191, 191); */
   color: gray;
 }
 

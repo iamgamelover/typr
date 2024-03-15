@@ -109,15 +109,12 @@
 }
 
 .testao-input-container {
-  /* border: 1px solid lightgray; */
   border-radius: 10px;
-  /* margin-bottom: 10px; */
   background-color: var(--section-color);
 }
 
 .testao-actions {
   display: flex;
-  /* justify-content: space-between; */
   margin: 10px;
 }
 
