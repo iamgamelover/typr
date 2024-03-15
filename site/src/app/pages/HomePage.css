@@ -100,19 +100,20 @@
   margin-right: 20px;
 }
 
+.testao-input-message.nickname {
+  width: 189px;
+  height: 35px;
+  margin-left: 10px;
+  font-size: 18px;
+}
+
+.testao-input-message.process {
+  height: 30px;
+}
+
 .testao-nickname-line {
   display: flex;
   align-items: center;
-}
-
-.testao-input-message.nickname {
-  width: 200px;
-  height: 35px;
-  border-radius: 10px;
-  border: 1px solid rgb(85, 103, 169);
-  padding: 5px 10px;
-  margin-left: 10px;
-  font-size: 18px;
 }
 
 .testao-send-button {
@@ -134,4 +135,21 @@
   background-color: rgb(104, 115, 206);
   color: white;
   font-size: 15px;
+}
+
+.testao-msg-bottom {
+  display: flex;
+  /* align-items: center; */
+  column-gap: 15px;
+}
+
+.testao-msg-aoicon {
+  width: 21px;
+  height: 10px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.testao-msg-aoicon:hover {
+  scale: 1.1;
 }

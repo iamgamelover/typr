@@ -5,9 +5,11 @@ import { createDataItemSigner, message, dryrun } from "@permaweb/aoconnect";
 import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
 import { formatTimestamp } from '../util/util';
+import { getProcessFromOwner } from '../../server/server';
 
 declare var window: any;
-const CHATROOM = "CAOVqgkWqJRsJYc5JGP7oDbmCjJ-PUzkZtva5s7zrr0";
+const CHATROOM = "F__i_YGIUOGw43zyqLY9dEKNNEhB_uTqzL9tOTWJ-KA";
+// const CHATROOM = "CAOVqgkWqJRsJYc5JGP7oDbmCjJ-PUzkZtva5s7zrr0";
 
 interface HomePageState {
   msg: string;
@@ -67,28 +69,68 @@ class HomePage extends React.Component<{}, HomePageState> {
     }
   }
 
-  start() {
+  async start() {
     let nickname = localStorage.getItem('nickname');
     let userAddress = localStorage.getItem('userAddress');
     if (nickname) this.setState({ nickname });
     if (userAddress) this.activeAddress = userAddress;
+    // console.log("userAddress:", userAddress)
 
     const interval = setInterval(this.getMessages, 2000);
     setTimeout(() => {
       this.scrollToBottom();
-    }, 4000);
+    }, 5000);
+
+    // this.getTokens();
+    // await getProcessFromOwner(userAddress)
+    // await this.getBalance('Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc')
+  }
+
+  async getBalance(process: string) {
+    const result = await dryrun({
+      process: 'Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc',
+      tags: [
+        { name: 'Action', value: 'Balance' },
+        { name: 'Tags', value: `{Target = 'rN1B9kLV3ilqMQSd0bqc-sjrvMXzQkKB-JtfUeUUnl8'}` }
+      ],
+    });
+
+    console.log("getBalance:", result)
+  }
+
+  async getTokens() {
+    // the ID of the token
+    const tokenID = "rN1B9kLV3ilqMQSd0bqc-sjrvMXzQkKB-JtfUeUUnl8";
+
+    // check if the token has been added
+    // const isAdded = await window.arweaveWallet.isTokenAdded(tokenID);
+    // console.log("isAdded:", isAdded)
+
+    // add token if it hasn't been added yet
+    // if (!isAdded) {
+    //   await window.arweaveWallet.addToken(tokenID);
+    // }
   }
 
   async getMessages() {
-    // console.log("getMessages...")
     const result = await dryrun({
       process: CHATROOM,
       tags: [{ name: 'Action', value: 'GetMessages' }],
     });
 
+    if (result.Messages.length == 0) {
+      this.setState({ loading: false });
+      return;
+    }
+
     let data = result.Messages[0].Data;
     let messages = data.split("▲");
-    if (messages.length == 1 && messages[0] == '') return;
+    
+    if (messages.length == 1 && messages[0] == '') {
+      this.setState({ loading: false });
+      return;
+    }
+    
     this.setState({ messages, loading: false });
   }
 
@@ -151,7 +193,7 @@ class HomePage extends React.Component<{}, HomePageState> {
     let time = now.toString();
 
     let data = { address, nickname, msg, time };
-    console.log("Message:", data)
+    // console.log("Message:", data)
 
     this.setState({ msg: '' });
 
@@ -203,6 +245,13 @@ class HomePage extends React.Component<{}, HomePageState> {
             onChange={(e) => this.setState({ nickname: e.target.value })}
           />
         </div>
+
+        {/* <input
+          className="testao-input-message process"
+          placeholder="process id"
+          value={this.state.nickname}
+          onChange={(e) => this.setState({ nickname: e.target.value })}
+        /> */}
 
         <div id='scrollableDiv' className="testao-chat-container">
           {this.renderMessages()}
