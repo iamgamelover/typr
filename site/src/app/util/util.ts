@@ -21,25 +21,25 @@ export function checkNumber(value: string) {
  */
 export function formatTimestamp(time: number, ago?: boolean) {
 
-  const m = new Map([[1, 'Jan'], [2, 'Feb'], [3, 'Mar'], [4, 'Apr'], [5, 'May'], [6, 'Jun'], 
-    [7, 'Jul'], [8, 'Aug'], [9, 'Sep'], [10, 'Oct'], [11, 'Nov'], [12, 'Dec']]);
+  const m = new Map([[1, 'Jan'], [2, 'Feb'], [3, 'Mar'], [4, 'Apr'], [5, 'May'], [6, 'Jun'],
+  [7, 'Jul'], [8, 'Aug'], [9, 'Sep'], [10, 'Oct'], [11, 'Nov'], [12, 'Dec']]);
 
-  let now  = secondsOfNow();
+  let now = secondsOfNow();
   let diff = now - time;
 
-  const days    = Math.floor(diff / (60 * 60 * 24));
-  const hours   = Math.floor((diff % (60 * 60 * 24)) / (60 * 60));
+  const days = Math.floor(diff / (60 * 60 * 24));
+  const hours = Math.floor((diff % (60 * 60 * 24)) / (60 * 60));
   const minutes = Math.floor((diff % (60 * 60)) / 60);
   const seconds = Math.floor(diff % 60);
 
   if (days > 0) {
     const date = new Date(time * 1000);
-    
+
     if (days > 365) {
       return date.toLocaleString();
     } else {
       const month = date.getMonth() + 1;
-      const day   = date.getDate();
+      const day = date.getDate();
       return m.get(month) + ' ' + day;
     }
   }
@@ -99,28 +99,28 @@ export function randomInteger(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function getAssetImage(asset:any):string {
+export function getAssetImage(asset: any): string {
   let image = asset.image;
-  if(!image)
+  if (!image)
     image = asset.id;
   return '/assets/' + image + '.png';
 }
 
-export function getPortraitImage(profile:any):string {
+export function getPortraitImage(profile: any): string {
   let image = profile ? profile.portrait : null;
-  if(!image)
+  if (!image)
     image = '/portrait-default.png';
   return image;
 }
 
-export function getBannerImage(profile:any):string {
+export function getBannerImage(profile: any): string {
   let image = profile ? profile.banner : null;
-  if(!image)
+  if (!image)
     image = '/banner-default.png';
   return image;
 }
 
-export function getMenuIcon(name:string):string {
+export function getMenuIcon(name: string): string {
   return '/icon/' + name + '.png';
 }
 
@@ -129,14 +129,14 @@ export function getMenuIcon(name:string):string {
  * @param str
  * @returns 
  */
-export function urlToLink(str: string):any {
+export function urlToLink(str: string): any {
   const re = /(f|ht){1}(tp|tps):\/\/([\w-]+\S)+[\w-]+([\w-?%#&=]*)?(\/[\w- ./?%#&=]*)?/g;
-  
+
   str = str.replace(re, function (url) {
     return `<a href=${url} target="_blank" style="color: white">${url}</a>`;
   });
 
-  return {__html: str};
+  return { __html: str };
 }
 
 export function numberWithCommas(x: number): string {
@@ -150,10 +150,10 @@ export function numberWithCommas(x: number): string {
  */
 export function getMediaAmount(quillRef: any) {
   let mediaAmount = 0;
-  let html     = quillRef.root.innerHTML;
-  let img      = html.match(/<img/gi);
-  let iframe   = html.match(/<iframe/gi);
-  let audio    = html.match(/<audio/gi);
+  let html = quillRef.root.innerHTML;
+  let img = html.match(/<img/gi);
+  let iframe = html.match(/<iframe/gi);
+  let audio = html.match(/<audio/gi);
   mediaAmount += img && img.length;
   mediaAmount += iframe && iframe.length;
   mediaAmount += audio && audio.length;
@@ -166,7 +166,7 @@ export function getMediaAmount(quillRef: any) {
  * @param str
  * @returns 
  */
-export function convertSlug(str: string):any {
+export function convertSlug(str: string): any {
   const pattern = /@\w+(-\w+)*/g;
   str = str.replace(pattern, function (slug) {
     return `<a className='activity-page-slug-link' href='/profile/${slug.substring(1)}' id="url-${slug}">${slug}</a>`;
@@ -180,7 +180,7 @@ export function convertSlug(str: string):any {
  * @param str
  * @returns 
  */
-export function convertHashTag(str: string):any {
+export function convertHashTag(str: string): any {
   const pattern = /#\w+(-\w+)*/g;
   str = str.replace(pattern, function (hashtag) {
     return `<a className='activity-page-slug-link' href='/plan/${hashtag.substring(1)}' id="url-${hashtag}">${hashtag}</a>`;
@@ -200,20 +200,20 @@ export function convertUrls(str: string): string {
 
   // match all of <a> tag content
   const hrefRegex = /<a\s+[^>]*?href\s*=\s*(['"])(.*?)\1/g;
-  const hrefs     = str.match(hrefRegex);
+  const hrefs = str.match(hrefRegex);
 
   // match all of img tag content
   const imgSrcRegex = /<img.*?src="(.*?)".*?>/g;
-  const imgSrcs     = str.match(imgSrcRegex);
+  const imgSrcs = str.match(imgSrcRegex);
 
   // match all of audio tag content
   const audioSrcRegex = /<audio.*?src="(.*?)"/g;
-  const audioSrcs     = str.match(audioSrcRegex);
+  const audioSrcs = str.match(audioSrcRegex);
 
   // match all of iframe tag content
   const iframeSrcRegex = /<iframe.*?src="(.*?)"/g;
-  const iframeSrcs     = str.match(iframeSrcRegex);
-  
+  const iframeSrcs = str.match(iframeSrcRegex);
+
   // repalce all of URLs while ignoring URLs that are already within an <a>, <img> or <audio> tag.
   const convertedText = str.replace(urlRegex, (url) => {
     if (hrefs && hrefs.includes(`<a href="${url}"`))
@@ -257,7 +257,7 @@ export function getFirstImage(content: any) {
 export function browserDetect() {
   let userAgent = navigator.userAgent;
   let browserName;
-  
+
   // Approach 1
   // if (userAgent.match(/chrome|chromium|crios/i)) {
   //   browserName = "chrome";
@@ -272,45 +272,45 @@ export function browserDetect() {
   // } else {
   //   browserName="other browser";
   // }
-  
+
   // Approach 2
   // CHROME
-  if (userAgent.indexOf("Chrome") != -1 ) {
+  if (userAgent.indexOf("Chrome") != -1) {
     console.log("Google Chrome");
     browserName = "chrome";
   }
   // FIREFOX
-  else if (userAgent.indexOf("Firefox") != -1 ) {
+  else if (userAgent.indexOf("Firefox") != -1) {
     console.log("Mozilla Firefox");
     browserName = "firefox";
   }
   // INTERNET EXPLORER
-  else if (userAgent.indexOf("MSIE") != -1 ) {
+  else if (userAgent.indexOf("MSIE") != -1) {
     console.log("Internet Exploder");
     browserName = "ie";
   }
   // EDGE
-  else if (userAgent.indexOf("Edge") != -1 ) {
+  else if (userAgent.indexOf("Edge") != -1) {
     console.log("Internet Edge");
     browserName = "edge";
   }
   // SAFARI
-  else if (userAgent.indexOf("Safari") != -1 ) {
+  else if (userAgent.indexOf("Safari") != -1) {
     console.log("Safari");
     browserName = "safari";
   }
   // OPERA
-  else if (userAgent.indexOf("Opera") != -1 ) {
+  else if (userAgent.indexOf("Opera") != -1) {
     console.log("Opera");
     browserName = "opera";
   }
   // YANDEX BROWSER
-  else if (userAgent.indexOf("YaBrowser") != -1 ) {
+  else if (userAgent.indexOf("YaBrowser") != -1) {
     console.log("YaBrowser");
     browserName = "yandex";
   }
   // Brave - TODO: need to test and update
-  else if (userAgent.indexOf("Brave") != -1 ) {
+  else if (userAgent.indexOf("Brave") != -1) {
     console.log("Brave");
     browserName = "brave";
   }
@@ -324,11 +324,43 @@ export function browserDetect() {
 }
 
 export function getTimestamp(exDays: number, hour: number) {
-  let now    = new Date(); // Date object for now
-  let year   = now.getFullYear(); // Get the current year
-  let month  = now.getMonth(); // Get the current month (note: the month starts from 0, and 0 means January)
-  let day    = now.getDate(); // get current date
+  let now = new Date(); // Date object for now
+  let year = now.getFullYear(); // Get the current year
+  let month = now.getMonth(); // Get the current month (note: the month starts from 0, and 0 means January)
+  let day = now.getDate(); // get current date
   let result = new Date(year, month, day + exDays, hour, 0, 0); // Create a Date object at the hour of the specified day
 
   return result.getTime(); // Returns the timestamp (in milliseconds) at the hour of the specified day
+}
+
+export function checkContent(quillRef: any, wordCount: number) {
+  // console.log('wordCount', wordCount)
+  let message = '';
+  let mediaAmount = getMediaAmount(quillRef);
+  if (mediaAmount > 1)
+    return 'Only one media is allowed.';
+
+  if (wordCount == 0 && mediaAmount == 0)
+    message = 'Post is empty.';
+  else if (wordCount > 500)
+    message = 'Content can be up to 500 characters long.';
+
+  return message;
+}
+
+export function capitalizeFirstLetter(str: string) {
+  return str.replace(/^\w/, c => c.toUpperCase());
+}
+
+/**
+ * Gets a uuid.
+ * @returns the unique uuid
+ */
+export function uuid() {
+  var str = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
+  return str.replace(/[xy]/g, function (c) {
+    var r = (Math.random() * 16) | 0,
+      v = c == "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 }

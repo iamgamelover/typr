@@ -8,45 +8,38 @@
 }
 
 .testao-chat-container {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  height: 450px;
-  background-color: rgb(227, 248, 227);
-  border-radius: 10px;
-  border: 1px solid lightgray;
-  padding: 20px 10px;
-  overflow-y: auto;
+  margin-top: 30px;
 }
 
 .testao-msg-line {
-  display: flex;
-  column-gap: 10px;
-  align-items: center;
-  margin-bottom: 3px;
+  padding: 10px;
+  background-color: rgb(227, 248, 227);
+  border-bottom: 1px solid rgb(233, 229, 229);
 }
 
-.testao-message {
-  display: flex;
-  align-items: center;
-  column-gap: 10px;
-  max-width: 380px;
-  background-color: rgb(65, 67, 72);
-  border-radius: 20px;
-  padding: 5px 15px;
-  color: white;
-  font-size: 16px;
+.testao-msg-line:hover {
+  background-color: rgb(207, 243, 207);
 }
 
 .testao-msg-header {
   display: flex;
-  align-items: center;
   column-gap: 10px;
 }
 
+.testao-message {
+  padding-left: 55px;
+  padding-right: 15px;
+  margin-bottom: 10px;
+  color: rgb(78, 68, 68);
+}
+
+.my-post {
+  /* background-color: green; */
+}
+
 .testao-msg-portrait {
-  width: 40px;
-  height: 40px;
+  width: 45px;
+  height: 45px;
 }
 
 .testao-msg-text {
@@ -57,7 +50,6 @@
 }
 
 .testao-msg-nickname {
-  /* color: yellow; */
   font-weight: 600;
   font-size: 16px;
 }
@@ -76,20 +68,9 @@
   justify-content: flex-end;
 }
 
-.other-message {
-  border-bottom-left-radius: 0;
-}
-
-.my-message {
-  border-bottom-right-radius: 0;
-  background-color: green;
-}
-
 .testao-msg-time {
-  display: flex;
   font-size: 13px;
   color: gray;
-  margin-top: -3px;
 }
 
 .testao-input-message {
@@ -116,16 +97,6 @@
   align-items: center;
 }
 
-.testao-send-button {
-  width: 90px;
-  height: 50px;
-  font-size: 18px;
-  color: black;
-  background-color: rgb(189, 239, 189);
-  border-radius: 10px;
-  border: 2px solid rgb(46, 75, 180);
-}
-
 .testao-connect-button {
   width: 180px;
   height: 45px;
@@ -137,19 +108,21 @@
   font-size: 15px;
 }
 
-.testao-msg-bottom {
+.testao-input-container {
+  /* border: 1px solid lightgray; */
+  border-radius: 10px;
+  /* margin-bottom: 10px; */
+  background-color: var(--section-color);
+}
+
+.testao-actions {
   display: flex;
-  /* align-items: center; */
-  column-gap: 15px;
+  /* justify-content: space-between; */
+  margin: 10px;
 }
 
-.testao-msg-aoicon {
-  width: 21px;
-  height: 10px;
-  cursor: pointer;
-  margin-top: 5px;
-}
-
-.testao-msg-aoicon:hover {
-  scale: 1.1;
+.testao-filter {
+  width: 120px;
+  border: none;
+  margin-right: 50px;
 }

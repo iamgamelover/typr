@@ -4,38 +4,45 @@ import { subscribe } from '../util/event';
 import { createDataItemSigner, message, dryrun } from "@permaweb/aoconnect";
 import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
-import { formatTimestamp } from '../util/util';
+import { checkContent, formatTimestamp, uuid } from '../util/util';
 import { getProcessFromOwner } from '../../server/server';
+import SharedQuillEditor from '../elements/SharedQuillEditor';
+import ActivityPost from '../elements/ActivityPost';
 
 declare var window: any;
-const CHATROOM = "F__i_YGIUOGw43zyqLY9dEKNNEhB_uTqzL9tOTWJ-KA";
-// const CHATROOM = "CAOVqgkWqJRsJYc5JGP7oDbmCjJ-PUzkZtva5s7zrr0";
+const AO_TWITTER = "Y4ZXUT9jFoHFg3K2XH5MVFf4_mXKHAcCsqgLta1au2U";
 
 interface HomePageState {
-  msg: string;
-  messages: string[];
+  posts: string[];
   nickname: string;
   question: string;
   alert: string;
+  message: string;
   loading: boolean;
+  range: string;
 }
 
 class HomePage extends React.Component<{}, HomePageState> {
 
   activeAddress = '';
+  quillRef: any;
+  wordCount = 0;
 
   constructor(props: {}) {
     super(props);
     this.state = {
-      msg: '',
-      messages: [],
+      posts: [],
       nickname: '',
       question: '',
       alert: '',
+      message: '',
       loading: true,
+      range: 'everyone',
     };
 
-    this.getMessages = this.getMessages.bind(this);
+    this.getPosts = this.getPosts.bind(this);
+    this.onContentChange = this.onContentChange.bind(this);
+    this.onRangeChange = this.onRangeChange.bind(this);
 
     subscribe('wallet-events', () => {
       this.forceUpdate();
@@ -44,6 +51,15 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   componentDidMount() {
     this.start();
+  }
+
+  onContentChange(length: number) {
+    this.wordCount = length;
+  };
+
+  onRangeChange(e: React.FormEvent<HTMLSelectElement>) {
+    const element = e.target as HTMLSelectElement;
+    this.setState({ range: element.value });
   }
 
   async connectWallet(fromConnect: boolean) {
@@ -76,14 +92,16 @@ class HomePage extends React.Component<{}, HomePageState> {
     if (userAddress) this.activeAddress = userAddress;
     // console.log("userAddress:", userAddress)
 
-    const interval = setInterval(this.getMessages, 2000);
-    setTimeout(() => {
-      this.scrollToBottom();
-    }, 5000);
+    // this.getPosts();
+    const interval = setInterval(this.getPosts, 5000);
+
+    // setTimeout(() => {
+    //   this.scrollToBottom();
+    // }, 5000);
 
     // this.getTokens();
     // await getProcessFromOwner(userAddress)
-    await this.getBalance('Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc')
+    // await this.getBalance('Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc')
   }
 
   async getBalance(process: string) {
@@ -113,11 +131,17 @@ class HomePage extends React.Component<{}, HomePageState> {
     // }
   }
 
-  async getMessages() {
-    const result = await dryrun({
-      process: CHATROOM,
-      tags: [{ name: 'Action', value: 'GetMessages' }],
-    });
+  async getPosts() {
+    let result;
+    try {
+      result = await dryrun({
+        process: AO_TWITTER,
+        tags: [{ name: 'Action', value: 'GetPosts' }],
+      });
+    } catch (error) {
+      this.setState({ alert: 'There is an AO issue.' });
+      return;
+    }
 
     if (result.Messages.length == 0) {
       this.setState({ loading: false });
@@ -125,65 +149,44 @@ class HomePage extends React.Component<{}, HomePageState> {
     }
 
     let data = result.Messages[0].Data;
-    let messages = data.split("▲");
-    
-    if (messages.length == 1 && messages[0] == '') {
+    let posts = data.split("▲");
+
+    if (posts.length == 1 && posts[0] == '') {
       this.setState({ loading: false });
       return;
     }
-    
-    this.setState({ messages, loading: false });
+
+    this.setState({ posts, loading: false });
   }
 
-  renderMessages() {
+  renderPosts() {
     if (this.state.loading)
       return (<div>Loading...</div>);
 
     let divs = [];
 
-    for (let i = 0; i < this.state.messages.length; i++) {
-      let data = JSON.parse(this.state.messages[i]);
-      let address = data.address;
-      address = address.substring(0, 4) + '...' + address.substring(address.length - 4);
-
+    // for (let i = 0; i < this.state.posts.length; i++) {
+    for (let i = this.state.posts.length - 1; i >= 0; i--) {
+      let data = JSON.parse(this.state.posts[i]);
+      // console.log("data:", data)
       divs.push(
-        <div key={i} className={`testao-msg-line ${data.address == this.activeAddress ? 'my-line' : 'other-line'}`}>
-          {data.address != this.activeAddress && <img className='testao-msg-portrait' src='portrait-default.png' />}
-          <div>
-            <div className={`testao-msg-header ${data.address == this.activeAddress ? 'my-line' : 'other-line'}`}>
-              <div className="testao-msg-nickname">{data.nickname}</div>
-              <div className="testao-msg-address">{address}</div>
-            </div>
-            <div className={`testao-message ${data.address == this.activeAddress ? 'my-message' : 'other-message'}`}>
-              {data.msg}
-            </div>
-            <div className={`testao-msg-time ${data.address == this.activeAddress ? 'my-line' : 'other-line'}`}>
-              {data.time ? formatTimestamp(data.time, true) : 'old msg'}
-            </div>
-          </div>
-          {data.address == this.activeAddress && <img className='testao-msg-portrait' src='portrait-default.png' />}
-        </div>
+        <ActivityPost
+          key={i}
+          data={data}
+          activeAddress={this.activeAddress}
+        />
       )
     }
 
-    return divs.length > 0 ? divs : <div>No messages yet.</div>
+    return divs.length > 0 ? divs : <div>No post yet.</div>
   }
 
-  async sendMessage() {
+  async uploadToAO(post: string, range: string) {
     let address = await this.connectWallet(false);
 
     let nickname = this.state.nickname.trim();
     if (nickname.length > 25) {
       this.setState({ alert: 'Nickname can be up to 25 characters long.' })
-      return;
-    }
-
-    let msg = this.state.msg.trim();
-    if (!msg) {
-      this.setState({ alert: 'Please input a message.' })
-      return;
-    } else if (msg.length > 500) {
-      this.setState({ alert: 'Message can be up to 500 characters long.' })
       return;
     }
 
@@ -193,30 +196,22 @@ class HomePage extends React.Component<{}, HomePageState> {
     let now = Math.floor(Date.now() / 1000);
     let time = now.toString();
 
-    let data = { address, nickname, msg, time };
-    // console.log("Message:", JSON.stringify(data))
+    let data = { id: uuid(), address, nickname, post, range, time };
+    console.log("Post:", data)
 
-    this.setState({ msg: '' });
-
-    const messageId = await message({
-      process: CHATROOM,
-      signer: createDataItemSigner(window.arweaveWallet),
-      tags: [
-        { name: 'Action', value: 'SendMessage' },
-        { name: 'Data', value: JSON.stringify(data) }
-      ],
-    });
-    console.log("messageId:", messageId)
-
-    setTimeout(() => {
-      this.scrollToBottom();
-    }, 2000);
-  }
-
-  handleKeyDown = (event: any) => {
-    if (event.key === 'Enter') {
-      event.preventDefault(); // prevent the form submit action
-      this.sendMessage();
+    try {
+      const messageId = await message({
+        process: AO_TWITTER,
+        signer: createDataItemSigner(window.arweaveWallet),
+        tags: [
+          { name: 'Action', value: 'SendPost' },
+          { name: 'Data', value: JSON.stringify(data) }
+        ],
+      });
+      console.log("messageId:", messageId)
+      return true;
+    } catch (error) {
+      return false;
     }
   }
 
@@ -229,10 +224,29 @@ class HomePage extends React.Component<{}, HomePageState> {
     }
   }
 
+  async onPost() {
+    let result = checkContent(this.quillRef, this.wordCount);
+    if (result) {
+      this.setState({ alert: result });
+      return;
+    }
+
+    this.setState({ message: 'Posting...' });
+    let post = this.quillRef.root.innerHTML;
+    let response = await this.uploadToAO(post, this.state.range);
+
+    if (response) {
+      this.quillRef.setText('');
+      this.setState({ message: '', alert: 'Post successful.' });
+    }
+    else
+      this.setState({ message: '', alert: 'There is an AO issue.' })
+  }
+
   render() {
     return (
       <div className="testao-page">
-        <div style={{ fontSize: 18 }}>This is an AO Chatroom for testing</div>
+        <div style={{ fontSize: 18 }}>This is an AO Twitter for testing</div>
 
         <div className="testao-nickname-line">
           <button className="testao-connect-button" onClick={() => this.connectWallet(true)}>
@@ -247,30 +261,33 @@ class HomePage extends React.Component<{}, HomePageState> {
           />
         </div>
 
-        {/* <input
-          className="testao-input-message process"
-          placeholder="process id"
-          value={this.state.nickname}
-          onChange={(e) => this.setState({ nickname: e.target.value })}
-        /> */}
+        <div className="testao-input-container">
+          <SharedQuillEditor
+            placeholder='Whats happening?'
+            onChange={this.onContentChange}
+            getRef={(ref: any) => this.quillRef = ref}
+          />
+
+          <div className='testao-actions'>
+            <select
+              className="testao-filter"
+              value={this.state.range}
+              onChange={this.onRangeChange}
+            >
+              <option value="everyone">Everyone</option>
+              <option value="following">Following</option>
+              <option value="private">Private</option>
+            </select>
+
+            <button onClick={() => this.onPost()}>Post</button>
+          </div>
+        </div>
 
         <div id='scrollableDiv' className="testao-chat-container">
-          {this.renderMessages()}
+          {this.renderPosts()}
         </div>
 
-        <div>
-          <input
-            id='input_msg'
-            className="testao-input-message"
-            placeholder="message"
-            value={this.state.msg}
-            onChange={(e) => this.setState({ msg: e.target.value })}
-            onKeyDown={this.handleKeyDown}
-          />
-          <button className="testao-send-button" onClick={() => this.sendMessage()}>Send</button>
-        </div>
-
-        {/* <MessageModal message={this.state.message} /> */}
+        <MessageModal message={this.state.message} />
         <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />
       </div>
     )
