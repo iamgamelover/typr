@@ -1,2 +1,2 @@
-# This is an AO Chatroom for testing
+# This is an AO Twitter for testing
 Using the aoconnect.

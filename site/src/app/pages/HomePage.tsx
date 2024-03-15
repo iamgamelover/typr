@@ -83,7 +83,7 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     // this.getTokens();
     // await getProcessFromOwner(userAddress)
-    // await this.getBalance('Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc')
+    await this.getBalance('Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc')
   }
 
   async getBalance(process: string) {
@@ -91,7 +91,8 @@ class HomePage extends React.Component<{}, HomePageState> {
       process: 'Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc',
       tags: [
         { name: 'Action', value: 'Balance' },
-        { name: 'Tags', value: `{Target = 'rN1B9kLV3ilqMQSd0bqc-sjrvMXzQkKB-JtfUeUUnl8'}` }
+        // { name: 'Tags', value: `{Target = 'rN1B9kLV3ilqMQSd0bqc-sjrvMXzQkKB-JtfUeUUnl8'}` }
+        { name: 'Target', value: 'rN1B9kLV3ilqMQSd0bqc-sjrvMXzQkKB-JtfUeUUnl8' }
       ],
     });
 
@@ -193,7 +194,7 @@ class HomePage extends React.Component<{}, HomePageState> {
     let time = now.toString();
 
     let data = { address, nickname, msg, time };
-    // console.log("Message:", data)
+    // console.log("Message:", JSON.stringify(data))
 
     this.setState({ msg: '' });
 
