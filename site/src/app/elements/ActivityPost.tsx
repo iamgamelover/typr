@@ -9,7 +9,6 @@ import ViewImageModal from '../modals/ViewImageModal';
 
 interface ActivityPostProps {
   data: any;
-  activeAddress?: string;
   afterRepost?: Function;
   beforeJump?: Function;
   isReply?: boolean;
@@ -188,7 +187,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           <div className='testao-msg-time'>&#x2022; {formatTimestamp(data.time, true)}</div>
         </div>
 
-        <div className={`testao-message ${data.address == this.props.activeAddress ? 'my-post' : ''}`}>
+        <div className='testao-message'>
           {parse(this.state.content, this.parseOptions)}
         </div>
 

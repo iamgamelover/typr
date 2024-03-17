@@ -414,7 +414,7 @@ export async function getDataFromAO(type: string) {
 
 export async function getNumOfReplies(postId: string) {
   let resp = await getDataFromAO('GetReplies');
-  if (!resp || resp.length == 0) return 0; 
+  if (!resp || resp.length == 0) return 0;
 
   let replies = [];
   for (let i = 0; i < resp.length; i++) {
@@ -427,6 +427,40 @@ export async function getNumOfReplies(postId: string) {
       continue;
     }
   }
-  
+
   return replies.length;
+}
+
+export async function connectWallet() {
+  try {
+    // connect to the ArConnect browser extension
+    await window.arweaveWallet.connect(
+      // request permissions
+      ["ACCESS_ADDRESS", "SIGN_TRANSACTION"],
+    );
+  } catch (error) {
+    alert('User canceled the connection.');
+    return false;
+  }
+
+  return true;
+}
+
+export async function getWalletAddress() {
+  let address;
+  try {
+    address = await window.arweaveWallet.getActiveAddress();
+  } catch (error) {
+    return '';
+  }
+
+  return address;
+}
+
+export async function isLoggedIn() {
+  let address = await getWalletAddress();
+  if (address)
+    return address;
+  else
+    return '';
 }

@@ -4,11 +4,12 @@ import { subscribe } from '../util/event';
 import { dryrun } from "@permaweb/aoconnect";
 import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
-import { checkContent, getDataFromAO, getNumOfReplies, msOfNow, timeOfNow, uploadToAO, uuid } from '../util/util';
+import { checkContent, connectWallet, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, uploadToAO, uuid } from '../util/util';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
 import { Service } from '../../server/service';
 import { TIP_IMG } from '../util/consts';
+import QuestionModal from '../modals/QuestionModal';
 
 declare var window: any;
 
@@ -20,11 +21,12 @@ interface HomePageState {
   message: string;
   loading: boolean;
   range: string;
+  isLoggedIn: string;
+  address: string;
 }
 
 class HomePage extends React.Component<{}, HomePageState> {
 
-  activeAddress = '';
   quillRef: any;
   wordCount = 0;
 
@@ -40,11 +42,15 @@ class HomePage extends React.Component<{}, HomePageState> {
       message: '',
       loading: true,
       range: 'everyone',
+      isLoggedIn: '',
+      address: '',
     };
 
     this.getPosts = this.getPosts.bind(this);
     this.onContentChange = this.onContentChange.bind(this);
     this.onRangeChange = this.onRangeChange.bind(this);
+    this.onQuestionYes = this.onQuestionYes.bind(this);
+    this.onQuestionNo = this.onQuestionNo.bind(this);
 
     subscribe('wallet-events', () => {
       this.forceUpdate();
@@ -64,35 +70,12 @@ class HomePage extends React.Component<{}, HomePageState> {
     this.setState({ range: element.value });
   }
 
-  async connectWallet(fromConnect: boolean) {
-    try {
-      // connect to the ArConnect browser extension
-      await window.arweaveWallet.connect(
-        // request permissions
-        ["ACCESS_ADDRESS", "SIGN_TRANSACTION"],
-      );
-    } catch (error) {
-      // this.setState({ alert: 'User canceled the connection.' });
-      alert('User canceled the connection.');
-      return;
-    }
-
-    // obtain the user's wallet address
-    const userAddress = await window.arweaveWallet.getActiveAddress();
-    if (userAddress) {
-      if (fromConnect) alert('You have connected to ArConnect.');
-      localStorage.setItem('userAddress', userAddress);
-      this.activeAddress = userAddress;
-      return userAddress;
-    }
-  }
-
   async start() {
+    let address = await isLoggedIn();
+    this.setState({ isLoggedIn: address, address });
+
     let nickname = localStorage.getItem('nickname');
-    let userAddress = localStorage.getItem('userAddress');
     if (nickname) this.setState({ nickname });
-    if (userAddress) this.activeAddress = userAddress;
-    // console.log("userAddress:", userAddress)
 
     this.getPosts();
     // const interval = setInterval(this.getPosts, 120000);
@@ -100,6 +83,27 @@ class HomePage extends React.Component<{}, HomePageState> {
     // this.getTokens();
     // await getProcessFromOwner(userAddress)
     // await this.getBalance('Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc')
+  }
+
+  async connectWallet() {
+    let connected = await connectWallet();
+    if (connected) {
+      let address = await getWalletAddress();
+      this.setState({ isLoggedIn: 'true', address });
+    }
+  }
+
+  async disconnectWallet() {
+    await window.arweaveWallet.disconnect();
+    this.setState({ isLoggedIn: '', address: '', question: '' });
+  }
+
+  onQuestionYes() {
+    this.disconnectWallet();
+  }
+
+  onQuestionNo() {
+    this.setState({ question: '' });
   }
 
   async getBalance(process: string) {
@@ -178,7 +182,6 @@ class HomePage extends React.Component<{}, HomePageState> {
         <ActivityPost
           key={i}
           data={this.state.posts[i]}
-          activeAddress={this.activeAddress}
         />
       )
     }
@@ -202,10 +205,15 @@ class HomePage extends React.Component<{}, HomePageState> {
       return;
     }
 
+    let address = await getWalletAddress();
+    if (!address) {
+      this.setState({ isLoggedIn: '', alert: 'You should connect to wallet first.' });
+      return;
+    }
+
     this.setState({ message: 'Posting...' });
 
     let post = this.quillRef.root.innerHTML;
-    let address = await this.connectWallet(false);
     let nickname = this.state.nickname.trim();
     if (nickname.length > 25) {
       this.setState({ alert: 'Nickname can be up to 25 characters long.' })
@@ -221,22 +229,33 @@ class HomePage extends React.Component<{}, HomePageState> {
     if (response) {
       this.quillRef.setText('');
       this.setState({ message: '', alert: 'Post successful.', posts: [], loading: true });
-      // this.setState({ message: '' });
       this.getPosts(true);
     }
     else
-      this.setState({ message: '', alert: TIP_IMG })
+      this.setState({ message: '', alert: TIP_IMG });
   }
 
   render() {
+    let address = this.state.address;
+    if (this.state.isLoggedIn)
+      address = address.substring(0, 6) + ' ... ' + address.substring(address.length - 6);
+
     return (
       <div className="testao-page">
         <div style={{ fontSize: 18 }}>This is an AO Twitter for testing</div>
 
         <div className="testao-nickname-line">
-          <button className="testao-connect-button" onClick={() => this.connectWallet(true)}>
-            Connect ArConnect
-          </button>
+          {this.state.isLoggedIn
+            ?
+            <button className="testao-connect-button connected" onClick={() => this.setState({ question: 'Disconnect?' })}>
+              {address}
+            </button>
+            :
+            <button className="testao-connect-button" onClick={() => this.connectWallet()}>
+              Connect ArConnect
+            </button>
+          }
+
           <div>Nickname</div>
           <input
             className="testao-input-message nickname"
@@ -246,27 +265,29 @@ class HomePage extends React.Component<{}, HomePageState> {
           />
         </div>
 
-        <div className="testao-input-container">
-          <SharedQuillEditor
-            placeholder='What is happening?!'
-            onChange={this.onContentChange}
-            getRef={(ref: any) => this.quillRef = ref}
-          />
+        {this.state.isLoggedIn &&
+          <div className="testao-input-container">
+            <SharedQuillEditor
+              placeholder='What is happening?!'
+              onChange={this.onContentChange}
+              getRef={(ref: any) => this.quillRef = ref}
+            />
 
-          <div className='testao-actions'>
-            <select
-              className="testao-filter"
-              value={this.state.range}
-              onChange={this.onRangeChange}
-            >
-              <option value="everyone">Everyone</option>
-              <option value="following">Following</option>
-              <option value="private">Private</option>
-            </select>
+            <div className='testao-actions'>
+              <select
+                className="testao-filter"
+                value={this.state.range}
+                onChange={this.onRangeChange}
+              >
+                <option value="everyone">Everyone</option>
+                <option value="following">Following</option>
+                <option value="private">Private</option>
+              </select>
 
-            <button onClick={() => this.onPost()}>Post</button>
+              <button onClick={() => this.onPost()}>Post</button>
+            </div>
           </div>
-        </div>
+        }
 
         <div id='scrollableDiv' className="testao-chat-container">
           {this.renderPosts()}
@@ -274,6 +295,7 @@ class HomePage extends React.Component<{}, HomePageState> {
 
         <MessageModal message={this.state.message} />
         <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />
+        <QuestionModal message={this.state.question} onYes={this.onQuestionYes} onNo={this.onQuestionNo} />
       </div>
     )
   }

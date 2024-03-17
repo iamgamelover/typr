@@ -37,10 +37,6 @@
   color: rgb(78, 68, 68);
 }
 
-.my-post {
-  /* background-color: green; */
-}
-
 .testao-msg-portrait {
   width: 45px;
   height: 45px;
@@ -110,6 +106,12 @@
   background-color: rgb(104, 115, 206);
   color: white;
   font-size: 15px;
+}
+
+.connected {
+  background-color: white;
+  color: black;
+  border: 1px solid lightgray;
 }
 
 .testao-input-container {
