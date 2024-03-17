@@ -1,7 +1,7 @@
 .testao-page {
   display: flex;
   flex-direction: column;
-  max-width: 650px;
+  max-width: var(--page-max-width);
   margin: auto;
   padding: 20px;
   row-gap: 20px;
@@ -19,6 +19,10 @@
 
 .testao-msg-line:hover {
   background-color: rgb(207, 243, 207);
+}
+
+.no_hover:hover {
+  background-color: rgb(227, 248, 227);
 }
 
 .testao-msg-header {

@@ -6,6 +6,7 @@
   --section-color: rgb(227, 248, 227);
   --section-header-color: rgb(65, 67, 72);
   --link-color: rgb(99, 99, 229);
+  --page-max-width: 650px;
 }
 
 html {

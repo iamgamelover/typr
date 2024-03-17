@@ -9,7 +9,7 @@ import ViewImageModal from '../modals/ViewImageModal';
 
 interface ActivityPostProps {
   data: any;
-  activeAddress: string;
+  activeAddress?: string;
   afterRepost?: Function;
   beforeJump?: Function;
   isReply?: boolean;
@@ -109,31 +109,14 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     this.setState({ navigate: '/profile/' + id });
   }
 
-  onJump(id: string) {
-    // if (this.props.isMission)
-    //   this.goMissionPage(id);
-    // else
-    //   this.goPostPage(id);
-  }
-
   goPostPage(id: string) {
     if (window.location.pathname.indexOf('/activity/post/') == 0)
       return;
 
     this.setState({ navigate: "/activity/post/" + id });
 
-    if (this.props.beforeJump)
-      this.props.beforeJump();
-  }
-
-  goMissionPage(id: string) {
-    if (window.location.pathname.indexOf('/mission/') == 0)
-      return;
-
-    this.setState({ navigate: "/mission/" + id });
-
-    if (this.props.beforeJump)
-      this.props.beforeJump();
+    // if (this.props.beforeJump)
+    //   this.props.beforeJump();
   }
 
   onClose() {
@@ -141,8 +124,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   renderActionsRow(data: any) {
-    let value = Number(data.replies);
-    value = 0;
     return (
       <div className='activity-post-action-row'>
         {!this.props.isReply &&
@@ -151,28 +132,32 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
               <BsChat />
             </div>
             <div className='activity-post-action-number'>
-              {numberWithCommas(value)}
+              {numberWithCommas(Number(data.replies))}
             </div>
           </div>
         }
 
-        <div className='activity-post-action' onClick={(e)=>this.onCoins(e)}>
-          <div className='activity-post-action-icon'>
-            <BsHeart />
+        {!this.props.isReply &&
+          <div className='activity-post-action' onClick={(e) => this.onCoins(e)}>
+            <div className='activity-post-action-icon'>
+              <BsHeart />
+            </div>
+            <div className='activity-post-action-number'>
+              {numberWithCommas(Number(data.likes))}
+            </div>
           </div>
-          <div className='activity-post-action-number'>
-            {numberWithCommas(value)}
-          </div>
-        </div>
+        }
 
-        <div className='activity-post-action' onClick={(e)=>this.onCoins(e)}>
-          <div className='activity-post-action-icon'>
-            <BsCoin />
+        {!this.props.isReply &&
+          <div className='activity-post-action' onClick={(e) => this.onCoins(e)}>
+            <div className='activity-post-action-icon'>
+              <BsCoin />
+            </div>
+            <div className='activity-post-action-number'>
+              {numberWithCommas(Number(data.coins))}
+            </div>
           </div>
-          <div className='activity-post-action-number'>
-            {numberWithCommas(value)}
-          </div>
-        </div>
+        }
       </div>
     )
   }
@@ -180,8 +165,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   render() {
     let data = this.props.data;
     // let author  = this.state.author;
-    let date = formatTimestamp(data.created_at / 1000, true);
-    let path = window.location.pathname.substring(1, 6);
+    // let date = formatTimestamp(data.created_at / 1000, true);
+    // let path = window.location.pathname.substring(1, 6);
 
     let address = data.address;
     address = address.substring(0, 4) + '...' + address.substring(address.length - 4);
@@ -191,15 +176,16 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
     return (
       <div
-        className='testao-msg-line'
+        // className='testao-msg-line'
+        className={`testao-msg-line ${ this.props.isReply || this.props.isPostPage ? 'no_hover' : '' }`}
         style={{ cursor: this.state.openImage || this.props.isReply || this.props.isPostPage ? 'auto' : 'pointer' }}
-        onClick={() => this.onJump(data.id)}
+        onClick={() => this.goPostPage(data.id)}
       >
         <div className='testao-msg-header'>
-          <img className='testao-msg-portrait' src='portrait-default.png' />
+          <img className='testao-msg-portrait' src='/portrait-default.png' />
           <div className="testao-msg-nickname">{data.nickname}</div>
           <div className="testao-msg-address">{address}</div>
-          <div className='testao-msg-time'>&#9679; {formatTimestamp(data.time, true)}</div>
+          <div className='testao-msg-time'>&#x2022; {formatTimestamp(data.time, true)}</div>
         </div>
 
         <div className={`testao-message ${data.address == this.props.activeAddress ? 'my-post' : ''}`}>

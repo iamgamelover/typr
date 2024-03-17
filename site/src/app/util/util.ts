@@ -1,3 +1,8 @@
+import { createDataItemSigner, dryrun, message } from "@permaweb/aoconnect/browser";
+import { AO_TWITTER } from "./consts";
+
+declare var window: any;
+
 /**
  * check the input if is a valid number
  * @param value 
@@ -362,4 +367,66 @@ export function uuid() {
       v = c == "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
+}
+
+export async function uploadToAO(data: any, type: string) {
+  try {
+    const messageId = await message({
+      process: AO_TWITTER,
+      signer: createDataItemSigner(window.arweaveWallet),
+      data: JSON.stringify(data),
+      tags: [
+        { name: 'Action', value: type },
+      ],
+    });
+    console.log("messageId:", messageId)
+    return true;
+  } catch (error) {
+    console.log("error:", error)
+    return false;
+  }
+}
+
+export function timeOfNow() {
+  let now = Math.floor(Date.now() / 1000);
+  return now.toString();
+}
+
+export async function getDataFromAO(type: string) {
+  let result;
+  try {
+    result = await dryrun({
+      process: AO_TWITTER,
+      tags: [{ name: 'Action', value: type }],
+    });
+  } catch (error) {
+    return '';
+  }
+
+  if (result.Messages.length == 0) return '';
+
+  let data = result.Messages[0].Data;
+  let final = data.split("▲");
+
+  if (final.length == 1 && final[0] == '') return '';
+  return final;
+}
+
+export async function getNumOfReplies(postId: string) {
+  let resp = await getDataFromAO('GetReplies');
+  if (!resp || resp.length == 0) return 0; 
+
+  let replies = [];
+  for (let i = 0; i < resp.length; i++) {
+    let data;
+    try {
+      data = JSON.parse(resp[i]);
+      if (data.postId == postId) replies.push(data);
+    } catch (error) {
+      // console.log(error)
+      continue;
+    }
+  }
+  
+  return replies.length;
 }

@@ -1,16 +1,16 @@
 import React from 'react';
 import './HomePage.css';
 import { subscribe } from '../util/event';
-import { createDataItemSigner, message, dryrun } from "@permaweb/aoconnect";
+import { dryrun } from "@permaweb/aoconnect";
 import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
-import { checkContent, formatTimestamp, uuid } from '../util/util';
-import { getProcessFromOwner } from '../../server/server';
+import { checkContent, getDataFromAO, getNumOfReplies, msOfNow, timeOfNow, uploadToAO, uuid } from '../util/util';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
+import { Service } from '../../server/service';
+import { TIP_IMG } from '../util/consts';
 
 declare var window: any;
-const AO_TWITTER = "Y4ZXUT9jFoHFg3K2XH5MVFf4_mXKHAcCsqgLta1au2U";
 
 interface HomePageState {
   posts: string[];
@@ -27,6 +27,8 @@ class HomePage extends React.Component<{}, HomePageState> {
   activeAddress = '';
   quillRef: any;
   wordCount = 0;
+
+  static service: Service = new Service();
 
   constructor(props: {}) {
     super(props);
@@ -92,12 +94,8 @@ class HomePage extends React.Component<{}, HomePageState> {
     if (userAddress) this.activeAddress = userAddress;
     // console.log("userAddress:", userAddress)
 
-    // this.getPosts();
-    const interval = setInterval(this.getPosts, 5000);
-
-    // setTimeout(() => {
-    //   this.scrollToBottom();
-    // }, 5000);
+    this.getPosts();
+    // const interval = setInterval(this.getPosts, 120000);
 
     // this.getTokens();
     // await getProcessFromOwner(userAddress)
@@ -109,7 +107,6 @@ class HomePage extends React.Component<{}, HomePageState> {
       process: 'Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc',
       tags: [
         { name: 'Action', value: 'Balance' },
-        // { name: 'Tags', value: `{Target = 'rN1B9kLV3ilqMQSd0bqc-sjrvMXzQkKB-JtfUeUUnl8'}` }
         { name: 'Target', value: 'rN1B9kLV3ilqMQSd0bqc-sjrvMXzQkKB-JtfUeUUnl8' }
       ],
     });
@@ -131,29 +128,39 @@ class HomePage extends React.Component<{}, HomePageState> {
     // }
   }
 
-  async getPosts() {
-    let result;
-    try {
-      result = await dryrun({
-        process: AO_TWITTER,
-        tags: [{ name: 'Action', value: 'GetPosts' }],
-      });
-    } catch (error) {
-      this.setState({ alert: 'There is an AO issue.' });
-      return;
-    }
+  async getPosts(new_post?: boolean) {
+    let posts = HomePage.service.getPostsFromCache();
+    // console.log("cached posts:", posts)
 
-    if (result.Messages.length == 0) {
-      this.setState({ loading: false });
-      return;
-    }
+    if (!posts || new_post) {
+      posts = await getDataFromAO('GetPosts');
+      if (!posts) {
+        this.setState({ loading: false });
+        return;
+      }
 
-    let data = result.Messages[0].Data;
-    let posts = data.split("▲");
-    // console.log("posts:", posts)
+      let final = [];
+      for (let i = posts.length - 1; i >= 0; i--) {
+        let data;
+        try {
+          data = JSON.parse(posts[i]);
+          HomePage.service.addPostToCache(data);
+        } catch (error) {
+          // console.log(error)
+          continue;
+        }
 
-    if (posts.length == 1 && posts[0] == '') {
-      this.setState({ loading: false });
+        final.push(data)
+      }
+
+      for (let i = final.length - 1; i >= 0; i--) {
+        let num = await getNumOfReplies(final[i].id);
+        final[i].replies = num;
+      }
+
+      this.setState({ posts: final, loading: false });
+      HomePage.service.addPostsToCache(final);
+      console.log("caching posts done")
       return;
     }
 
@@ -165,62 +172,18 @@ class HomePage extends React.Component<{}, HomePageState> {
       return (<div>Loading...</div>);
 
     let divs = [];
-
-    for (let i = this.state.posts.length - 1; i >= 0; i--) {
-      let data;
-      try {
-        data = JSON.parse(this.state.posts[i]);
-      } catch (error) {
-        // console.log(error)
-        continue;
-      }
-
+    // for (let i = this.state.posts.length - 1; i >= 0; i--) {
+    for (let i = 0; i < this.state.posts.length; i++) {
       divs.push(
         <ActivityPost
           key={i}
-          data={data}
+          data={this.state.posts[i]}
           activeAddress={this.activeAddress}
         />
       )
     }
 
     return divs.length > 0 ? divs : <div>No post yet.</div>
-  }
-
-  async uploadToAO(post: string, range: string) {
-    let address = await this.connectWallet(false);
-
-    let nickname = this.state.nickname.trim();
-    if (nickname.length > 25) {
-      this.setState({ alert: 'Nickname can be up to 25 characters long.' })
-      return;
-    }
-
-    localStorage.setItem('nickname', nickname);
-    if (!nickname) nickname = 'anonymous';
-
-    let now = Math.floor(Date.now() / 1000);
-    let time = now.toString();
-
-    let data = { id: uuid(), address, nickname, post, range, time };
-    // console.log("Post:", data)
-
-    try {
-      const messageId = await message({
-        process: AO_TWITTER,
-        signer: createDataItemSigner(window.arweaveWallet),
-        data: JSON.stringify(data),
-        tags: [
-          { name: 'Action', value: 'SendPost' },
-          // { name: 'Data', value: JSON.stringify(data) }
-        ],
-      });
-      console.log("messageId:", messageId)
-      return true;
-    } catch (error) {
-      console.log("error:", error)
-      return false;
-    }
   }
 
   scrollToBottom() {
@@ -240,15 +203,29 @@ class HomePage extends React.Component<{}, HomePageState> {
     }
 
     this.setState({ message: 'Posting...' });
+
     let post = this.quillRef.root.innerHTML;
-    let response = await this.uploadToAO(post, this.state.range);
+    let address = await this.connectWallet(false);
+    let nickname = this.state.nickname.trim();
+    if (nickname.length > 25) {
+      this.setState({ alert: 'Nickname can be up to 25 characters long.' })
+      return;
+    }
+
+    localStorage.setItem('nickname', nickname);
+    if (!nickname) nickname = 'anonymous';
+
+    let data = { id: uuid(), address, nickname, post, range: this.state.range, likes: '0', replies: '0', coins: '0', time: timeOfNow() };
+    let response = await uploadToAO(data, 'SendPost');
 
     if (response) {
       this.quillRef.setText('');
-      this.setState({ message: '', alert: 'Post successful.' });
+      this.setState({ message: '', alert: 'Post successful.', posts: [], loading: true });
+      // this.setState({ message: '' });
+      this.getPosts(true);
     }
     else
-      this.setState({ message: '', alert: 'Is there a picture in the post? Size just up to 100KB for now.' })
+      this.setState({ message: '', alert: TIP_IMG })
   }
 
   render() {

@@ -1,0 +1,78 @@
+.activity-post-page {
+  padding: 20px;
+  max-width: var(--page-max-width);
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+}
+
+.activity-post-page-header {
+  display: flex;
+  column-gap: 10px;
+  background-color: var(--section-header-color);
+  border-radius: 10px;
+  padding: 5px 10px;
+  align-items: center;
+  color: white;
+  cursor: pointer;
+}
+
+.activity-post-page-header:hover {
+  background-color: rgb(81, 83, 87);
+}
+
+.activity-post-time {
+  color: lightgray;
+  font-size: 14px;
+  margin-left: 30px;
+}
+
+.activity-post-page-back-button {
+  width: 34px;
+  height: 34px;
+  font-size: 18pt;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.activity-post-page-editor-header {
+  display: flex;
+  align-items: center;
+  border-top-right-radius: 10px;
+  border-top-left-radius: 10px;
+  background-color: var(--section-header-color);
+  /* font-size: 0.8em; */
+  /* color: #ffffff40; */
+  padding-left: 15px;
+  margin-top: 10px;
+  height: 34px;
+}
+
+.activity-post-page-reply-container { 
+  /* border: 1px solid #ffffff40; */
+  border-radius: 10px;
+  /* padding: 10px; */
+  margin-top: 20px;
+  /* margin-bottom: 0px; */
+}
+
+.activity-post-page-reply-header {
+  font-size: 0.9em;
+  color: gray;
+  margin-top: 20px;
+}
+
+.activity-post-page-action {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+  /* column-gap: 10px; */
+}
+
+@media (max-width: 600px) {
+  .activity-post-page {
+    padding: 10px;
+  }
+}

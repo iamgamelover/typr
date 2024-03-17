@@ -4,6 +4,7 @@ import SitePage from './pages/SitePage';
 import NotFoundPage from './pages/NotFoundPage';
 import './App.css';
 import HomePage from './pages/HomePage';
+import ActivityPostPage from './pages/ActivityPostPage';
 
 
 class App extends React.Component<{}, {}> {
@@ -20,6 +21,7 @@ class App extends React.Component<{}, {}> {
         <Routes>
           <Route path='/' element={<SitePage />}>
             <Route index element={<HomePage />} />
+            <Route path='/activity/post/:id' element={<ActivityPostPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
