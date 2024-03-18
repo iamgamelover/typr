@@ -163,12 +163,9 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   render() {
     let data = this.props.data;
-    // let author  = this.state.author;
-    // let date = formatTimestamp(data.created_at / 1000, true);
-    // let path = window.location.pathname.substring(1, 6);
-
     let address = data.address;
-    address = address.substring(0, 4) + '...' + address.substring(address.length - 4);
+    if (address)
+      address = address.substring(0, 4) + '...' + address.substring(address.length - 4);
 
     if (this.state.navigate)
       return <Navigate to={this.state.navigate} />;

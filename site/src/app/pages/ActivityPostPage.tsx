@@ -9,7 +9,7 @@ import { BsClock, BsFillArrowLeftCircleFill } from 'react-icons/bs';
 import { subscribe } from '../util/event';
 import HomePage from './HomePage';
 import { dryrun } from '@permaweb/aoconnect/browser';
-import { checkContent, getDataFromAO, getNumOfReplies, timeOfNow, uploadToAO, uuid } from '../util/util';
+import { checkContent, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, uploadToAO, uuid } from '../util/util';
 import { AO_TWITTER, TIP_IMG } from '../util/consts';
 
 interface ActivityPostPageState {
@@ -19,6 +19,8 @@ interface ActivityPostPageState {
   alert: string;
   loading: boolean;
   loading_reply: boolean;
+  isLoggedIn: string;
+  address: string;
 }
 
 class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
@@ -36,6 +38,8 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
       alert: '',
       loading: true,
       loading_reply: true,
+      isLoggedIn: '',
+      address: '',
     };
 
     this.onContentChange = this.onContentChange.bind(this);
@@ -51,9 +55,19 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
 
   componentDidMount() {
     document.getElementById('id-app-page').scrollTo(0, 0);
-    this.getPost();
+    this.start();
   }
 
+  async start() {
+    let address = await isLoggedIn();
+    this.setState({ isLoggedIn: address, address });
+
+    // let nickname = localStorage.getItem('nickname');
+    // if (nickname) this.setState({ nickname });
+
+    this.getPost();
+  }
+  
   async getPost() {
     this.postId = window.location.pathname.substring(15);
     let post = HomePage.service.getPostFromCache(this.postId);
@@ -117,11 +131,16 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
       return;
     }
 
+    let address = await getWalletAddress();
+    if (!address) {
+      this.setState({ isLoggedIn: '', alert: 'You should connect to wallet first.' });
+      return;
+    }
+
     this.setState({ message: 'Replying...' });
 
     let post = this.quillRef.root.innerHTML;
     let nickname = localStorage.getItem('nickname');
-    let address = localStorage.getItem('userAddress');
     if (!nickname) nickname = 'anonymous';
 
     let data = { id: uuid(), postId: this.state.post.id, address, nickname, post, time: timeOfNow() };
@@ -178,7 +197,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
           <div className='mission-page-block-time'><BsClock />{date}</div>
         } */}
 
-        {!this.state.loading &&
+        {!this.state.loading && this.state.isLoggedIn &&
           <div className="activity-post-page-reply-container">
             <SharedQuillEditor
               placeholder='Enter reply...'
