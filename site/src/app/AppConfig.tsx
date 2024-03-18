@@ -4,20 +4,38 @@ export class AppConfig {
 
   public static menu = [
     {
-      text: 'Wallet',
-      icon: 'wallet',
+      text: 'Home',
+      icon: 'home',
       to: '/',
       loggedIn: false
     },
     {
-      text: 'Apps',
-      icon: 'apps',
-      to: '/apps',
+      text: 'TokenEco',
+      icon: 'token',
+      to: '/token',
       loggedIn: false
     },
     {
-      text: 'Account',
-      icon: 'portrait',
+      text: 'Notifications',
+      icon: 'notifications',
+      to: '/notifications',
+      loggedIn: false
+    },
+    {
+      text: 'Bookmark',
+      icon: 'bookmark',
+      to: '/bookmark',
+      loggedIn: false
+    },
+    {
+      text: 'Chatroom',
+      icon: 'chatroom',
+      to: '/chatroom',
+      loggedIn: false
+    },
+    {
+      text: 'Profile',
+      icon: 'profile',
       to: '/profile',
       loggedIn: false
     },

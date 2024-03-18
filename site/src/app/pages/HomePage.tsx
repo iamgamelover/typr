@@ -10,6 +10,7 @@ import ActivityPost from '../elements/ActivityPost';
 import { Service } from '../../server/service';
 import { TIP_IMG } from '../util/consts';
 import QuestionModal from '../modals/QuestionModal';
+import { getProcessFromOwner } from '../../server/server';
 
 declare var window: any;
 
@@ -72,6 +73,7 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   async start() {
     let address = await isLoggedIn();
+    console.log("address:", address)
     this.setState({ isLoggedIn: address, address });
 
     let nickname = localStorage.getItem('nickname');
@@ -81,7 +83,13 @@ class HomePage extends React.Component<{}, HomePageState> {
     // const interval = setInterval(this.getPosts, 120000);
 
     // this.getTokens();
-    // await getProcessFromOwner(userAddress)
+    let resp = await getProcessFromOwner('4tKnGrXpOzbL_r2VsahCCUPSwV1ndbU35U1nxeB6_ic');
+    if (resp.success) {
+      console.log("process:", resp.process)
+    } else {
+      console.log("err:", resp.message)
+    }
+
     // await this.getBalance('Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc')
   }
 
@@ -242,8 +250,6 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     return (
       <div className="testao-page">
-        <div style={{ fontSize: 18 }}>This is an AO Twitter for testing</div>
-
         <div className="testao-nickname-line">
           {this.state.isLoggedIn
             ?

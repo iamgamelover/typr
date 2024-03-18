@@ -43,11 +43,13 @@ export async function getProcessFromOwner(owner: string) {
     let response = await fetchGraphQL(queryObject);
     console.log("response:", response)
 
-
     let end = performance.now();
     console.log(`<== [getProcessFromOwner] [${Math.round(end - start)} ms]`);
 
-    //   return {success: true, posts};
+    if (response.length == 0)
+      return { success: true, process: '' };
+    else
+      return { success: true, process: response[0].node.id };
   } catch (error) {
     console.log("ERR:", error);
     return { success: false, message: 'getPostsOfMission failed.' };

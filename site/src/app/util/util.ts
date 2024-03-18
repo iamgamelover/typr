@@ -126,7 +126,7 @@ export function getBannerImage(profile: any): string {
 }
 
 export function getMenuIcon(name: string): string {
-  return '/icon/' + name + '.png';
+  return '/' + name + '.png';
 }
 
 /**

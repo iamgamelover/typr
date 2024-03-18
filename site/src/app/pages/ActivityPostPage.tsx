@@ -61,10 +61,6 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
   async start() {
     let address = await isLoggedIn();
     this.setState({ isLoggedIn: address, address });
-
-    // let nickname = localStorage.getItem('nickname');
-    // if (nickname) this.setState({ nickname });
-
     this.getPost();
   }
   
