@@ -15,7 +15,7 @@ import { getProcessFromOwner } from '../../server/server';
 declare var window: any;
 
 interface HomePageState {
-  posts: string[];
+  posts: any;
   nickname: string;
   question: string;
   alert: string;
@@ -73,7 +73,7 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   async start() {
     let address = await isLoggedIn();
-    console.log("address:", address)
+    // console.log("address:", address)
     this.setState({ isLoggedIn: address, address });
 
     let nickname = localStorage.getItem('nickname');
@@ -82,14 +82,14 @@ class HomePage extends React.Component<{}, HomePageState> {
     this.getPosts();
     // const interval = setInterval(this.getPosts, 120000);
 
-    // this.getTokens();
-    let resp = await getProcessFromOwner('4tKnGrXpOzbL_r2VsahCCUPSwV1ndbU35U1nxeB6_ic');
-    if (resp.success) {
-      console.log("process:", resp.process)
-    } else {
-      console.log("err:", resp.message)
-    }
+    // let resp = await getProcessFromOwner('4tKnGrXpOzbL_r2VsahCCUPSwV1ndbU35U1nxeB6_ic');
+    // if (resp.success) {
+    //   console.log("process:", resp.process)
+    // } else {
+    //   console.log("err:", resp.message)
+    // }
 
+    // this.getTokens();
     // await this.getBalance('Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc')
   }
 
@@ -165,18 +165,32 @@ class HomePage extends React.Component<{}, HomePageState> {
         final.push(data)
       }
 
-      for (let i = final.length - 1; i >= 0; i--) {
-        let num = await getNumOfReplies(final[i].id);
-        final[i].replies = num;
-      }
+      // for (let i = final.length - 1; i >= 0; i--) {
+      //   let num = await getNumOfReplies(final[i].id);
+      //   final[i].replies = num;
+      // }
 
       this.setState({ posts: final, loading: false });
       HomePage.service.addPostsToCache(final);
       console.log("caching posts done")
+
+      setTimeout(() => {
+        this.renderNumOfReplies();
+      }, 500);
+
       return;
     }
 
     this.setState({ posts, loading: false });
+  }
+
+  async renderNumOfReplies() {
+    let posts = this.state.posts;
+    for (let i = 0; i < posts.length; i++) {
+      let num = await getNumOfReplies(posts[i].id);
+      posts[i].replies = num;
+      this.setState({ posts });
+    }
   }
 
   renderPosts() {

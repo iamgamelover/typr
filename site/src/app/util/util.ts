@@ -393,6 +393,9 @@ export function timeOfNow() {
 }
 
 export async function getDataFromAO(type: string) {
+  let start = performance.now();
+  console.log('==> [getDataFromAO]');
+
   let result;
   try {
     result = await dryrun({
@@ -402,11 +405,14 @@ export async function getDataFromAO(type: string) {
   } catch (error) {
     return '';
   }
-
+  
   if (result.Messages.length == 0) return '';
-
+  
   let data = result.Messages[0].Data;
   let final = data.split("▲");
+  
+  let end = performance.now();
+  console.log(`<== [getDataFromAO] [${Math.round(end - start)} ms]`);
 
   if (final.length == 1 && final[0] == '') return '';
   return final;
