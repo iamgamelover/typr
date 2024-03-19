@@ -39,8 +39,13 @@
   color: rgb(113, 105, 105);
   text-decoration: none;
   margin-bottom: 10px;
-  /* border-radius: 30px; */
+  border-radius: 30px;
   padding: 10px 20px;
+}
+
+.navbar-link:hover {
+  color: white;
+  background-color: var(--section-header-color);
 }
 
 .navbar-link-active {
