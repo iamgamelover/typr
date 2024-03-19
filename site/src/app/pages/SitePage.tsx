@@ -13,10 +13,10 @@ class SitePage extends React.Component {
   render() {
     return (
       <div className="app-container">
-        <div className='app-logo-line'>
+        <NavLink className='app-logo-line' to='/'>
           <img className='app-logo' src='/ao.png' />
           <div className='app-logo-text'>Twitter (beta)</div>
-        </div>
+        </NavLink>
 
         <div className="app-content">
           <div className="app-navbar">

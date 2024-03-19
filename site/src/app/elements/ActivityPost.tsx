@@ -6,6 +6,7 @@ import './ActivityPost.css';
 import parse, { attributesToProps } from 'html-react-parser';
 import { NavLink, Navigate } from 'react-router-dom';
 import ViewImageModal from '../modals/ViewImageModal';
+import AlertModal from '../modals/AlertModal';
 
 interface ActivityPostProps {
   data: any;
@@ -20,6 +21,7 @@ interface ActivityPostState {
   navigate: string;
   content: string;
   author: any;
+  alert: string;
 }
 
 class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState> {
@@ -46,7 +48,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       openImage: false,
       navigate: '',
       content: '',
-      author: ''
+      author: '',
+      alert: '',
     };
 
     this.onClose = this.onClose.bind(this);
@@ -96,8 +99,14 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     this.setState({ openImage: true })
   }
 
-  async onCoins(e: any) {
+  async onLike(e: any) {
     e.stopPropagation();
+    this.setState({ navigate: '', alert: 'Like a Post with CRED ^_^' })
+  }
+
+  async onCoin(e: any) {
+    e.stopPropagation();
+    this.setState({ alert: 'See the earned CRED ^_^' })
   }
 
   goProfilePage(e: any, id: string) {
@@ -137,7 +146,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         }
 
         {!this.props.isReply &&
-          <div className='activity-post-action' onClick={(e) => this.onCoins(e)}>
+          <div className='activity-post-action' onClick={(e) => this.onLike(e)}>
             <div className='activity-post-action-icon'>
               <BsHeart />
             </div>
@@ -148,7 +157,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         }
 
         {!this.props.isReply &&
-          <div className='activity-post-action' onClick={(e) => this.onCoins(e)}>
+          <div className='activity-post-action' onClick={(e) => this.onCoin(e)}>
             <div className='activity-post-action-icon'>
               <BsCoin />
             </div>
@@ -190,6 +199,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
         {this.renderActionsRow(data)}
 
+        <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ navigate: '', alert: '' })} />
         <ViewImageModal open={this.state.openImage} src={this.imgUrl} onClose={this.onClose} />
       </div>
     )
