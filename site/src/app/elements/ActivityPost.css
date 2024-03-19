@@ -69,6 +69,12 @@
   margin-top: 15px;
 }
 
+/* .activity-post-action:hover {
+  border-radius: 20px;
+  padding: 0px 10px;
+  background-color: rgb(54, 154, 54);
+} */
+
 .activity-post-action-icon {
   margin-right: 7px;
 }

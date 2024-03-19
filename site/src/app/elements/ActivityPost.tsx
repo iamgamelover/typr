@@ -1,5 +1,5 @@
 import React from 'react';
-import { BsChat, BsChatSquareText, BsCoin, BsEyeglasses, BsHeart, BsPersonFillLock } from 'react-icons/bs';
+import { BsBookmark, BsChat, BsChatSquareText, BsCoin, BsEyeglasses, BsHeart, BsPersonFillLock } from 'react-icons/bs';
 import { capitalizeFirstLetter, convertHashTag, convertUrls, getPortraitImage, numberWithCommas } from '../util/util';
 import { formatTimestamp } from '../util/util';
 import './ActivityPost.css';
@@ -101,12 +101,17 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   async onLike(e: any) {
     e.stopPropagation();
-    this.setState({ navigate: '', alert: 'Like a Post with CRED ^_^' })
+    this.setState({ alert: 'Like a Post with CRED ^_^' })
   }
 
   async onCoin(e: any) {
     e.stopPropagation();
     this.setState({ alert: 'See the earned CRED ^_^' })
+  }
+
+  async onBookmark(e: any) {
+    e.stopPropagation();
+    // this.setState({ alert: 'See the earned CRED ^_^' })
   }
 
   goProfilePage(e: any, id: string) {
@@ -145,27 +150,29 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           </div>
         }
 
-        {!this.props.isReply &&
-          <div className='activity-post-action' onClick={(e) => this.onLike(e)}>
-            <div className='activity-post-action-icon'>
-              <BsHeart />
-            </div>
-            <div className='activity-post-action-number'>
-              {numberWithCommas(Number(data.likes))}
-            </div>
+        <div className='activity-post-action' onClick={(e) => this.onLike(e)}>
+          <div className='activity-post-action-icon'>
+            <BsHeart />
           </div>
-        }
+          <div className='activity-post-action-number'>
+            {numberWithCommas(Number(data.likes))}
+          </div>
+        </div>
 
-        {!this.props.isReply &&
-          <div className='activity-post-action' onClick={(e) => this.onCoin(e)}>
-            <div className='activity-post-action-icon'>
-              <BsCoin />
-            </div>
-            <div className='activity-post-action-number'>
-              {numberWithCommas(Number(data.coins))}
-            </div>
+        <div className='activity-post-action' onClick={(e) => this.onCoin(e)}>
+          <div className='activity-post-action-icon'>
+            <BsCoin />
           </div>
-        }
+          <div className='activity-post-action-number'>
+            {numberWithCommas(Number(data.coins))}
+          </div>
+        </div>
+
+        <div className='activity-post-action' onClick={(e) => this.onBookmark(e)}>
+          <div className='activity-post-action-icon'>
+            <BsBookmark />
+          </div>
+        </div>
       </div>
     )
   }
@@ -181,8 +188,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
     return (
       <div
-        // className='testao-msg-line'
-        className={`testao-msg-line ${ this.props.isReply || this.props.isPostPage ? 'no_hover' : '' }`}
+        className={`testao-msg-line ${this.props.isReply || this.props.isPostPage ? 'no_hover' : ''}`}
         style={{ cursor: this.state.openImage || this.props.isReply || this.props.isPostPage ? 'auto' : 'pointer' }}
         onClick={() => this.goPostPage(data.id)}
       >
@@ -199,7 +205,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
         {this.renderActionsRow(data)}
 
-        <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ navigate: '', alert: '' })} />
+        <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />
         <ViewImageModal open={this.state.openImage} src={this.imgUrl} onClose={this.onClose} />
       </div>
     )

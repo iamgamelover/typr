@@ -1,5 +1,7 @@
 .activity-post-page {
-  padding: 20px;
+  /* padding: 20px; */
+  padding-left: 30px;
+  padding-bottom: 30px;
   max-width: var(--page-max-width);
   margin: auto;
   display: flex;

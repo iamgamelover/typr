@@ -13,7 +13,8 @@ class AlertModal extends React.Component<AlertModalProps, {}> {
     this.onClose = this.onClose.bind(this);
   }
   
-  onClose() {
+  onClose(e: any) {
+    e.stopPropagation();
     this.props.onClose();
   }
 

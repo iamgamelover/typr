@@ -15,16 +15,16 @@
 
 .testao-msg-line {
   padding: 10px;
-  background-color: rgb(227, 248, 227);
+  background-color: var(--section-color);
   border-bottom: 1px solid rgb(233, 229, 229);
 }
 
 .testao-msg-line:hover {
-  background-color: rgb(207, 243, 207);
+  background-color: var(--section-hover-color);
 }
 
 .no_hover:hover {
-  background-color: rgb(227, 248, 227);
+  background-color: var(--section-color);
 }
 
 .testao-msg-header {

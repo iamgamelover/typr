@@ -139,7 +139,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     let nickname = localStorage.getItem('nickname');
     if (!nickname) nickname = 'anonymous';
 
-    let data = { id: uuid(), postId: this.state.post.id, address, nickname, post, time: timeOfNow() };
+    let data = { id: uuid(), postId: this.state.post.id, address, nickname, post, likes: '0', replies: '0', coins: '0', time: timeOfNow() };
     let response = await uploadToAO(data, 'SendReply');
 
     if (response) {
