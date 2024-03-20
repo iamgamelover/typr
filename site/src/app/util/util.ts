@@ -1,5 +1,6 @@
 import { createDataItemSigner, dryrun, message } from "@permaweb/aoconnect/browser";
 import { AO_TWITTER } from "./consts";
+import { getProcessFromOwner } from "../../server/server";
 
 declare var window: any;
 
@@ -405,12 +406,12 @@ export async function getDataFromAO(type: string) {
   } catch (error) {
     return '';
   }
-  
+
   if (result.Messages.length == 0) return '';
-  
+
   let data = result.Messages[0].Data;
   let final = data.split("▲");
-  
+
   let end = performance.now();
   console.log(`<== [getDataFromAO] [${Math.round(end - start)} ms]`);
 
@@ -469,4 +470,15 @@ export async function isLoggedIn() {
     return address;
   else
     return '';
+}
+
+export async function getProcess(address: string) {
+  let resp = await getProcessFromOwner(address);
+  if (resp.success) {
+    console.log("process:", resp.process)
+    return resp.process;
+  } else {
+    console.log("err:", resp.message)
+    return '';
+  }
 }

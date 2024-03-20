@@ -1,4 +1,4 @@
-.testao-page {
+.home-page {
   display: flex;
   flex-direction: column;
   max-width: var(--page-max-width);
@@ -9,17 +9,17 @@
   row-gap: 20px;
 }
 
-.testao-chat-container {
+.home-chat-container {
   margin-top: 30px;
 }
 
-.testao-msg-line {
+.home-msg-line {
   padding: 10px;
   background-color: var(--section-color);
   border-bottom: 1px solid rgb(233, 229, 229);
 }
 
-.testao-msg-line:hover {
+.home-msg-line:hover {
   background-color: var(--section-hover-color);
 }
 
@@ -27,36 +27,36 @@
   background-color: var(--section-color);
 }
 
-.testao-msg-header {
+.home-msg-header {
   display: flex;
   column-gap: 10px;
 }
 
-.testao-message {
+.home-message {
   padding-left: 55px;
   padding-right: 15px;
   margin-bottom: 10px;
   color: rgb(78, 68, 68);
 }
 
-.testao-msg-portrait {
+.home-msg-portrait {
   width: 45px;
   height: 45px;
 }
 
-.testao-msg-text {
+.home-msg-text {
   display: flex;
   flex-direction: row;
   column-gap: 18px;
   align-items: center;
 }
 
-.testao-msg-nickname {
+.home-msg-nickname {
   font-weight: 600;
   font-size: 16px;
 }
 
-.testao-msg-address {
+.home-msg-address {
   color: gray;
   font-size: 12px;
 }
@@ -70,12 +70,12 @@
   justify-content: flex-end;
 }
 
-.testao-msg-time {
+.home-msg-time {
   font-size: 13px;
   color: gray;
 }
 
-.testao-input-message {
+.home-input-message {
   width: 500px;
   border-radius: 10px;
   border: 1px solid rgb(85, 103, 169);
@@ -83,23 +83,23 @@
   margin-right: 20px;
 }
 
-.testao-input-message.nickname {
+.home-input-message.nickname {
   width: 189px;
   height: 35px;
   margin-left: 10px;
   font-size: 18px;
 }
 
-.testao-input-message.process {
+.home-input-message.process {
   height: 30px;
 }
 
-.testao-nickname-line {
+.home-nickname-line {
   display: flex;
   align-items: center;
 }
 
-.testao-connect-button {
+.home-connect-button {
   width: 180px;
   height: 45px;
   border-radius: 10px;
@@ -116,17 +116,17 @@
   border: 1px solid lightgray;
 }
 
-.testao-input-container {
+.home-input-container {
   border-radius: 10px;
   background-color: var(--section-color);
 }
 
-.testao-actions {
+.home-actions {
   display: flex;
   margin: 10px;
 }
 
-.testao-filter {
+.home-filter {
   width: 120px;
   border: none;
   margin-right: 50px;

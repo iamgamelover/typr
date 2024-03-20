@@ -16,6 +16,18 @@ export class AppConfig {
       loggedIn: false
     },
     {
+      text: 'Games',
+      icon: 'games',
+      to: '/games',
+      loggedIn: false
+    },
+    {
+      text: 'Chatroom',
+      icon: 'chatroom',
+      to: '/chat',
+      loggedIn: false
+    },
+    {
       text: 'Notifications',
       icon: 'notifications',
       to: '/notifications',
@@ -25,12 +37,6 @@ export class AppConfig {
       text: 'Bookmark',
       icon: 'bookmark',
       to: '/bookmark',
-      loggedIn: false
-    },
-    {
-      text: 'Chatroom',
-      icon: 'chatroom',
-      to: '/chatroom',
       loggedIn: false
     },
     {

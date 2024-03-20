@@ -60,6 +60,7 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   componentDidMount() {
     this.start();
+    // TODO: register user, store the message id
   }
 
   onContentChange(length: number) {
@@ -81,13 +82,6 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     this.getPosts();
     // const interval = setInterval(this.getPosts, 120000);
-
-    // let resp = await getProcessFromOwner('4tKnGrXpOzbL_r2VsahCCUPSwV1ndbU35U1nxeB6_ic');
-    // if (resp.success) {
-    //   console.log("process:", resp.process)
-    // } else {
-    //   console.log("err:", resp.message)
-    // }
 
     // this.getTokens();
     // await this.getBalance('Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc')
@@ -263,22 +257,22 @@ class HomePage extends React.Component<{}, HomePageState> {
       address = address.substring(0, 6) + ' ... ' + address.substring(address.length - 6);
 
     return (
-      <div className="testao-page">
-        <div className="testao-nickname-line">
+      <div className="home-page">
+        <div className="home-nickname-line">
           {this.state.isLoggedIn
             ?
-            <button className="testao-connect-button connected" onClick={() => this.setState({ question: 'Disconnect?' })}>
+            <button className="home-connect-button connected" onClick={() => this.setState({ question: 'Disconnect?' })}>
               {address}
             </button>
             :
-            <button className="testao-connect-button" onClick={() => this.connectWallet()}>
+            <button className="home-connect-button" onClick={() => this.connectWallet()}>
               Connect ArConnect
             </button>
           }
 
           <div>Nickname</div>
           <input
-            className="testao-input-message nickname"
+            className="home-input-message nickname"
             placeholder="nickname"
             value={this.state.nickname}
             onChange={(e) => this.setState({ nickname: e.target.value })}
@@ -286,16 +280,16 @@ class HomePage extends React.Component<{}, HomePageState> {
         </div>
 
         {this.state.isLoggedIn &&
-          <div className="testao-input-container">
+          <div className="home-input-container">
             <SharedQuillEditor
               placeholder='What is happening?!'
               onChange={this.onContentChange}
               getRef={(ref: any) => this.quillRef = ref}
             />
 
-            <div className='testao-actions'>
+            <div className='home-actions'>
               <select
-                className="testao-filter"
+                className="home-filter"
                 value={this.state.range}
                 onChange={this.onRangeChange}
               >
@@ -309,7 +303,7 @@ class HomePage extends React.Component<{}, HomePageState> {
           </div>
         }
 
-        <div id='scrollableDiv' className="testao-chat-container">
+        <div id='scrollableDiv' className="home-chat-container">
           {this.renderPosts()}
         </div>
 

@@ -188,18 +188,18 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
     return (
       <div
-        className={`testao-msg-line ${this.props.isReply || this.props.isPostPage ? 'no_hover' : ''}`}
+        className={`home-msg-line ${this.props.isReply || this.props.isPostPage ? 'no_hover' : ''}`}
         style={{ cursor: this.state.openImage || this.props.isReply || this.props.isPostPage ? 'auto' : 'pointer' }}
         onClick={() => this.goPostPage(data.id)}
       >
-        <div className='testao-msg-header'>
-          <img className='testao-msg-portrait' src='/portrait-default.png' />
-          <div className="testao-msg-nickname">{data.nickname}</div>
-          <div className="testao-msg-address">{address}</div>
-          <div className='testao-msg-time'>&#x2022; {formatTimestamp(data.time, true)}</div>
+        <div className='home-msg-header'>
+          <img className='home-msg-portrait' src='/portrait-default.png' />
+          <div className="home-msg-nickname">{data.nickname}</div>
+          <div className="home-msg-address">{address}</div>
+          <div className='home-msg-time'>&#x2022; {formatTimestamp(data.time, true)}</div>
         </div>
 
-        <div className='testao-message'>
+        <div className='home-message'>
           {parse(this.state.content, this.parseOptions)}
         </div>
 

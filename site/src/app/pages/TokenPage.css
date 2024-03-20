@@ -1,0 +1,49 @@
+.token-page {
+  display: flex;
+  flex-direction: column;
+  max-width: var(--page-max-width);
+  margin: auto;
+  /* padding: 20px; */
+  padding-left: 100px;
+  padding-bottom: 30px;
+  row-gap: 20px;
+}
+
+.token-page-card {
+  width: 390px;
+  padding: 12px 25px;
+  border-radius: 30px;
+  background-color: var(--section-color);
+}
+
+.token-page-header {
+  display: flex;
+  column-gap: 30px;
+}
+
+.token-page-process-id {
+  font-size: 17px;
+}
+
+.token-page-text {
+  color: gray;
+  margin-top: 5px;
+}
+
+.balance {
+  color: gray;
+  font-size: 20px;
+}
+
+.token-page-text-small {
+  font-size: 17px;
+  color: gray;
+}
+
+.token-page-vote {
+  color: white;
+  margin-top: 10px;
+  padding: 6px 15px;
+  border-radius: 10px;
+  background-color: var(--section-header-color);
+}
