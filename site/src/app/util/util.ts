@@ -370,7 +370,7 @@ export function uuid() {
   });
 }
 
-export async function uploadToAO(data: any, type: string) {
+export async function messageToAO(data: any, type: string) {
   try {
     const messageId = await message({
       process: AO_TWITTER,
@@ -395,7 +395,7 @@ export function timeOfNow() {
 
 export async function getDataFromAO(type: string) {
   let start = performance.now();
-  console.log('==> [getDataFromAO]');
+  // console.log('==> [getDataFromAO]');
 
   let result;
   try {
@@ -413,7 +413,7 @@ export async function getDataFromAO(type: string) {
   let final = data.split("▲");
 
   let end = performance.now();
-  console.log(`<== [getDataFromAO] [${Math.round(end - start)} ms]`);
+  // console.log(`<== [getDataFromAO] [${Math.round(end - start)} ms]`);
 
   if (final.length == 1 && final[0] == '') return '';
   return final;
@@ -446,7 +446,7 @@ export async function connectWallet() {
       ["ACCESS_ADDRESS", "SIGN_TRANSACTION"],
     );
   } catch (error) {
-    alert('User canceled the connection.');
+    alert('You should connect to ArConnect browser extension.');
     return false;
   }
 

@@ -4,7 +4,7 @@ import { subscribe } from '../util/event';
 import { dryrun } from "@permaweb/aoconnect";
 import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
-import { checkContent, connectWallet, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, uploadToAO, uuid } from '../util/util';
+import { checkContent, connectWallet, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid } from '../util/util';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
 import { Service } from '../../server/service';
@@ -81,10 +81,6 @@ class HomePage extends React.Component<{}, HomePageState> {
     if (nickname) this.setState({ nickname });
 
     this.getPosts();
-    // const interval = setInterval(this.getPosts, 120000);
-
-    // this.getTokens();
-    // await this.getBalance('Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc')
   }
 
   async connectWallet() {
@@ -92,6 +88,20 @@ class HomePage extends React.Component<{}, HomePageState> {
     if (connected) {
       let address = await getWalletAddress();
       this.setState({ isLoggedIn: 'true', address });
+      this.register(address);
+    }
+  }
+
+  // Register one user
+  // This is a temp way, need to search varibale Members
+  // to keep one, on browser side or AOS side (in lua code)
+  async register(address: string) {
+    let registered = localStorage.getItem('registered');
+    if (!registered) {
+      let data = { address, nickname: this.state.nickname, avatar: '', time: timeOfNow() };
+      let resp = await messageToAO(data, 'Register');
+      // console.log("register:", resp)
+      if (resp) localStorage.setItem('registered', 'Yes');
     }
   }
 
@@ -240,7 +250,7 @@ class HomePage extends React.Component<{}, HomePageState> {
     if (!nickname) nickname = 'anonymous';
 
     let data = { id: uuid(), address, nickname, post, range: this.state.range, likes: '0', replies: '0', coins: '0', time: timeOfNow() };
-    let response = await uploadToAO(data, 'SendPost');
+    let response = await messageToAO(data, 'SendPost');
 
     if (response) {
       this.quillRef.setText('');

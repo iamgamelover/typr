@@ -9,7 +9,7 @@ import { BsClock, BsFillArrowLeftCircleFill } from 'react-icons/bs';
 import { subscribe } from '../util/event';
 import HomePage from './HomePage';
 import { dryrun } from '@permaweb/aoconnect/browser';
-import { checkContent, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, uploadToAO, uuid } from '../util/util';
+import { checkContent, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid } from '../util/util';
 import { AO_TWITTER, TIP_IMG } from '../util/consts';
 
 interface ActivityPostPageState {
@@ -140,7 +140,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     if (!nickname) nickname = 'anonymous';
 
     let data = { id: uuid(), postId: this.state.post.id, address, nickname, post, likes: '0', replies: '0', coins: '0', time: timeOfNow() };
-    let response = await uploadToAO(data, 'SendReply');
+    let response = await messageToAO(data, 'SendReply');
 
     if (response) {
       this.quillRef.setText('');
