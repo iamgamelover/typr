@@ -60,7 +60,6 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   componentDidMount() {
     this.start();
-    // TODO: register user, store the message id
   }
 
   onContentChange(length: number) {
@@ -248,14 +247,24 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     localStorage.setItem('nickname', nickname);
     if (!nickname) nickname = 'anonymous';
+    let time = timeOfNow();
+    
+    let data = { id: uuid(), address, nickname, post, range: this.state.range, 
+      likes: '0', replies: '0', coins: '0', time };
 
-    let data = { id: uuid(), address, nickname, post, range: this.state.range, likes: '0', replies: '0', coins: '0', time: timeOfNow() };
     let response = await messageToAO(data, 'SendPost');
 
     if (response) {
       this.quillRef.setText('');
       this.setState({ message: '', alert: 'Post successful.', posts: [], loading: true });
       this.getPosts(true);
+
+      // This code store the post id. 
+      // When loading huge data is very slow, 
+      // just load post id and download content of a post from arweave.
+      let data = { address, id: response, time };
+      console.log("SendPostID:", data)
+      messageToAO(data, 'SendPostID');
     }
     else
       this.setState({ message: '', alert: TIP_IMG });

@@ -115,29 +115,35 @@ a {
 /* app styles */
 
 .app-container {
+  /* display: grid; */
+  /* grid-template-rows: 50px 1fr; */
   height: 100vh;
   max-height: -webkit-fill-available;
   max-width: 800px;
   margin: auto;
+
 }
 
 .app-navbar {
-  background-color: var(--header-color);
+  position: fixed;
+  top: 80px;
 }
 
 .app-content {
-  display: grid;
-  grid-template-columns: 170px 1fr;
+  /* display: grid; */
+  /* grid-template-columns: 170px 1fr; */
   overflow-y: auto;
 }
 
 .app-page {
-  /* height: calc(100vh - 80px); */
-  /* overflow-y: auto; */
+  /* overflow-x: auto; */
+  margin-left: 180px;
+  margin-top: 80px;
   background-color: var(--page-color);
 }
 
 .app-logo-line {
+  position: fixed;
   display: flex;
   align-items: flex-end;
   column-gap: 10px;
@@ -183,13 +189,14 @@ a {
   margin-top: 50px;
   font-size: 19px;
 }
-/* @media (max-width: 850px) {
+
+@media (max-width: 850px) {
   .app-content {
     grid-template-columns: 70px 1fr;
   }
-} */
+}
 
-/* @media (max-width: 710px) {
+@media (max-width: 710px) {
   .app-content {
     grid-template-columns: 0px 1fr;
   }
@@ -197,7 +204,7 @@ a {
   .app-content {
     overflow-y: visible;
   }
-} */
+}
 
 /* ---- Quill editor config ----*/
 

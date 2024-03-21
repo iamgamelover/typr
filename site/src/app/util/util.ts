@@ -381,10 +381,10 @@ export async function messageToAO(data: any, type: string) {
       ],
     });
     console.log("messageId:", messageId)
-    return true;
+    return messageId;
   } catch (error) {
     console.log("error:", error)
-    return false;
+    return '';
   }
 }
 
