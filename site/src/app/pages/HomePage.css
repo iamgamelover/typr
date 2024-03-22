@@ -42,6 +42,11 @@
 .home-msg-portrait {
   width: 45px;
   height: 45px;
+  cursor: pointer;
+}
+
+.my-portrait {
+  scale: 1.1;
 }
 
 .home-msg-text {

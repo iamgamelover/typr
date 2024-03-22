@@ -1,12 +1,15 @@
 import React from 'react';
-import { BsBookmark, BsChat, BsChatSquareText, BsCoin, BsEyeglasses, BsHeart, BsPersonFillLock } from 'react-icons/bs';
-import { capitalizeFirstLetter, convertHashTag, convertUrls, getPortraitImage, numberWithCommas } from '../util/util';
+import { BsBookmark, BsChat, BsCoin, BsHeart } from 'react-icons/bs';
+import { convertUrls, getWalletAddress, numberWithCommas, uuid } from '../util/util';
 import { formatTimestamp } from '../util/util';
 import './ActivityPost.css';
 import parse, { attributesToProps } from 'html-react-parser';
-import { NavLink, Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import ViewImageModal from '../modals/ViewImageModal';
 import AlertModal from '../modals/AlertModal';
+import { createAvatar } from '@dicebear/core';
+import { micah } from '@dicebear/collection';
+import { Service } from '../../server/service';
 
 interface ActivityPostProps {
   data: any;
@@ -22,6 +25,8 @@ interface ActivityPostState {
   content: string;
   author: any;
   alert: string;
+  avatar: string;
+  address: string;
 }
 
 class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState> {
@@ -29,6 +34,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   id: string;
   imgUrl: string;
   loading: boolean = false;
+
+  static service: Service = new Service();
 
   parseOptions = {
     replace: (domNode: any) => {
@@ -50,6 +57,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       content: '',
       author: '',
       alert: '',
+      avatar: '',
+      address: '',
     };
 
     this.onClose = this.onClose.bind(this);
@@ -58,6 +67,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   componentDidMount() {
     // this.getProfile();
     this.getPostContent();
+    this.start();
 
     const links = document.querySelectorAll("[id^='url']");
     for (let i = 0; i < links.length; i++) {
@@ -76,9 +86,41 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     }
   }
 
+  async start() {
+    let address = await getWalletAddress();
+    this.setState({ address });
+
+    let avatar = '';
+    if (this.props.data.address == address) {
+      avatar = localStorage.getItem('avatar');
+      if (!avatar) avatar = '';
+    }
+
+    this.createAvatar(avatar);
+  }
+
+  createAvatar(random: string) {
+    const resp = createAvatar(micah, {
+      seed: this.props.data.nickname + random,
+      // ... other options
+    });
+
+    const avatar = resp.toDataUriSync();
+    this.setState({ avatar });
+  }
+
+  newAvatar(e:any) {
+    if (this.props.data.address !== this.state.address) return;
+    e.stopPropagation();
+
+    let random = uuid();
+    localStorage.setItem('avatar', random);
+    this.createAvatar(random);
+  }
+
   async getPostContent() {
     let content = this.props.data.post;
-    content = convertHashTag(content);
+    // content = convertHashTag(content);
     content = convertUrls(content);
     this.setState({ content });
   }
@@ -178,6 +220,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   render() {
+    let owner = (this.props.data.address == this.state.address);
+
     let data = this.props.data;
     let address = data.address;
     if (address)
@@ -193,7 +237,14 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         onClick={() => this.goPostPage(data.id)}
       >
         <div className='home-msg-header'>
-          <img className='home-msg-portrait' src='/portrait-default.png' />
+          {/* <img className='home-msg-portrait' src='/portrait-default.png' /> */}
+          <img 
+            className='home-msg-portrait'
+            src={this.state.avatar}
+            alt='avatar'
+            onClick={(e) => this.newAvatar(e)}
+            title={owner ? 'Click to change your avatar' : ''}
+          />
           <div className="home-msg-nickname">{data.nickname}</div>
           <div className="home-msg-address">{address}</div>
           <div className='home-msg-time'>&#x2022; {formatTimestamp(data.time, true)}</div>

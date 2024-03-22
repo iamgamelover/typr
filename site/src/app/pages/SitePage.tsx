@@ -2,13 +2,25 @@ import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import NavBar from '../elements/NavBar';
 import { BsRocketTakeoff } from 'react-icons/bs';
-import { ICON_SIZE } from '../util/consts';
+import { isLoggedIn } from '../util/util';
+import { Service } from '../../server/service';
 
 class SitePage extends React.Component {
 
+  static service: Service = new Service();
+
   componentDidMount() {
     console.log('SitePage')
+    // this.start()
   }
+  
+  // async start() {
+  //   // for testing
+  //   let activeAddress = await isLoggedIn();
+  //   console.log("activeAddress:", activeAddress)
+  //   SitePage.service.setIsLoggedIn(activeAddress);
+  //   SitePage.service.setActiveAddress(activeAddress);
+  // }
 
   render() {
     return (

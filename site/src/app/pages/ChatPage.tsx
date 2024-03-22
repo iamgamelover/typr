@@ -54,7 +54,7 @@ class ChatPage extends React.Component<{}, ChatPageState> {
     msg_timer = setInterval(this.getMessages, 2000);
     setTimeout(() => {
       this.scrollToBottom();
-    }, 6000);
+    }, 5000);
   }
 
   async getMessages() {
@@ -145,7 +145,7 @@ class ChatPage extends React.Component<{}, ChatPageState> {
 
     setTimeout(() => {
       this.scrollToBottom();
-    }, 4000);
+    }, 3000);
   }
 
   handleKeyDown = (event: any) => {
