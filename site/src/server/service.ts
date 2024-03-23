@@ -1,12 +1,21 @@
 export class Service {
   protected posts:any;
   protected post:any;
+  protected position:number;
 
   protected isLoggedIn:string;
   protected activeAddress:string;
 
   constructor() {
     this.post = [];
+  }
+
+  public addPositionToCache(position:number) {
+    this.position = position;
+  }
+
+  public getPositionFromCache() {
+    return this.position;
   }
 
   public addPostsToCache(posts:any) {

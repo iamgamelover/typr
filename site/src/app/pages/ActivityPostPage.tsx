@@ -11,6 +11,7 @@ import HomePage from './HomePage';
 import { dryrun } from '@permaweb/aoconnect/browser';
 import { checkContent, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid } from '../util/util';
 import { AO_TWITTER, TIP_IMG } from '../util/consts';
+import { Server } from '../../server/server';
 
 interface ActivityPostPageState {
   post: any;
@@ -66,7 +67,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
   
   async getPost() {
     this.postId = window.location.pathname.substring(15);
-    let post = HomePage.service.getPostFromCache(this.postId);
+    let post = Server.service.getPostFromCache(this.postId);
 
     if (!post) {
       post = await this.getPostById(this.postId)
@@ -91,7 +92,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
       let data;
       try {
         data = JSON.parse(resp[i]);
-        HomePage.service.addPostToCache(data);
+        Server.service.addPostToCache(data);
         if (data.id == id) return data;
       } catch (error) {
         // console.log(error)

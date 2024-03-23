@@ -10,7 +10,7 @@ import ActivityPost from '../elements/ActivityPost';
 import { Service } from '../../server/service';
 import { TIP_IMG } from '../util/consts';
 import QuestionModal from '../modals/QuestionModal';
-import { getProcessFromOwner } from '../../server/server';
+import { Server } from '../../server/server';
 
 declare var window: any;
 
@@ -30,8 +30,6 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   quillRef: any;
   wordCount = 0;
-
-  static service: Service = new Service();
 
   constructor(props: {}) {
     super(props);
@@ -60,6 +58,10 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   componentDidMount() {
     this.start();
+  }
+
+  componentWillUnmount(): void {
+    Server.service.addPositionToCache(window.pageYOffset);
   }
 
   onContentChange(length: number) {
@@ -144,7 +146,9 @@ class HomePage extends React.Component<{}, HomePageState> {
   }
 
   async getPosts(new_post?: boolean) {
-    let posts = HomePage.service.getPostsFromCache();
+    let posts = Server.service.getPostsFromCache();
+    let position = Server.service.getPositionFromCache();
+
     // console.log("cached posts:", posts)
 
     if (!posts || new_post) {
@@ -159,7 +163,7 @@ class HomePage extends React.Component<{}, HomePageState> {
         let data;
         try {
           data = JSON.parse(posts[i]);
-          HomePage.service.addPostToCache(data);
+          Server.service.addPostToCache(data);
         } catch (error) {
           // console.log(error)
           continue;
@@ -174,7 +178,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       // }
 
       this.setState({ posts: final, loading: false });
-      HomePage.service.addPostsToCache(final);
+      Server.service.addPostsToCache(final);
       console.log("caching posts done")
 
       setTimeout(() => {
@@ -185,6 +189,9 @@ class HomePage extends React.Component<{}, HomePageState> {
     }
 
     this.setState({ posts, loading: false });
+    setTimeout(() => {
+      window.scrollTo(0, position);
+    }, 10);
   }
 
   async renderNumOfReplies() {

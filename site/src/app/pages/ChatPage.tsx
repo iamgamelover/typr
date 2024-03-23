@@ -145,7 +145,7 @@ class ChatPage extends React.Component<{}, ChatPageState> {
 
     setTimeout(() => {
       this.scrollToBottom();
-    }, 3000);
+    }, 2000);
   }
 
   handleKeyDown = (event: any) => {
