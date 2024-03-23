@@ -4,11 +4,14 @@ import { publish } from '../util/event';
 import './NavBar.css';
 import { BsAward, BsBell, BsBookmark, BsChatText, BsController, BsHouse, BsPerson } from 'react-icons/bs';
 import { ICON_SIZE } from '../util/consts';
+import { AiOutlineFire } from 'react-icons/ai';
 
 interface NavBarButtonProps {
-  icon:string,
+  // icon:string,
   text:string,
   to:string,
+  beta:string,
+  new:string,
   align?:string
 }
 
@@ -65,6 +68,8 @@ class NavBarButton extends React.Component<NavBarButtonProps, NavBarButtonState>
   renderIcon() {
     if (this.props.text == 'Home')
       return <BsHouse size={ICON_SIZE}/>
+    else if (this.props.text == 'Story')
+      return <AiOutlineFire size={ICON_SIZE}/>
     else if (this.props.text == 'Games')
       return <BsController size={ICON_SIZE}/>
     else if (this.props.text == 'TokenEco')
@@ -85,11 +90,11 @@ class NavBarButton extends React.Component<NavBarButtonProps, NavBarButtonState>
         <div className="navbar-button" onClick={() => this.onClickButton()}>
           {this.renderIcon()}
           <div className="navbar-text">{this.props.text}</div>
-          {this.state.isMessagesButton &&
-            <div className="navbar-red-circle" />
+          {this.props.beta &&
+            <div className="navbar-label-beta">beta</div>
           }
-          {this.state.isFriendButton && this.state.isFriendUpdated &&
-            <div className="navbar-red-circle" />
+          {this.props.new &&
+            <div className="navbar-label-beta new">new</div>
           }
         </div>
       </NavLink>

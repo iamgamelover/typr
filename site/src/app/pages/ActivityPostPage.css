@@ -27,7 +27,14 @@
 .activity-post-time {
   color: lightgray;
   font-size: 14px;
-  margin-left: 30px;
+  margin-left: 10px;
+}
+
+.activity-post-page-story-row {
+  display: flex;
+  align-items: flex-end;
+  column-gap: 20px;
+  margin-bottom: 10px;
 }
 
 .activity-post-page-back-button {
@@ -67,10 +74,9 @@
 }
 
 .activity-post-page-action {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 15px;
-  /* column-gap: 10px; */
+  /* display: flex; */
+  /* justify-content: flex-end; */
+  margin-top: 12px;
 }
 
 @media (max-width: 600px) {

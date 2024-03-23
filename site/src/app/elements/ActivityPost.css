@@ -79,6 +79,14 @@
   margin-right: 7px;
 }
 
+.activity-post-arweave-icon {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
 .activity-post-action-number {
   font-size: 15px;
   margin-bottom: 3px;

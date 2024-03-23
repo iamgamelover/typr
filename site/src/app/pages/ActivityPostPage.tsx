@@ -5,23 +5,25 @@ import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
 import MessageModal from '../modals/MessageModal';
 import AlertModal from '../modals/AlertModal';
-import { BsClock, BsFillArrowLeftCircleFill } from 'react-icons/bs';
+import { BsFillArrowLeftCircleFill, BsPlugin, BsReply } from 'react-icons/bs';
 import { subscribe } from '../util/event';
-import HomePage from './HomePage';
-import { dryrun } from '@permaweb/aoconnect/browser';
 import { checkContent, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid } from '../util/util';
-import { AO_TWITTER, TIP_IMG } from '../util/consts';
+import { TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
+import { AiOutlineFire } from "react-icons/ai";
+import QuestionModal from '../modals/QuestionModal';
 
 interface ActivityPostPageState {
   post: any;
   replies: any;
   message: string;
   alert: string;
+  question: string;
   loading: boolean;
   loading_reply: boolean;
   isLoggedIn: string;
   address: string;
+  txid: string;
 }
 
 class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
@@ -37,13 +39,17 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
       replies: '',
       message: '',
       alert: '',
+      question: '',
       loading: true,
       loading_reply: true,
       isLoggedIn: '',
       address: '',
+      txid: '',
     };
 
     this.onContentChange = this.onContentChange.bind(this);
+    this.onQuestionYes = this.onQuestionYes.bind(this);
+    this.onQuestionNo = this.onQuestionNo.bind(this);
 
     subscribe('wallet-events', () => {
       this.forceUpdate();
@@ -55,8 +61,15 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
   };
 
   componentDidMount() {
-    document.getElementById('id-app-page').scrollTo(0, 0);
     this.start();
+  }
+
+  onQuestionYes() {
+    this.setState({ question: '' });
+  }
+
+  onQuestionNo() {
+    this.setState({ question: '' });
   }
 
   async start() {
@@ -64,7 +77,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     this.setState({ isLoggedIn: address, address });
     this.getPost();
   }
-  
+
   async getPost() {
     this.postId = window.location.pathname.substring(15);
     let post = Server.service.getPostFromCache(this.postId);
@@ -80,8 +93,26 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     }
 
     this.setState({ post, loading: false });
-
     this.getReplies(this.postId);
+
+    let txid = await this.getTxidOfPost(this.postId);
+    this.setState({ txid });
+  }
+
+  async getTxidOfPost(postId: string) {
+    let resp = await getDataFromAO('GetPostID');
+
+    for (let i = 0; i < resp.length; i++) {
+      let data;
+      try {
+        data = JSON.parse(resp[i]);
+        if (data.postId == postId) return data.txid;
+      } catch (error) {
+        continue;
+      }
+    }
+
+    return '';
   }
 
   async getPostById(id: string) {
@@ -175,6 +206,10 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     window.history.back();
   }
 
+  toStory() {
+    this.setState({ question: "Why don't you turn the post into a story? Show your support for the author!" });
+  }
+
   render() {
     let date = new Date(this.state.post.time * 1000).toLocaleString();
 
@@ -183,16 +218,22 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
         <div className="activity-post-page-header" onClick={() => this.onBack()}>
           <div className="activity-post-page-back-button"><BsFillArrowLeftCircleFill /></div>
           <div>{this.state.loading ? 'Loading...' : 'Post'}</div>
-          {date != 'Invalid Date' && <div className='activity-post-time'>{date}</div>}
+          {date != 'Invalid Date' && <div className='activity-post-time'>&#x2022;&nbsp;&nbsp;{date}</div>}
         </div>
 
         {!this.state.loading &&
-          <ActivityPost data={this.state.post} isPostPage={true} />
+          <ActivityPost data={this.state.post} isPostPage={true} txid={this.state.txid} />
         }
 
-        {/* {!this.state.loading &&
-          <div className='mission-page-block-time'><BsClock />{date}</div>
-        } */}
+        {!this.state.loading &&
+          <div className='activity-post-page-story-row'>
+            <div className="app-post-button story" onClick={() => this.toStory()}>
+              <AiOutlineFire size={23} />
+              <div>To Story</div>
+            </div>
+            <div><BsPlugin size={18} />&nbsp;&nbsp;&nbsp;1 / 100</div>
+          </div>
+        }
 
         {!this.state.loading && this.state.isLoggedIn &&
           <div className="activity-post-page-reply-container">
@@ -203,7 +244,10 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
             />
 
             <div className='activity-post-page-action'>
-              <button onClick={() => this.onReply()}>Reply</button>
+              <div className="app-post-button story reply" onClick={() => this.onReply()}>
+                <BsReply size={23} />
+                <div>Reply</div>
+              </div>
             </div>
           </div>
         }
@@ -220,6 +264,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
 
         <MessageModal message={this.state.message} />
         <AlertModal message={this.state.alert} button="OK" onClose={() => this.onAlertClose()} />
+        <QuestionModal message={this.state.question} onYes={this.onQuestionYes} onNo={this.onQuestionNo} />
       </div>
     );
   }

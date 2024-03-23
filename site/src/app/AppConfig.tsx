@@ -10,6 +10,13 @@ export class AppConfig {
       loggedIn: false
     },
     {
+      text: 'Story',
+      icon: 'story',
+      to: '/story',
+      beta: true,
+      loggedIn: false
+    },
+    {
       text: 'TokenEco',
       icon: 'token',
       to: '/token',
@@ -37,6 +44,7 @@ export class AppConfig {
       text: 'Bookmark',
       icon: 'bookmark',
       to: '/bookmark',
+      new: false,
       loggedIn: false
     },
     {

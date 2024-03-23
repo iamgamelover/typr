@@ -16,7 +16,6 @@
 
 .navbar-text {
   margin-left: 10px;
-  margin-bottom: 0px;
 }
 
 @media (max-width: 850px) {
@@ -68,6 +67,22 @@
   background-color: red;
   position: absolute;
   right: -7px;
+}
+
+.navbar-label-beta {
+  font-size: 13px;
+  color: white;
+  padding: 0px 5px;
+  line-height: 17px;
+  /* border-radius: 10px; */
+  background-color: red;
+  position: absolute;
+  right: 0px;
+  top: -5px;
+}
+
+.new {
+  top: -12px;
 }
 
 .navbar-bottom {

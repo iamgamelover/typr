@@ -8,7 +8,14 @@ class NavBar extends React.Component {
 
   renderButton(menu: any) {
     return (
-      <NavBarButton key={menu.text} icon={getMenuIcon(menu.icon)} text={menu.text} to={menu.to} />
+      <NavBarButton
+        key={menu.text}
+        // icon={getMenuIcon(menu.icon)}
+        text={menu.text}
+        to={menu.to}
+        beta={menu.beta}
+        new={menu.new}
+      />
     )
   }
 
@@ -24,7 +31,7 @@ class NavBar extends React.Component {
       else
         buttons.push(this.renderButton(menu[i]));
     }
-    
+
     return (
       <nav>
         <div className="navbar-container">{buttons}</div>

@@ -346,8 +346,8 @@ export function checkContent(quillRef: any, wordCount: number) {
 
   if (wordCount == 0 && mediaAmount == 0)
     message = 'Post is empty.';
-  else if (wordCount > 500)
-    message = 'Content can be up to 500 characters long.';
+  else if (wordCount > 10000)
+    message = 'Content can be up to 10000 characters long.';
 
   return message;
 }

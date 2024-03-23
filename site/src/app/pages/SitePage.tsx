@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import NavBar from '../elements/NavBar';
-import { BsRocketTakeoff } from 'react-icons/bs';
+import { BsRocketTakeoff, BsSend } from 'react-icons/bs';
 import { isLoggedIn } from '../util/util';
 import { Service } from '../../server/service';
 
@@ -34,7 +34,7 @@ class SitePage extends React.Component {
           <div className="app-navbar">
             <NavBar />
             <NavLink className="app-post-button" to='/'>
-              <BsRocketTakeoff size={23} />
+              <BsSend size={22} />
               <div>Post</div>
             </NavLink>
 

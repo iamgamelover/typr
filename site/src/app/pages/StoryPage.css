@@ -1,0 +1,25 @@
+.story-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: var(--page-max-width);
+  padding-left: 30px;
+  padding-bottom: 30px;
+  row-gap: 30px;
+  line-height: 30px;
+}
+
+.story-intro-line {
+  text-align: center;
+  width: 390px;
+  padding: 20px;
+  border-radius: 30px;
+  font-size: 18px;
+  color: white;
+  background-color: var(--section-header-color);
+}
+
+.game {
+  color: black;
+  background-color: var(--section-color);
+}

@@ -17,6 +17,7 @@ interface ActivityPostProps {
   beforeJump?: Function;
   isReply?: boolean;
   isPostPage?: boolean;
+  txid?: string;
 }
 
 interface ActivityPostState {
@@ -109,7 +110,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     this.setState({ avatar });
   }
 
-  newAvatar(e:any) {
+  newAvatar(e: any) {
     if (this.props.data.address !== this.state.address) return;
     e.stopPropagation();
 
@@ -219,6 +220,10 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     )
   }
 
+  openLink(txid: string) {
+    window.open('https://www.ao.link/message/' + txid);
+  }
+
   render() {
     let owner = (this.props.data.address == this.state.address);
 
@@ -237,8 +242,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         onClick={() => this.goPostPage(data.id)}
       >
         <div className='home-msg-header'>
-          {/* <img className='home-msg-portrait' src='/portrait-default.png' /> */}
-          <img 
+          <img
             className='home-msg-portrait'
             src={this.state.avatar}
             alt='avatar'
@@ -247,7 +251,15 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           />
           <div className="home-msg-nickname">{data.nickname}</div>
           <div className="home-msg-address">{address}</div>
-          <div className='home-msg-time'>&#x2022; {formatTimestamp(data.time, true)}</div>
+          <div className='home-msg-time'>&#x2022;&nbsp;&nbsp;{formatTimestamp(data.time, true)}</div>
+          {this.props.isPostPage && this.props.txid &&
+            <img
+              className='activity-post-arweave-icon'
+              src='/ar.svg'
+              onClick={() => this.openLink(this.props.txid)}
+              title='Go to ao.link'
+            />
+          }
         </div>
 
         <div className='home-message'>

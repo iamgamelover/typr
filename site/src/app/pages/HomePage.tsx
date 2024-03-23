@@ -7,7 +7,6 @@ import MessageModal from '../modals/MessageModal';
 import { checkContent, connectWallet, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid } from '../util/util';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
-import { Service } from '../../server/service';
 import { TIP_IMG } from '../util/consts';
 import QuestionModal from '../modals/QuestionModal';
 import { Server } from '../../server/server';
@@ -255,8 +254,9 @@ class HomePage extends React.Component<{}, HomePageState> {
     localStorage.setItem('nickname', nickname);
     if (!nickname) nickname = 'anonymous';
     let time = timeOfNow();
-    
-    let data = { id: uuid(), address, nickname, post, range: this.state.range, 
+    let postId = uuid();
+
+    let data = { id: postId, address, nickname, post, range: this.state.range, 
       likes: '0', replies: '0', coins: '0', time };
 
     let response = await messageToAO(data, 'SendPost');
@@ -269,8 +269,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       // This code store the post id. 
       // When loading huge data is very slow, 
       // just load post id and download content of a post from arweave.
-      let data = { address, id: response, time };
-      console.log("SendPostID:", data)
+      let data = { address, postId, txid: response, time };
       messageToAO(data, 'SendPostID');
     }
     else

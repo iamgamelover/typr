@@ -8,6 +8,7 @@ import ActivityPostPage from './pages/ActivityPostPage';
 import GamesPage from './pages/GamesPage';
 import ChatPage from './pages/ChatPage';
 import TokenPage from './pages/TokenPage';
+import StoryPage from './pages/StoryPage';
 
 
 class App extends React.Component<{}, {}> {
@@ -25,6 +26,7 @@ class App extends React.Component<{}, {}> {
           <Route path='/' element={<SitePage />}>
             <Route index element={<HomePage />} />
             <Route path='/activity/post/:id' element={<ActivityPostPage />} />
+            <Route path="/story" element={<StoryPage />} />
             <Route path="/token" element={<TokenPage />} />
             <Route path="/games" element={<GamesPage />} />
             <Route path="/chat" element={<ChatPage />} />
