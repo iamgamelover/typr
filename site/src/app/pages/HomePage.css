@@ -136,3 +136,14 @@
   border: none;
   margin-right: 50px;
 }
+
+.home-page-tip-new-posts {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 30px;
+  background-color: rgb(92, 92, 228);
+  cursor: pointer;
+}

@@ -24,12 +24,15 @@ interface HomePageState {
   range: string;
   isLoggedIn: string;
   address: string;
+  newPosts: number;
 }
 
 class HomePage extends React.Component<{}, HomePageState> {
 
   quillRef: any;
   wordCount = 0;
+  refresh: any;
+  newPosts: any;
 
   constructor(props: {}) {
     super(props);
@@ -43,6 +46,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       range: 'everyone',
       isLoggedIn: '',
       address: '',
+      newPosts: 0,
     };
 
     this.getPosts = this.getPosts.bind(this);
@@ -62,6 +66,7 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   componentWillUnmount(): void {
     Server.service.addPositionToCache(window.pageYOffset);
+    clearInterval(this.refresh);
   }
 
   onContentChange(length: number) {
@@ -81,7 +86,8 @@ class HomePage extends React.Component<{}, HomePageState> {
     let nickname = localStorage.getItem('nickname');
     if (nickname) this.setState({ nickname });
 
-    this.getPosts();
+    await this.getPosts();
+    this.refresh = setInterval(() => this.refreshPosts(), 10000); // 10 seconds
   }
 
   async connectWallet() {
@@ -145,6 +151,45 @@ class HomePage extends React.Component<{}, HomePageState> {
     // }
   }
 
+  async refreshPosts() {
+    this.newPosts = await getDataFromAO('GetPosts');
+    let posts_amt = localStorage.getItem('posts_amt');
+    let newPosts = this.newPosts.length - Number(posts_amt);
+    console.log("newPosts amt:", newPosts)
+    if (newPosts > 0)
+      this.setState({ newPosts });
+  }
+
+  showNewPosts() {
+    let posts = this.parsePosts(this.newPosts);
+    this.setState({ posts: [] });
+
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+      this.setState({ posts, newPosts: 0 });
+      Server.service.addPostsToCache(posts);
+      localStorage.setItem('posts_amt', posts.length.toString());
+    }, 10);
+  }
+
+  parsePosts(posts: any) {
+    let result = [];
+    for (let i = posts.length - 1; i >= 0; i--) {
+      let data;
+      try {
+        data = JSON.parse(posts[i]);
+        Server.service.addPostToCache(data);
+      } catch (error) {
+        // console.log(error)
+        continue;
+      }
+
+      result.push(data)
+    }
+
+    return result;
+  }
+
   async getPosts(new_post?: boolean) {
     let posts = Server.service.getPostsFromCache();
     let position = Server.service.getPositionFromCache();
@@ -158,27 +203,29 @@ class HomePage extends React.Component<{}, HomePageState> {
         return;
       }
 
-      let final = [];
-      for (let i = posts.length - 1; i >= 0; i--) {
-        let data;
-        try {
-          data = JSON.parse(posts[i]);
-          Server.service.addPostToCache(data);
-        } catch (error) {
-          // console.log(error)
-          continue;
-        }
+      // let final = [];
+      // for (let i = posts.length - 1; i >= 0; i--) {
+      //   let data;
+      //   try {
+      //     data = JSON.parse(posts[i]);
+      //     Server.service.addPostToCache(data);
+      //   } catch (error) {
+      //     // console.log(error)
+      //     continue;
+      //   }
 
-        final.push(data)
-      }
+      //   final.push(data)
+      // }
 
       // for (let i = final.length - 1; i >= 0; i--) {
       //   let num = await getNumOfReplies(final[i].id);
       //   final[i].replies = num;
       // }
 
+      let final = this.parsePosts(posts);
       this.setState({ posts: final, loading: false });
       Server.service.addPostsToCache(final);
+      localStorage.setItem('posts_amt', final.length.toString());
       console.log("caching posts done")
 
       setTimeout(() => {
@@ -335,9 +382,15 @@ class HomePage extends React.Component<{}, HomePageState> {
           </div>
         }
 
-        <div id='scrollableDiv' className="home-chat-container">
+        <div className="home-chat-container">
           {this.renderPosts()}
         </div>
+
+        {this.state.newPosts > 0 &&
+          <div className='home-page-tip-new-posts' onClick={() => this.showNewPosts()}>
+            {this.state.newPosts}&nbsp;&nbsp;&nbsp;New Posts
+          </div>
+        }
 
         <MessageModal message={this.state.message} />
         <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />
