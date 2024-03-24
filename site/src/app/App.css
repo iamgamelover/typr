@@ -142,6 +142,21 @@ a {
   background-color: var(--page-color);
 }
 
+.app-status-row {
+  display: flex;
+  column-gap: 20px;
+  justify-content: flex-end;
+  color: gray;
+  margin-top: 5px;
+}
+
+.app-status-data {
+  display: flex;
+  align-items: center;
+  column-gap: 5px;
+  font-size: 15px;
+}
+
 .app-logo-line {
   position: fixed;
   display: flex;
@@ -195,6 +210,11 @@ a {
 
 .story:hover {
   background-color: rgb(185, 71, 36);
+}
+
+.post {
+  margin-top: 0px;
+  font-size: 17px;
 }
 
 .reply {

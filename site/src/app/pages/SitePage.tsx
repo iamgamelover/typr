@@ -1,26 +1,81 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import NavBar from '../elements/NavBar';
-import { BsRocketTakeoff, BsSend } from 'react-icons/bs';
-import { isLoggedIn } from '../util/util';
-import { Service } from '../../server/service';
+import { BsPeopleFill, BsReplyFill, BsSend, BsSendFill } from 'react-icons/bs';
+import { getDataFromAO } from '../util/util';
 
-class SitePage extends React.Component {
+interface SitePageState {
+  members: number;
+  posts: number;
+  replies: number;
+}
 
-  static service: Service = new Service();
+class SitePage extends React.Component<{}, SitePageState> {
+
+  constructor(props: {}) {
+    super(props);
+    this.state = {
+      members: 0,
+      posts: 0,
+      replies: 0,
+    };
+  }
 
   componentDidMount() {
-    console.log('SitePage')
-    // this.start()
+    // console.log('SitePage')
+    this.start();
   }
-  
-  // async start() {
-  //   // for testing
-  //   let activeAddress = await isLoggedIn();
-  //   console.log("activeAddress:", activeAddress)
-  //   SitePage.service.setIsLoggedIn(activeAddress);
-  //   SitePage.service.setActiveAddress(activeAddress);
-  // }
+
+  async start() {
+    // for testing
+    // let activeAddress = await isLoggedIn();
+    // console.log("activeAddress:", activeAddress)
+    // SitePage.service.setIsLoggedIn(activeAddress);
+    // SitePage.service.setActiveAddress(activeAddress);
+
+    // let posts = await getDataFromAO('GetPosts');
+    // console.log("posts amount:", posts.length)
+
+    this.getStatus();
+    const id = setInterval(()=>this.getStatus(), 60000); // 1 min
+  }
+
+  async getStatus() {
+    console.log("getStatus")
+
+    let members = await getDataFromAO('GetMembers');
+    // console.log("members:", members)
+    let resp = this.removeDuplicate(members);
+    // console.log("members amount:", resp.length)
+    this.setState({ members: resp.length });
+
+    let posts = await getDataFromAO('GetPosts');
+    // console.log("posts amount:", posts.length)
+    this.setState({ posts: posts.length });
+
+    // will use this to get the amount of posts in the future.
+    // let postIDs = await getDataFromAO('GetPostIDs');
+    // console.log("another way for posts amount:", postIDs.length)
+
+    let replies = await getDataFromAO('GetReplies');
+    // console.log("replies amount:", replies.length)
+    this.setState({ replies: replies.length });
+  }
+
+  removeDuplicate(data: any) {
+    let result = [];
+    let ids = [] as any;
+    for (let i = 0; i < data.length; i++) {
+      let resp = JSON.parse(data[i]);
+      let id = resp.address;
+      if (!ids.includes(id)) {
+        ids.push(id);
+        result.push(resp);
+      }
+    }
+
+    return result;
+  }
 
   render() {
     return (
@@ -29,6 +84,12 @@ class SitePage extends React.Component {
           <img className='app-logo' src='/ao.png' />
           <div className='app-logo-text'>Twitter (beta)</div>
         </NavLink>
+
+        <div className='app-status-row'>
+          <div className='app-status-data'><BsPeopleFill />{this.state.members}</div>
+          <div className='app-status-data'><BsSendFill />{this.state.posts}</div>
+          <div className='app-status-data'><BsReplyFill />{this.state.replies}</div>
+        </div>
 
         <div className="app-content">
           <div className="app-navbar">

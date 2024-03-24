@@ -10,6 +10,7 @@ import ActivityPost from '../elements/ActivityPost';
 import { TIP_IMG } from '../util/consts';
 import QuestionModal from '../modals/QuestionModal';
 import { Server } from '../../server/server';
+import { BsSend } from 'react-icons/bs';
 
 declare var window: any;
 
@@ -256,8 +257,10 @@ class HomePage extends React.Component<{}, HomePageState> {
     let time = timeOfNow();
     let postId = uuid();
 
-    let data = { id: postId, address, nickname, post, range: this.state.range, 
-      likes: '0', replies: '0', coins: '0', time };
+    let data = {
+      id: postId, address, nickname, post, range: this.state.range,
+      likes: '0', replies: '0', coins: '0', time
+    };
 
     let response = await messageToAO(data, 'SendPost');
 
@@ -323,7 +326,11 @@ class HomePage extends React.Component<{}, HomePageState> {
                 <option value="private">Private</option>
               </select>
 
-              <button onClick={() => this.onPost()}>Post</button>
+              {/* <button onClick={() => this.onPost()}>Post</button> */}
+              <div className="app-post-button story post reply" onClick={() => this.onPost()}>
+                <BsSend size={20} />
+                <div>Post</div>
+              </div>
             </div>
           </div>
         }

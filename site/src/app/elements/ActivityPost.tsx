@@ -251,7 +251,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           />
           <div className="home-msg-nickname">{data.nickname}</div>
           <div className="home-msg-address">{address}</div>
-          <div className='home-msg-time'>&#x2022;&nbsp;&nbsp;{formatTimestamp(data.time, true)}</div>
+          <div className='home-msg-time'>&#x2022;&nbsp;&nbsp;{formatTimestamp(data.time)}</div>
           {this.props.isPostPage && this.props.txid &&
             <img
               className='activity-post-arweave-icon'
