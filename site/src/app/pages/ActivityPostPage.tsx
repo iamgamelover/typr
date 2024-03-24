@@ -100,7 +100,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
   }
 
   async getTxidOfPost(postId: string) {
-    let resp = await getDataFromAO('GetPostID');
+    let resp = await getDataFromAO('GetPostIDs');
 
     for (let i = 0; i < resp.length; i++) {
       let data;
