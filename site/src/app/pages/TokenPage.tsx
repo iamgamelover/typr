@@ -1,7 +1,9 @@
 import React from 'react';
 import './TokenPage.css';
-import { getProcess, getWalletAddress } from '../util/util';
+import { getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO } from '../util/util';
+import { createDataItemSigner, dryrun, message, result } from "@permaweb/aoconnect/browser";
 
+declare var window: any;
 
 interface TokenPageState {
   question: string;
@@ -34,9 +36,10 @@ class TokenPage extends React.Component<{}, TokenPageState> {
     let address = await getWalletAddress();
     console.log("address:", address)
 
-    let process = await getProcess(address);
+    let process = await getDefaultProcess(address);
     console.log("process:", process)
-    this.setState({ process });
+
+    this.setState({ address, process });
   }
 
   render() {

@@ -5,6 +5,8 @@ import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
 import { formatTimestamp, getWalletAddress, timeOfNow } from '../util/util';
 import { CHATROOM } from '../util/consts';
+import { createAvatar } from '@dicebear/core';
+import { micah } from '@dicebear/collection';
 
 declare var window: any;
 var msg_timer: any;
@@ -81,6 +83,15 @@ class ChatPage extends React.Component<{}, ChatPageState> {
     this.setState({ messages, loading: false });
   }
 
+
+  createAvatar(nickname: string) {
+    const resp = createAvatar(micah, {
+      seed: nickname,
+    });
+
+    return resp.toDataUriSync();
+  }
+
   renderMessages() {
     if (this.state.loading)
       return (<div>Loading...</div>);
@@ -92,9 +103,14 @@ class ChatPage extends React.Component<{}, ChatPageState> {
       let address = data.address;
       address = address.substring(0, 4) + '...' + address.substring(address.length - 4);
 
+      let avatar = this.createAvatar(data.nickname);
+
       divs.push(
         <div key={i} className={`chat-msg-line ${data.address == this.state.address ? 'my-line' : 'other-line'}`}>
-          {data.address != this.state.address && <img className='chat-msg-portrait' src='portrait-default.png' />}
+          {data.address != this.state.address &&
+            <img className='chat-msg-portrait' src={avatar} />
+          }
+
           <div>
             <div className={`chat-msg-header ${data.address == this.state.address ? 'my-line' : 'other-line'}`}>
               <div className="chat-msg-nickname">{data.nickname}</div>
@@ -107,7 +123,10 @@ class ChatPage extends React.Component<{}, ChatPageState> {
               {data.time ? formatTimestamp(data.time, true) : 'old msg'}
             </div>
           </div>
-          {data.address == this.state.address && <img className='chat-msg-portrait' src='portrait-default.png' />}
+
+          {data.address == this.state.address &&
+            <img className='chat-msg-portrait' src={avatar} />
+          }
         </div>
       )
     }

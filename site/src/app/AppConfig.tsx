@@ -17,15 +17,15 @@ export class AppConfig {
       loggedIn: false
     },
     {
-      text: 'TokenEco',
-      icon: 'token',
-      to: '/token',
-      loggedIn: false
-    },
-    {
       text: 'Games',
       icon: 'games',
       to: '/games',
+      loggedIn: false
+    },
+    {
+      text: 'TokenEco',
+      icon: 'token',
+      to: '/token',
       loggedIn: false
     },
     {
@@ -41,10 +41,10 @@ export class AppConfig {
       loggedIn: false
     },
     {
-      text: 'Bookmark',
-      icon: 'bookmark',
-      to: '/bookmark',
-      new: false,
+      text: 'Bookmarks',
+      icon: 'bookmarks',
+      to: '/bookmarks',
+      new: true,
       loggedIn: false
     },
     {

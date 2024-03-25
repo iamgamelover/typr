@@ -1,4 +1,4 @@
-import { createDataItemSigner, dryrun, message } from "@permaweb/aoconnect/browser";
+import { createDataItemSigner, dryrun, message, spawn } from "@permaweb/aoconnect/browser";
 import { AO_TWITTER } from "./consts";
 
 declare var window: any;
@@ -369,16 +369,59 @@ export function uuid() {
   });
 }
 
-export async function messageToAO(data: any, type: string) {
+export function timeOfNow() {
+  let now = Math.floor(Date.now() / 1000);
+  return now.toString();
+}
+
+export async function spawnProcess(data: string) {
+  try {
+    const processId = await spawn({
+      module: 'UAUszdznoUPQvXRbrFuIIH6J0N_LnJ1h4Trej28UgrE',
+      scheduler: 'fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY',
+      signer: createDataItemSigner(window.arweaveWallet),
+      // tags,
+      // data: data,
+    });
+
+    return processId;
+  } catch (error) {
+    console.log("error:", error)
+    return '';
+  }
+}
+
+/**
+ * Load the lua code into users process
+ * @param process 
+ * @param data 
+ * @returns 
+ */
+export async function evaluate(process: string, data: string) {
   try {
     const messageId = await message({
-      process: AO_TWITTER,
+      process,
       signer: createDataItemSigner(window.arweaveWallet),
-      data: JSON.stringify(data),
-      tags: [
-        { name: 'Action', value: type },
-      ],
+      tags: [{ name: 'Action', value: 'Eval' }],
+      data
     });
+
+    return messageId;
+  } catch (error) {
+    console.log("error:", error)
+    return '';
+  }
+}
+
+export async function messageToAO(process: string, data: string, action: string) {
+  try {
+    const messageId = await message({
+      process: process,
+      signer: createDataItemSigner(window.arweaveWallet),
+      tags: [{ name: 'Action', value: action }],
+      data: data
+    });
+
     console.log("messageId:", messageId)
     return messageId;
   } catch (error) {
@@ -387,20 +430,15 @@ export async function messageToAO(data: any, type: string) {
   }
 }
 
-export function timeOfNow() {
-  let now = Math.floor(Date.now() / 1000);
-  return now.toString();
-}
-
-export async function getDataFromAO(type: string) {
+export async function getDataFromAO(process: string, action: string) {
   let start = performance.now();
   // console.log('==> [getDataFromAO]');
 
   let result;
   try {
     result = await dryrun({
-      process: AO_TWITTER,
-      tags: [{ name: 'Action', value: type }],
+      process: process,
+      tags: [{ name: 'Action', value: action }],
     });
   } catch (error) {
     return '';
@@ -419,7 +457,7 @@ export async function getDataFromAO(type: string) {
 }
 
 export async function getNumOfReplies(postId: string) {
-  let resp = await getDataFromAO('GetReplies');
+  let resp = await getDataFromAO(AO_TWITTER, 'GetReplies');
   if (!resp || resp.length == 0) return 0;
 
   let replies = [];
@@ -435,6 +473,16 @@ export async function getNumOfReplies(postId: string) {
   }
 
   return replies.length;
+}
+
+// check the state of bookmark
+export function isBookmarked(bookmarks: any, id: string) {
+  for (let i = 0; i < bookmarks.length; i++) {
+    let index = bookmarks[i].indexOf(id)
+    if (index > -1) return true
+  }
+
+  return false;
 }
 
 export async function connectWallet() {
@@ -471,10 +519,10 @@ export async function isLoggedIn() {
     return '';
 }
 
-export async function getProcess(address: string) {
+export async function getDefaultProcess(address: string) {
   let resp = await getProcessFromOwner(address);
   if (resp.success) {
-    console.log("process:", resp.process)
+    console.log("default process:", resp.process)
     return resp.process;
   } else {
     console.log("err:", resp.message)
@@ -499,7 +547,7 @@ export async function fetchGraphQL(queryObject: any) {
 
 export async function getProcessFromOwner(owner: string) {
   let start = performance.now();
-  console.log('==> [getProcessFromOwner]');
+  // console.log('==> [getProcessFromOwner]');
 
   const queryObject = {
     query:
@@ -524,10 +572,10 @@ export async function getProcessFromOwner(owner: string) {
 
   try {
     let response = await fetchGraphQL(queryObject);
-    console.log("response:", response)
+    // console.log("response:", response)
 
     let end = performance.now();
-    console.log(`<== [getProcessFromOwner] [${Math.round(end - start)} ms]`);
+    // console.log(`<== [getProcessFromOwner] [${Math.round(end - start)} ms]`);
 
     if (response.length == 0)
       return { success: true, process: '' };
@@ -535,6 +583,6 @@ export async function getProcessFromOwner(owner: string) {
       return { success: true, process: response[0].node.id };
   } catch (error) {
     console.log("ERR:", error);
-    return { success: false, message: 'getPostsOfMission failed.' };
+    return { success: false, message: 'getProcessFromOwner failed.' };
   }
 }

@@ -8,6 +8,16 @@
   --section-header-color: rgb(65, 67, 72);
   --link-color: rgb(99, 99, 229);
   --page-max-width: 650px;
+
+  --rt-color-white: #fff;
+  --rt-color-dark: #222;
+  --rt-color-success: #8dc572;
+  --rt-color-error: #be6464;
+  --rt-color-warning: #f0ad4e;
+  --rt-color-info: #337ab7;
+  --rt-opacity: 0.9;
+  --rt-transition-show-delay: 0.15s;
+  --rt-transition-closing-delay: 0.15s;
 }
 
 html {
@@ -138,7 +148,7 @@ a {
 .app-page {
   /* overflow-x: auto; */
   margin-left: 180px;
-  margin-top: 80px;
+  margin-top: 50px;
   background-color: var(--page-color);
 }
 

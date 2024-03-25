@@ -144,6 +144,10 @@
   color: white;
   padding: 10px 20px;
   border-radius: 30px;
-  background-color: rgb(92, 92, 228);
+  background-color: rgb(114, 114, 234);
   cursor: pointer;
+}
+
+.home-page-tip-new-posts:hover {
+  background-color: rgb(80, 80, 209);
 }

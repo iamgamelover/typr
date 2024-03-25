@@ -76,7 +76,7 @@ class NavBarButton extends React.Component<NavBarButtonProps, NavBarButtonState>
       return <BsAward size={ICON_SIZE}/>
     else if (this.props.text == 'Notifications')
       return <BsBell size={ICON_SIZE}/>
-    else if (this.props.text == 'Bookmark')
+    else if (this.props.text == 'Bookmarks')
       return <BsBookmark size={ICON_SIZE}/>
     else if (this.props.text == 'Chatroom')
       return <BsChatText size={ICON_SIZE}/>

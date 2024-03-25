@@ -1,13 +1,13 @@
 import React from 'react';
 import './HomePage.css';
-import { subscribe } from '../util/event';
+import { publish, subscribe } from '../util/event';
 import { dryrun } from "@permaweb/aoconnect";
 import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
-import { checkContent, connectWallet, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid } from '../util/util';
+import { checkContent, connectWallet, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, getDefaultProcess, spawnProcess, evaluate, isBookmarked } from '../util/util';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
-import { TIP_IMG } from '../util/consts';
+import { AO_TWITTER, LUA, TIP_IMG } from '../util/consts';
 import QuestionModal from '../modals/QuestionModal';
 import { Server } from '../../server/server';
 import { BsSend } from 'react-icons/bs';
@@ -80,7 +80,6 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   async start() {
     let address = await isLoggedIn();
-    // console.log("address:", address)
     this.setState({ isLoggedIn: address, address });
 
     let nickname = localStorage.getItem('nickname');
@@ -96,25 +95,43 @@ class HomePage extends React.Component<{}, HomePageState> {
       let address = await getWalletAddress();
       this.setState({ isLoggedIn: 'true', address });
       this.register(address);
+
+      // for testing
+      Server.service.setIsLoggedIn(address);
+      Server.service.setActiveAddress(address);
+      publish('wallet-events');
+
+      // for testing - load lua code into the process of users
+      let process = await getDefaultProcess(address);
+
+      // Spawn a new process
+      if (!process) {
+        let processId = await spawnProcess(LUA);
+        console.log("Spawn --> processId:", processId)
+      }
+
+      // load lua
+      let messageId = await evaluate(process, LUA);
+      // console.log("evaluate -->", messageId)
     }
   }
 
   // Register one user
   // This is a temp way, need to search varibale Members
   // to keep one, on browser side or AOS side (in lua code)
-  async register(address: string) {
-    let registered = localStorage.getItem('registered');
-    if (!registered) {
-      let data = { address, nickname: this.state.nickname, avatar: '', time: timeOfNow() };
-      let resp = await messageToAO(data, 'Register');
-      // console.log("register:", resp)
-      if (resp) localStorage.setItem('registered', 'Yes');
-    }
+  register(address: string) {
+    let data = { address, nickname: this.state.nickname, avatar: '', time: timeOfNow() };
+    messageToAO(AO_TWITTER, JSON.stringify(data), 'Register');
   }
 
   async disconnectWallet() {
     await window.arweaveWallet.disconnect();
     this.setState({ isLoggedIn: '', address: '', question: '' });
+
+    // for testing
+    Server.service.setIsLoggedIn('');
+    Server.service.setActiveAddress('');
+    publish('wallet-events');
   }
 
   onQuestionYes() {
@@ -152,7 +169,7 @@ class HomePage extends React.Component<{}, HomePageState> {
   }
 
   async refreshPosts() {
-    this.newPosts = await getDataFromAO('GetPosts');
+    this.newPosts = await getDataFromAO(AO_TWITTER, 'GetPosts');
     let posts_amt = localStorage.getItem('posts_amt');
     let newPosts = this.newPosts.length - Number(posts_amt);
     console.log("newPosts amt:", newPosts)
@@ -197,30 +214,11 @@ class HomePage extends React.Component<{}, HomePageState> {
     // console.log("cached posts:", posts)
 
     if (!posts || new_post) {
-      posts = await getDataFromAO('GetPosts');
+      posts = await getDataFromAO(AO_TWITTER, 'GetPosts');
       if (!posts) {
         this.setState({ loading: false });
         return;
       }
-
-      // let final = [];
-      // for (let i = posts.length - 1; i >= 0; i--) {
-      //   let data;
-      //   try {
-      //     data = JSON.parse(posts[i]);
-      //     Server.service.addPostToCache(data);
-      //   } catch (error) {
-      //     // console.log(error)
-      //     continue;
-      //   }
-
-      //   final.push(data)
-      // }
-
-      // for (let i = final.length - 1; i >= 0; i--) {
-      //   let num = await getNumOfReplies(final[i].id);
-      //   final[i].replies = num;
-      // }
 
       let final = this.parsePosts(posts);
       this.setState({ posts: final, loading: false });
@@ -242,10 +240,18 @@ class HomePage extends React.Component<{}, HomePageState> {
   }
 
   async renderNumOfReplies() {
+    // to check the state of bookmark
+    let process = await getDefaultProcess(this.state.address);
+    let bookmarks = await getDataFromAO(process, 'AOTwitter.getBookmarks');
+
     let posts = this.state.posts;
     for (let i = 0; i < posts.length; i++) {
       let num = await getNumOfReplies(posts[i].id);
       posts[i].replies = num;
+      
+      let resp = isBookmarked(bookmarks, posts[i].id);
+      posts[i].isBookmarked = resp;
+
       this.setState({ posts });
     }
   }
@@ -266,15 +272,6 @@ class HomePage extends React.Component<{}, HomePageState> {
     }
 
     return divs.length > 0 ? divs : <div>No post yet.</div>
-  }
-
-  scrollToBottom() {
-    var scrollableDiv = document.getElementById("scrollableDiv");
-    if (scrollableDiv) {
-      scrollableDiv.scrollTop = scrollableDiv.scrollHeight;
-    } else {
-      console.error("Element with id 'scrollableDiv' not found.");
-    }
   }
 
   async onPost() {
@@ -309,7 +306,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       likes: '0', replies: '0', coins: '0', time
     };
 
-    let response = await messageToAO(data, 'SendPost');
+    let response = await messageToAO(AO_TWITTER, JSON.stringify(data), 'SendPost');
 
     if (response) {
       this.quillRef.setText('');
@@ -320,7 +317,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       // When loading huge data is very slow, 
       // just load post id and download content of a post from arweave.
       let data = { address, postId, txid: response, time };
-      messageToAO(data, 'SendPostID');
+      messageToAO(AO_TWITTER, JSON.stringify(data), 'SendPostID');
     }
     else
       this.setState({ message: '', alert: TIP_IMG });
@@ -388,7 +385,7 @@ class HomePage extends React.Component<{}, HomePageState> {
 
         {this.state.newPosts > 0 &&
           <div className='home-page-tip-new-posts' onClick={() => this.showNewPosts()}>
-            {this.state.newPosts}&nbsp;&nbsp;&nbsp;New Posts
+            {this.state.newPosts}&nbsp;&nbsp;New Posts
           </div>
         }
 

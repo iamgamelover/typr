@@ -7,8 +7,8 @@ import MessageModal from '../modals/MessageModal';
 import AlertModal from '../modals/AlertModal';
 import { BsFillArrowLeftCircleFill, BsPlugin, BsReply } from 'react-icons/bs';
 import { subscribe } from '../util/event';
-import { checkContent, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid } from '../util/util';
-import { TIP_IMG } from '../util/consts';
+import { checkContent, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, getDefaultProcess, isBookmarked } from '../util/util';
+import { AO_TWITTER, TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
 import { AiOutlineFire } from "react-icons/ai";
 import QuestionModal from '../modals/QuestionModal';
@@ -97,10 +97,17 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
 
     let txid = await this.getTxidOfPost(this.postId);
     this.setState({ txid });
+
+    // TEMP WAY -- to check the state of bookmark
+    let process = await getDefaultProcess(this.state.address);
+    let bookmarks = await getDataFromAO(process, 'AOTwitter.getBookmarks');
+    let resp = isBookmarked(bookmarks, post.id);
+    post.isBookmarked = resp;
+    this.setState({ post });
   }
 
   async getTxidOfPost(postId: string) {
-    let resp = await getDataFromAO('GetPostIDs');
+    let resp = await getDataFromAO(AO_TWITTER, 'GetPostIDs');
 
     for (let i = 0; i < resp.length; i++) {
       let data;
@@ -116,7 +123,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
   }
 
   async getPostById(id: string) {
-    let resp = await getDataFromAO('GetPosts');
+    let resp = await getDataFromAO(AO_TWITTER, 'GetPosts');
     if (!resp) this.setState({ loading: false });
 
     for (let i = 0; i < resp.length; i++) {
@@ -133,7 +140,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
   }
 
   async getReplies(postId: string) {
-    let resp = await getDataFromAO('GetReplies');
+    let resp = await getDataFromAO(AO_TWITTER, 'GetReplies');
     if (!resp) this.setState({ loading: false, loading_reply: false });
 
     let replies = [];
@@ -172,7 +179,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     if (!nickname) nickname = 'anonymous';
 
     let data = { id: uuid(), postId: this.state.post.id, address, nickname, post, likes: '0', replies: '0', coins: '0', time: timeOfNow() };
-    let response = await messageToAO(data, 'SendReply');
+    let response = await messageToAO(AO_TWITTER, JSON.stringify(data), 'SendReply');
 
     if (response) {
       this.quillRef.setText('');

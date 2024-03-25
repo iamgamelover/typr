@@ -1,6 +1,6 @@
 import React from 'react';
-import { BsBookmark, BsChat, BsCoin, BsHeart } from 'react-icons/bs';
-import { convertUrls, getWalletAddress, numberWithCommas, uuid } from '../util/util';
+import { BsBookmark, BsBookmarkFill, BsChat, BsCoin, BsHeart } from 'react-icons/bs';
+import { convertUrls, getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO, numberWithCommas, uuid } from '../util/util';
 import { formatTimestamp } from '../util/util';
 import './ActivityPost.css';
 import parse, { attributesToProps } from 'html-react-parser';
@@ -10,6 +10,9 @@ import AlertModal from '../modals/AlertModal';
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
 import { Service } from '../../server/service';
+import { Server } from '../../server/server';
+import { subscribe } from '../util/event';
+import { Tooltip } from 'react-tooltip'
 
 interface ActivityPostProps {
   data: any;
@@ -28,6 +31,7 @@ interface ActivityPostState {
   alert: string;
   avatar: string;
   address: string;
+  // isBookmarked: boolean;
 }
 
 class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState> {
@@ -49,9 +53,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   constructor(props: ActivityPostProps) {
     super(props);
-    // let data  = this.props.data;
-    // this.id  = data.id;
-
     this.state = {
       openImage: false,
       navigate: '',
@@ -60,13 +61,17 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       alert: '',
       avatar: '',
       address: '',
+      // isBookmarked: false
     };
 
     this.onClose = this.onClose.bind(this);
+
+    subscribe('wallet-events', () => {
+      this.forceUpdate();
+    });
   }
 
   componentDidMount() {
-    // this.getProfile();
     this.getPostContent();
     this.start();
 
@@ -88,6 +93,9 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   async start() {
+    // for testing
+    // this.setState({ isBookmarked: this.props.data.isBookmarked });
+
     let address = await getWalletAddress();
     this.setState({ address });
 
@@ -154,7 +162,14 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   async onBookmark(e: any) {
     e.stopPropagation();
-    // this.setState({ alert: 'See the earned CRED ^_^' })
+    // this.setState({ isBookmarked: true });
+
+    let process = await getDefaultProcess(Server.service.getActiveAddress());
+    let resp = await messageToAO(
+      process,
+      JSON.stringify({ data: this.props.data }),
+      'AOTwitter.setBookmark'
+    );
   }
 
   goProfilePage(e: any, id: string) {
@@ -211,11 +226,26 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           </div>
         </div>
 
-        <div className='activity-post-action' onClick={(e) => this.onBookmark(e)}>
-          <div className='activity-post-action-icon'>
-            <BsBookmark />
+        {Server.service.getIsLoggedIn() && !this.props.isReply &&
+          <div className='activity-post-action'>
+            <div className='activity-post-action-icon'>
+              {data.isBookmarked
+                ?
+                <BsBookmarkFill
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Can't be removed now"
+                  color='rgb(114, 114, 234)'
+                />
+                :
+                <BsBookmark
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Bookmark"
+                  onClick={(e) => this.onBookmark(e)}
+                />
+              }
+            </div>
           </div>
-        </div>
+        }
       </div>
     )
   }
@@ -245,7 +275,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           <img
             className='home-msg-portrait'
             src={this.state.avatar}
-            alt='avatar'
             onClick={(e) => this.newAvatar(e)}
             title={owner ? 'Click to change your avatar' : ''}
           />
@@ -257,7 +286,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
               className='activity-post-arweave-icon'
               src='/ar.svg'
               onClick={() => this.openLink(this.props.txid)}
-              title='Go to ao.link'
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="Go to ao.link"
             />
           }
         </div>
@@ -268,6 +298,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
         {this.renderActionsRow(data)}
 
+        <Tooltip id="my-tooltip" />
         <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />
         <ViewImageModal open={this.state.openImage} src={this.imgUrl} onClose={this.onClose} />
       </div>

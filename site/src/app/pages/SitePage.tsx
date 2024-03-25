@@ -2,7 +2,9 @@ import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import NavBar from '../elements/NavBar';
 import { BsPeopleFill, BsReplyFill, BsSend, BsSendFill } from 'react-icons/bs';
-import { getDataFromAO } from '../util/util';
+import { getDataFromAO, isLoggedIn } from '../util/util';
+import { AO_TWITTER } from '../util/consts';
+import { Server } from '../../server/server';
 
 interface SitePageState {
   members: number;
@@ -22,34 +24,30 @@ class SitePage extends React.Component<{}, SitePageState> {
   }
 
   componentDidMount() {
-    // console.log('SitePage')
     this.start();
   }
 
   async start() {
     // for testing
-    // let activeAddress = await isLoggedIn();
+    let activeAddress = await isLoggedIn();
     // console.log("activeAddress:", activeAddress)
-    // SitePage.service.setIsLoggedIn(activeAddress);
-    // SitePage.service.setActiveAddress(activeAddress);
-
-    // let posts = await getDataFromAO('GetPosts');
-    // console.log("posts amount:", posts.length)
+    Server.service.setIsLoggedIn(activeAddress);
+    Server.service.setActiveAddress(activeAddress);
 
     this.getStatus();
-    const id = setInterval(()=>this.getStatus(), 60000); // 1 min
+    setInterval(() => this.getStatus(), 60000); // 1 min
   }
 
   async getStatus() {
     console.log("getStatus")
 
-    let members = await getDataFromAO('GetMembers');
+    let members = await getDataFromAO(AO_TWITTER, 'GetMembers');
     // console.log("members:", members)
     let resp = this.removeDuplicate(members);
     // console.log("members amount:", resp.length)
     this.setState({ members: resp.length });
 
-    let posts = await getDataFromAO('GetPosts');
+    let posts = await getDataFromAO(AO_TWITTER, 'GetPosts');
     // console.log("posts amount:", posts.length)
     this.setState({ posts: posts.length });
 
@@ -57,7 +55,7 @@ class SitePage extends React.Component<{}, SitePageState> {
     // let postIDs = await getDataFromAO('GetPostIDs');
     // console.log("another way for posts amount:", postIDs.length)
 
-    let replies = await getDataFromAO('GetReplies');
+    let replies = await getDataFromAO(AO_TWITTER, 'GetReplies');
     // console.log("replies amount:", replies.length)
     this.setState({ replies: replies.length });
   }
