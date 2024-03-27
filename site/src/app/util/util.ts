@@ -1,5 +1,5 @@
 import { createDataItemSigner, dryrun, message, spawn } from "@permaweb/aoconnect/browser";
-import { AO_TWITTER } from "./consts";
+import { AO_TWITTER, MODULE, SCHEDULER } from "./consts";
 
 declare var window: any;
 
@@ -374,14 +374,12 @@ export function timeOfNow() {
   return now.toString();
 }
 
-export async function spawnProcess(data: string) {
+export async function spawnProcess() {
   try {
     const processId = await spawn({
-      module: 'UAUszdznoUPQvXRbrFuIIH6J0N_LnJ1h4Trej28UgrE',
-      scheduler: 'fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY',
+      module: MODULE,
+      scheduler: SCHEDULER,
       signer: createDataItemSigner(window.arweaveWallet),
-      // tags,
-      // data: data,
     });
 
     return processId;
@@ -413,13 +411,13 @@ export async function evaluate(process: string, data: string) {
   }
 }
 
-export async function messageToAO(process: string, data: string, action: string) {
+export async function messageToAO(process: string, data: any, action: string) {
   try {
     const messageId = await message({
       process: process,
       signer: createDataItemSigner(window.arweaveWallet),
       tags: [{ name: 'Action', value: action }],
-      data: data
+      data: JSON.stringify(data)
     });
 
     console.log("messageId:", messageId)
@@ -522,7 +520,7 @@ export async function isLoggedIn() {
 export async function getDefaultProcess(address: string) {
   let resp = await getProcessFromOwner(address);
   if (resp.success) {
-    console.log("default process:", resp.process)
+    // console.log("default process:", resp.process)
     return resp.process;
   } else {
     console.log("err:", resp.message)

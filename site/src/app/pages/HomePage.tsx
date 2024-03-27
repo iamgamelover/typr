@@ -106,22 +106,26 @@ class HomePage extends React.Component<{}, HomePageState> {
 
       // Spawn a new process
       if (!process) {
-        let processId = await spawnProcess(LUA);
-        console.log("Spawn --> processId:", processId)
+        process = await spawnProcess();
+        console.log("Spawn --> processId:", process)
       }
-
-      // load lua
+       
+      // load lua into the process
       let messageId = await evaluate(process, LUA);
-      // console.log("evaluate -->", messageId)
+      console.log("evaluate -->", messageId)
     }
   }
 
   // Register one user
   // This is a temp way, need to search varibale Members
   // to keep one, on browser side or AOS side (in lua code)
-  register(address: string) {
-    let data = { address, nickname: this.state.nickname, avatar: '', time: timeOfNow() };
-    messageToAO(AO_TWITTER, JSON.stringify(data), 'Register');
+  async register(address: string) {
+    let registered = localStorage.getItem('registered');
+    if (!registered) {
+      let data = { address, nickname: this.state.nickname, avatar: '', time: timeOfNow() };
+      let resp = await messageToAO(AO_TWITTER, data, 'Register');
+      if (resp) localStorage.setItem('registered', 'Yes');
+    }
   }
 
   async disconnectWallet() {
@@ -241,18 +245,22 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   async renderNumOfReplies() {
     // to check the state of bookmark
-    let process = await getDefaultProcess(this.state.address);
-    let bookmarks = await getDataFromAO(process, 'AOTwitter.getBookmarks');
-
-    let posts = this.state.posts;
-    for (let i = 0; i < posts.length; i++) {
-      let num = await getNumOfReplies(posts[i].id);
-      posts[i].replies = num;
-      
-      let resp = isBookmarked(bookmarks, posts[i].id);
-      posts[i].isBookmarked = resp;
-
-      this.setState({ posts });
+    try {
+      let process = await getDefaultProcess(this.state.address);
+      let bookmarks = await getDataFromAO(process, 'AOTwitter.getBookmarks');
+  
+      let posts = this.state.posts;
+      for (let i = 0; i < posts.length; i++) {
+        let num = await getNumOfReplies(posts[i].id);
+        posts[i].replies = num;
+        
+        let resp = isBookmarked(bookmarks, posts[i].id);
+        posts[i].isBookmarked = resp;
+  
+        this.setState({ posts });
+      }
+    } catch (error) {
+      console.log('ERR ==>', error)
     }
   }
 
@@ -300,13 +308,13 @@ class HomePage extends React.Component<{}, HomePageState> {
     if (!nickname) nickname = 'anonymous';
     let time = timeOfNow();
     let postId = uuid();
-
+    
     let data = {
       id: postId, address, nickname, post, range: this.state.range,
       likes: '0', replies: '0', coins: '0', time
     };
 
-    let response = await messageToAO(AO_TWITTER, JSON.stringify(data), 'SendPost');
+    let response = await messageToAO(AO_TWITTER, data, 'SendPost');
 
     if (response) {
       this.quillRef.setText('');
@@ -317,7 +325,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       // When loading huge data is very slow, 
       // just load post id and download content of a post from arweave.
       let data = { address, postId, txid: response, time };
-      messageToAO(AO_TWITTER, JSON.stringify(data), 'SendPostID');
+      messageToAO(AO_TWITTER, data, 'SendPostID');
     }
     else
       this.setState({ message: '', alert: TIP_IMG });

@@ -51,6 +51,7 @@ export class AppConfig {
       text: 'Profile',
       icon: 'profile',
       to: '/profile',
+      new: true,
       loggedIn: false
     },
   ];

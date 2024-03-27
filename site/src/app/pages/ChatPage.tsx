@@ -100,33 +100,35 @@ class ChatPage extends React.Component<{}, ChatPageState> {
 
     for (let i = 0; i < this.state.messages.length; i++) {
       let data = JSON.parse(this.state.messages[i]);
+      let owner = (data.address == this.state.address);
       let address = data.address;
       address = address.substring(0, 4) + '...' + address.substring(address.length - 4);
 
-      let avatar = this.createAvatar(data.nickname);
+      let avatar;
+      if (owner) {
+        let profile = JSON.parse(localStorage.getItem('profile'));
+        avatar = profile.avatar;
+      }
+      else {
+        avatar = this.createAvatar(data.nickname);
+      }
 
       divs.push(
-        <div key={i} className={`chat-msg-line ${data.address == this.state.address ? 'my-line' : 'other-line'}`}>
-          {data.address != this.state.address &&
-            <img className='chat-msg-portrait' src={avatar} />
-          }
-
+        <div key={i} className={`chat-msg-line ${owner ? 'my-line' : 'other-line'}`}>
+          {!owner && <img className='chat-msg-portrait' src={avatar} />}
           <div>
-            <div className={`chat-msg-header ${data.address == this.state.address ? 'my-line' : 'other-line'}`}>
+            <div className={`chat-msg-header ${owner ? 'my-line' : 'other-line'}`}>
               <div className="chat-msg-nickname">{data.nickname}</div>
               <div className="chat-msg-address">{address}</div>
             </div>
-            <div className={`chat-message ${data.address == this.state.address ? 'my-message' : 'other-message'}`}>
+            <div className={`chat-message ${owner ? 'my-message' : 'other-message'}`}>
               {data.msg}
             </div>
-            <div className={`chat-msg-time ${data.address == this.state.address ? 'my-line' : 'other-line'}`}>
+            <div className={`chat-msg-time ${owner ? 'my-line' : 'other-line'}`}>
               {data.time ? formatTimestamp(data.time, true) : 'old msg'}
             </div>
           </div>
-
-          {data.address == this.state.address &&
-            <img className='chat-msg-portrait' src={avatar} />
-          }
+          {owner && <img className='chat-msg-portrait' src={avatar} />}
         </div>
       )
     }

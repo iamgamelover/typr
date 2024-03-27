@@ -27,9 +27,9 @@ interface ActivityPostState {
   openImage: boolean;
   navigate: string;
   content: string;
-  author: any;
   alert: string;
   avatar: string;
+  nickname: string;
   address: string;
   // isBookmarked: boolean;
 }
@@ -57,9 +57,9 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       openImage: false,
       navigate: '',
       content: '',
-      author: '',
       alert: '',
       avatar: '',
+      nickname: '',
       address: '',
       // isBookmarked: false
     };
@@ -106,12 +106,27 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     }
 
     this.createAvatar(avatar);
+    this.getProfile(this.props.data.address);
+  }
+
+  // load profile from the process of user's
+  async getProfile(address: string) {
+    let process = await getDefaultProcess(address);
+    if (!process) return;
+
+    let response = await getDataFromAO(process, 'AOTwitter.getProfile');
+    if (response) {
+      let profile = JSON.parse(response[response.length - 1]);
+      this.setState({
+        avatar: profile.avatar,
+        nickname: profile.nickname,
+      })
+    }
   }
 
   createAvatar(random: string) {
     const resp = createAvatar(micah, {
       seed: this.props.data.nickname + random,
-      // ... other options
     });
 
     const avatar = resp.toDataUriSync();
@@ -132,16 +147,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     // content = convertHashTag(content);
     content = convertUrls(content);
     this.setState({ content });
-  }
-
-  async getProfile() {
-    // let author = Server.public.getProfile(this.props.data.author);
-    // if (!author) {
-    //   await Server.public.cacheProfiles([this.props.data]);
-    //   author = Server.public.getProfile(this.props.data.author);
-    // }
-
-    // this.setState({ author });
   }
 
   tapImage(e: any, src: string) {
@@ -167,7 +172,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     let process = await getDefaultProcess(Server.service.getActiveAddress());
     let resp = await messageToAO(
       process,
-      JSON.stringify({ data: this.props.data }),
+      { data: this.props.data },
       'AOTwitter.setBookmark'
     );
   }
@@ -257,6 +262,13 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   render() {
     let owner = (this.props.data.address == this.state.address);
 
+    let avatar, nickname;
+    let profile = JSON.parse(localStorage.getItem('profile'));
+    if (profile) {
+      avatar = profile.avatar
+      nickname = profile.nickname
+    }
+
     let data = this.props.data;
     let address = data.address;
     if (address)
@@ -274,11 +286,14 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         <div className='home-msg-header'>
           <img
             className='home-msg-portrait'
-            src={this.state.avatar}
-            onClick={(e) => this.newAvatar(e)}
-            title={owner ? 'Click to change your avatar' : ''}
+            src={owner ? avatar : this.state.avatar}
+            // onClick={(e) => this.newAvatar(e)}
+            // title={owner ? 'Click to change your avatar' : ''}
           />
-          <div className="home-msg-nickname">{data.nickname}</div>
+          <div className="home-msg-nickname">
+            {owner ? nickname : this.state.nickname ? this.state.nickname : data.nickname}
+          </div>
+
           <div className="home-msg-address">{address}</div>
           <div className='home-msg-time'>&#x2022;&nbsp;&nbsp;{formatTimestamp(data.time)}</div>
           {this.props.isPostPage && this.props.txid &&

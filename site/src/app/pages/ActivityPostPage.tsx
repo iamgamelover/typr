@@ -179,7 +179,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     if (!nickname) nickname = 'anonymous';
 
     let data = { id: uuid(), postId: this.state.post.id, address, nickname, post, likes: '0', replies: '0', coins: '0', time: timeOfNow() };
-    let response = await messageToAO(AO_TWITTER, JSON.stringify(data), 'SendReply');
+    let response = await messageToAO(AO_TWITTER, data, 'SendReply');
 
     if (response) {
       this.quillRef.setText('');

@@ -10,6 +10,7 @@ import ChatPage from './pages/ChatPage';
 import TokenPage from './pages/TokenPage';
 import StoryPage from './pages/StoryPage';
 import BookmarksPage from './pages/BookmarksPage';
+import ProfilePage from './pages/ProfilePage';
 
 
 class App extends React.Component<{}, {}> {
@@ -32,6 +33,7 @@ class App extends React.Component<{}, {}> {
             <Route path="/games" element={<GamesPage />} />
             <Route path="/chat" element={<ChatPage />} />
             <Route path="/bookmarks" element={<BookmarksPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
