@@ -41,15 +41,14 @@ class SitePage extends React.Component<{}, SitePageState> {
   async getStatus() {
     console.log("getStatus")
 
-    let members = await getDataFromAO(AO_TWITTER, 'GetMembers');
-    // console.log("members:", members)
-    let resp = this.removeDuplicate(members);
-    // console.log("members amount:", resp.length)
-    this.setState({ members: resp.length });
-
     let posts = await getDataFromAO(AO_TWITTER, 'GetPosts');
     // console.log("posts amount:", posts.length)
     this.setState({ posts: posts.length });
+
+    // get the amount of addresses (No Duplicate) from all of posts.
+    let resp = this.removeDuplicate(posts);
+    // console.log("addr from posts --> amount:", resp.length)
+    this.setState({ members: resp.length });
 
     // will use this to get the amount of posts in the future.
     // let postIDs = await getDataFromAO('GetPostIDs');
