@@ -68,7 +68,7 @@ class HomePage extends React.Component<{}, HomePageState> {
   }
 
   componentWillUnmount(): void {
-    clearInterval(this.refresh);
+    // clearInterval(this.refresh);
     window.removeEventListener('scroll', this.atBottom);
     Server.service.addPositionToCache(window.pageYOffset);
   }
@@ -102,7 +102,7 @@ class HomePage extends React.Component<{}, HomePageState> {
     await this.getPosts();
 
     // check the new post every 10 seconds.
-    this.refresh = setInterval(() => this.refreshPosts(), 10000);
+    // this.refresh = setInterval(() => this.refreshPosts(), 10000);
   }
 
   async connectWallet() {
@@ -204,7 +204,7 @@ class HomePage extends React.Component<{}, HomePageState> {
     let posts = await getDataFromAO(AO_TWITTER, 'GetPosts', 1, this.state.newPosts.toString());
     let final = this.parsePosts(posts);
     let total = final.concat(this.state.posts);
-    // this.setState({ posts: [] });
+    this.setState({ posts: [] });
 
     setTimeout(() => {
       window.scrollTo(0, 0);
