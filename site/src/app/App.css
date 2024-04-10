@@ -188,15 +188,16 @@ a {
 .app-logo-line {
   position: fixed;
   display: flex;
-  align-items: flex-end;
-  column-gap: 10px;
-  padding: 20px;
+  /* align-items: flex-end; */
+  /* column-gap: 10px; */
+  padding: 10px;
   margin-bottom: 10px;
-  text-decoration: none;
+  /* text-decoration: none; */
 }
 
 .app-logo {
-  width: 55px;
+  width: 110px;
+  /* width: 55px; */
 }
 
 .app-logo-text {

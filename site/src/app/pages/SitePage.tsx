@@ -78,8 +78,9 @@ class SitePage extends React.Component<{}, SitePageState> {
     return (
       <div className="app-container">
         <NavLink className='app-logo-line' to='/'>
-          <img className='app-logo' src='/ao.png' />
-          <div className='app-logo-text'>Twitter (beta)</div>
+          <img className='app-logo' src='/logo.png' />
+          {/* <img className='app-logo' src='/ao.png' /> */}
+          {/* <div className='app-logo-text'>Twitter (beta)</div> */}
         </NavLink>
 
         <div className='app-status-row'>

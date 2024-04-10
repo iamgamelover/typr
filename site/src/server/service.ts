@@ -2,6 +2,7 @@ export class Service {
   protected posts:any;
   protected post:any;
   protected position:number;
+  protected pageNo:number = 1;
 
   protected isLoggedIn:string;
   protected activeAddress:string;
@@ -48,5 +49,13 @@ export class Service {
 
   public getActiveAddress() {
     return this.activeAddress;
+  }
+  
+  public setPageNo(pageNo:number) {
+    this.pageNo = pageNo;
+  }
+
+  public getPageNo() {
+    return this.pageNo;
   }
 }

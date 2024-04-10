@@ -3,8 +3,10 @@ export const AO_TWITTER = "Ekm_mCHSs9mawVqwqTi35qBaT-8DaORzYJ-c9Z3qMhY";
 export const CHATROOM = "F__i_YGIUOGw43zyqLY9dEKNNEhB_uTqzL9tOTWJ-KA";
 export const TIP_IMG = "Is there a picture in the post? Size just up to 100KB for now.";
 export const ICON_SIZE = 28;
+export const PAGE_SIZE = "10";
 export const MODULE = "SBNb1qPQ1TDwpD_mboxm2YllmMLXpWw4U8P9Ff8W9vk"
 export const SCHEDULER = "_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA"
+export const ARWEAVE_GATEWAY = "https://arweave.net/";
 
 export const LUA =
   `

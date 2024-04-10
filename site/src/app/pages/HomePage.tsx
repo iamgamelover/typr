@@ -4,10 +4,10 @@ import { publish, subscribe } from '../util/event';
 import { dryrun } from "@permaweb/aoconnect";
 import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
-import { checkContent, connectWallet, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, getDefaultProcess, spawnProcess, evaluate, isBookmarked } from '../util/util';
+import { checkContent, connectWallet, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, getDefaultProcess, spawnProcess, evaluate, isBookmarked, downloadFromArweave } from '../util/util';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
-import { AO_TWITTER, LUA, TIP_IMG } from '../util/consts';
+import { AO_TWITTER, LUA, PAGE_SIZE, TIP_IMG } from '../util/consts';
 import QuestionModal from '../modals/QuestionModal';
 import { Server } from '../../server/server';
 import { BsSend } from 'react-icons/bs';
@@ -21,6 +21,7 @@ interface HomePageState {
   alert: string;
   message: string;
   loading: boolean;
+  loadNextPage: boolean;
   range: string;
   isLoggedIn: string;
   address: string;
@@ -32,7 +33,6 @@ class HomePage extends React.Component<{}, HomePageState> {
   quillRef: any;
   wordCount = 0;
   refresh: any;
-  newPosts: any;
 
   constructor(props: {}) {
     super(props);
@@ -43,6 +43,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       alert: '',
       message: '',
       loading: true,
+      loadNextPage: false,
       range: 'everyone',
       isLoggedIn: '',
       address: '',
@@ -54,6 +55,7 @@ class HomePage extends React.Component<{}, HomePageState> {
     this.onRangeChange = this.onRangeChange.bind(this);
     this.onQuestionYes = this.onQuestionYes.bind(this);
     this.onQuestionNo = this.onQuestionNo.bind(this);
+    this.atBottom = this.atBottom.bind(this);
 
     subscribe('wallet-events', () => {
       this.forceUpdate();
@@ -62,16 +64,28 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   componentDidMount() {
     this.start();
+    window.addEventListener('scroll', this.atBottom);
   }
 
   componentWillUnmount(): void {
-    Server.service.addPositionToCache(window.pageYOffset);
     clearInterval(this.refresh);
+    window.removeEventListener('scroll', this.atBottom);
+    Server.service.addPositionToCache(window.pageYOffset);
   }
 
   onContentChange(length: number) {
     this.wordCount = length;
   };
+
+  atBottom() {
+    const scrollHeight = document.documentElement.scrollHeight;
+    const scrollTop = document.documentElement.scrollTop;
+    const clientHeight = document.documentElement.clientHeight;
+
+    if (scrollTop + clientHeight + 300 >= scrollHeight)
+      if (!this.state.loading && !this.state.loadNextPage)
+        this.nextPage();
+  }
 
   onRangeChange(e: React.FormEvent<HTMLSelectElement>) {
     const element = e.target as HTMLSelectElement;
@@ -86,7 +100,9 @@ class HomePage extends React.Component<{}, HomePageState> {
     if (nickname) this.setState({ nickname });
 
     await this.getPosts();
-    this.refresh = setInterval(() => this.refreshPosts(), 10000); // 10 seconds
+
+    // check the new post every 10 seconds.
+    this.refresh = setInterval(() => this.refreshPosts(), 10000);
   }
 
   async connectWallet() {
@@ -109,7 +125,7 @@ class HomePage extends React.Component<{}, HomePageState> {
         process = await spawnProcess();
         console.log("Spawn --> processId:", process)
       }
-       
+
       // load lua into the process
       let messageId = await evaluate(process, LUA);
       console.log("evaluate -->", messageId)
@@ -173,23 +189,27 @@ class HomePage extends React.Component<{}, HomePageState> {
   }
 
   async refreshPosts() {
-    this.newPosts = await getDataFromAO(AO_TWITTER, 'GetPosts');
     let posts_amt = localStorage.getItem('posts_amt');
-    let newPosts = this.newPosts.length - Number(posts_amt);
-    console.log("newPosts amt:", newPosts)
-    if (newPosts > 0)
-      this.setState({ newPosts });
+    if (posts_amt) {
+      let posts = await getDataFromAO(AO_TWITTER, 'GetPosts');
+      let newPosts = posts.length - Number(posts_amt);
+      localStorage.setItem('posts_amt', posts.length.toString());
+      console.log("newPosts amt:", newPosts)
+      if (newPosts > 0)
+        this.setState({ newPosts });
+    }
   }
 
-  showNewPosts() {
-    let posts = this.parsePosts(this.newPosts);
-    this.setState({ posts: [] });
+  async showNewPosts() {
+    let posts = await getDataFromAO(AO_TWITTER, 'GetPosts', 1, this.state.newPosts.toString());
+    let final = this.parsePosts(posts);
+    let total = final.concat(this.state.posts);
+    // this.setState({ posts: [] });
 
     setTimeout(() => {
       window.scrollTo(0, 0);
-      this.setState({ posts, newPosts: 0 });
-      Server.service.addPostsToCache(posts);
-      localStorage.setItem('posts_amt', posts.length.toString());
+      this.setState({ posts: total, newPosts: 0 });
+      Server.service.addPostsToCache(total);
     }, 10);
   }
 
@@ -201,7 +221,6 @@ class HomePage extends React.Component<{}, HomePageState> {
         data = JSON.parse(posts[i]);
         Server.service.addPostToCache(data);
       } catch (error) {
-        // console.log(error)
         continue;
       }
 
@@ -215,10 +234,11 @@ class HomePage extends React.Component<{}, HomePageState> {
     let posts = Server.service.getPostsFromCache();
     let position = Server.service.getPositionFromCache();
 
-    // console.log("cached posts:", posts)
+    // let pageNo = Server.service.getPageNo();
+    // console.log('this.pageNo', pageNo)
 
     if (!posts || new_post) {
-      posts = await getDataFromAO(AO_TWITTER, 'GetPosts');
+      posts = await getDataFromAO(AO_TWITTER, 'GetPosts', 1, PAGE_SIZE);
       if (!posts) {
         this.setState({ loading: false });
         return;
@@ -227,8 +247,6 @@ class HomePage extends React.Component<{}, HomePageState> {
       let final = this.parsePosts(posts);
       this.setState({ posts: final, loading: false });
       Server.service.addPostsToCache(final);
-      localStorage.setItem('posts_amt', final.length.toString());
-      console.log("caching posts done")
 
       setTimeout(() => {
         this.renderNumOfReplies();
@@ -243,20 +261,44 @@ class HomePage extends React.Component<{}, HomePageState> {
     }, 10);
   }
 
+  async nextPage() {
+    this.setState({ loadNextPage: true });
+
+    let pageNo = Server.service.getPageNo();
+    pageNo += 1;
+    Server.service.setPageNo(pageNo);
+    console.log("pageNo:", pageNo)
+
+    let posts = await getDataFromAO(AO_TWITTER, 'GetPosts', pageNo, PAGE_SIZE);
+    if (!posts) {
+      this.setState({ loading: false });
+      return;
+    }
+
+    let final = this.parsePosts(posts);
+    let total = this.state.posts.concat(final);
+    Server.service.addPostsToCache(total);
+    this.setState({ posts: total, loadNextPage: false });
+
+    setTimeout(() => {
+      this.renderNumOfReplies();
+    }, 500);
+  }
+
   async renderNumOfReplies() {
     // to check the state of bookmark
     try {
       let process = await getDefaultProcess(this.state.address);
       let bookmarks = await getDataFromAO(process, 'AOTwitter.getBookmarks');
-  
+
       let posts = this.state.posts;
       for (let i = 0; i < posts.length; i++) {
         let num = await getNumOfReplies(posts[i].id);
         posts[i].replies = num;
-        
+
         let resp = isBookmarked(bookmarks, posts[i].id);
         posts[i].isBookmarked = resp;
-  
+
         this.setState({ posts });
       }
     } catch (error) {
@@ -266,10 +308,13 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   renderPosts() {
     if (this.state.loading)
-      return (<div>Loading...</div>);
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div id="loading" />
+        </div>
+      );
 
     let divs = [];
-    // for (let i = this.state.posts.length - 1; i >= 0; i--) {
     for (let i = 0; i < this.state.posts.length; i++) {
       divs.push(
         <ActivityPost
@@ -308,7 +353,7 @@ class HomePage extends React.Component<{}, HomePageState> {
     if (!nickname) nickname = 'anonymous';
     let time = timeOfNow();
     let postId = uuid();
-    
+
     let data = {
       id: postId, address, nickname, post, range: this.state.range,
       likes: '0', replies: '0', coins: '0', time
@@ -318,8 +363,9 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     if (response) {
       this.quillRef.setText('');
-      this.setState({ message: '', alert: 'Post successful.', posts: [], loading: true });
-      this.getPosts(true);
+      this.setState({ message: '', alert: 'Post successful.' });
+      // this.setState({ message: '', alert: 'Post successful.', posts: [], loading: true });
+      // this.getPosts(true);
 
       // This code store the post id. 
       // When loading huge data is very slow, 
@@ -378,7 +424,6 @@ class HomePage extends React.Component<{}, HomePageState> {
                 <option value="private">Private</option>
               </select>
 
-              {/* <button onClick={() => this.onPost()}>Post</button> */}
               <div className="app-post-button story post reply" onClick={() => this.onPost()}>
                 <BsSend size={20} />
                 <div>Post</div>
@@ -394,6 +439,12 @@ class HomePage extends React.Component<{}, HomePageState> {
         {this.state.newPosts > 0 &&
           <div className='home-page-tip-new-posts' onClick={() => this.showNewPosts()}>
             {this.state.newPosts}&nbsp;&nbsp;New Posts
+          </div>
+        }
+
+        {this.state.loadNextPage &&
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <div id="loading" />
           </div>
         }
 

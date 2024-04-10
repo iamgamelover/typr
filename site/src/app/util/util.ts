@@ -1,5 +1,5 @@
 import { createDataItemSigner, dryrun, message, spawn } from "@permaweb/aoconnect/browser";
-import { AO_TWITTER, MODULE, SCHEDULER } from "./consts";
+import { AO_TWITTER, ARWEAVE_GATEWAY, MODULE, SCHEDULER } from "./consts";
 
 declare var window: any;
 
@@ -428,17 +428,26 @@ export async function messageToAO(process: string, data: any, action: string) {
   }
 }
 
-export async function getDataFromAO(process: string, action: string) {
+export async function getDataFromAO(process: string, action: string, pageNo?: number, pageSize?: string) {
   let start = performance.now();
   // console.log('==> [getDataFromAO]');
+
+  let valPN = '', valPS = '';
+  if (pageNo) valPN = pageNo.toString();
+  if (pageSize) valPS = pageSize;
 
   let result;
   try {
     result = await dryrun({
       process: process,
-      tags: [{ name: 'Action', value: action }],
+      tags: [
+        { name: 'Action', value: action },
+        { name: 'pageNo', value: valPN },
+        { name: 'pageSize', value: valPS }
+      ],
     });
   } catch (error) {
+    console.log(error)
     return '';
   }
 
@@ -583,4 +592,11 @@ export async function getProcessFromOwner(owner: string) {
     console.log("ERR:", error);
     return { success: false, message: 'getProcessFromOwner failed.' };
   }
+}
+
+export async function downloadFromArweave(txid: string) {
+  let url  = ARWEAVE_GATEWAY + txid;
+  let resp = await fetch(url);
+  let data = await resp.json();
+  return data;
 }
