@@ -463,7 +463,11 @@ export async function getDataFromAO(
   // console.log('action', action);
   // console.log('result', result);
 
-  if (result.Messages.length == 0) return '';
+  try {
+    if (result.Messages.length == 0) return '';
+  } catch (error) {
+    return '';
+  }
 
   let data = result.Messages[0].Data;
   let final = data.split("▲");

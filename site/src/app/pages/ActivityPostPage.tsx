@@ -129,7 +129,10 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
 
   async getReplies(postId: string) {
     let replies = await getDataFromAO(AO_TWITTER, 'GetReplies', null, null, postId);
-    this.setState({ replies, loading_reply: false });
+    this.setState({
+      replies: replies ? replies : [],
+      loading_reply: false
+    });
   }
 
   async onReply() {
@@ -160,8 +163,8 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
 
     if (response) {
       this.quillRef.setText('');
-      this.state.replies.push(data);
       this.state.post.replies += 1;
+      this.state.replies.push(JSON.stringify(data));
       this.setState({ message: '', replies: this.state.replies, post: this.state.post });
 
       // update the amount of replies
