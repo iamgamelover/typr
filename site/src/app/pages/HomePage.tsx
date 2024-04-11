@@ -4,7 +4,7 @@ import { publish, subscribe } from '../util/event';
 import { dryrun } from "@permaweb/aoconnect";
 import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
-import { checkContent, connectWallet, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, getDefaultProcess, spawnProcess, evaluate, isBookmarked, downloadFromArweave } from '../util/util';
+import { checkContent, connectWallet, getDataFromAO, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, getDefaultProcess, spawnProcess, evaluate, isBookmarked, downloadFromArweave } from '../util/util';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
 import { AO_TWITTER, LUA, PAGE_SIZE, TIP_IMG } from '../util/consts';
@@ -234,9 +234,6 @@ class HomePage extends React.Component<{}, HomePageState> {
     let posts = Server.service.getPostsFromCache();
     let position = Server.service.getPositionFromCache();
 
-    // let pageNo = Server.service.getPageNo();
-    // console.log('this.pageNo', pageNo)
-
     if (!posts || new_post) {
       posts = await getDataFromAO(AO_TWITTER, 'GetPosts', 1, PAGE_SIZE);
       if (!posts) {
@@ -247,11 +244,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       let final = this.parsePosts(posts);
       this.setState({ posts: final, loading: false });
       Server.service.addPostsToCache(final);
-
-      setTimeout(() => {
-        this.renderNumOfReplies();
-      }, 500);
-
+      this.checkBookmarks();
       return;
     }
 
@@ -279,26 +272,18 @@ class HomePage extends React.Component<{}, HomePageState> {
     let total = this.state.posts.concat(final);
     Server.service.addPostsToCache(total);
     this.setState({ posts: total, loadNextPage: false });
-
-    setTimeout(() => {
-      this.renderNumOfReplies();
-    }, 500);
+    this.checkBookmarks();
   }
 
-  async renderNumOfReplies() {
-    // to check the state of bookmark
+  async checkBookmarks() {
     try {
       let process = await getDefaultProcess(this.state.address);
       let bookmarks = await getDataFromAO(process, 'AOTwitter.getBookmarks');
 
       let posts = this.state.posts;
       for (let i = 0; i < posts.length; i++) {
-        let num = await getNumOfReplies(posts[i].id);
-        posts[i].replies = num;
-
         let resp = isBookmarked(bookmarks, posts[i].id);
         posts[i].isBookmarked = resp;
-
         this.setState({ posts });
       }
     } catch (error) {
@@ -354,22 +339,24 @@ class HomePage extends React.Component<{}, HomePageState> {
     let time = timeOfNow();
     let postId = uuid();
 
+    // let data = {
+    //   id: postId, address, nickname, post, range: this.state.range,
+    //   likes: '0', replies: '0', coins: '0', time
+    // };
+
     let data = {
       id: postId, address, nickname, post, range: this.state.range,
-      likes: '0', replies: '0', coins: '0', time
+      likes: 0, replies: 0, coins: 0, time
     };
 
     let response = await messageToAO(AO_TWITTER, data, 'SendPost');
 
     if (response) {
       this.quillRef.setText('');
-      this.setState({ message: '', alert: 'Post successful.' });
-      // this.setState({ message: '', alert: 'Post successful.', posts: [], loading: true });
-      // this.getPosts(true);
+      this.setState({ message: '', alert: 'Post successful.', posts: [], loading: true });
+      this.getPosts(true);
 
       // This code store the post id. 
-      // When loading huge data is very slow, 
-      // just load post id and download content of a post from arweave.
       let data = { address, postId, txid: response, time };
       messageToAO(AO_TWITTER, data, 'SendPostID');
     }

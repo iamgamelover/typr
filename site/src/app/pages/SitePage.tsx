@@ -50,10 +50,6 @@ class SitePage extends React.Component<{}, SitePageState> {
     // console.log("addr from posts --> amount:", resp.length)
     this.setState({ members: resp.length });
 
-    // will use this to get the amount of posts in the future.
-    // let postIDs = await getDataFromAO('GetPostIDs');
-    // console.log("another way for posts amount:", postIDs.length)
-
     let replies = await getDataFromAO(AO_TWITTER, 'GetReplies');
     // console.log("replies amount:", replies.length)
     this.setState({ replies: replies.length });

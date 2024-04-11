@@ -463,25 +463,6 @@ export async function getDataFromAO(process: string, action: string, pageNo?: nu
   return final;
 }
 
-export async function getNumOfReplies(postId: string) {
-  let resp = await getDataFromAO(AO_TWITTER, 'GetReplies');
-  if (!resp || resp.length == 0) return 0;
-
-  let replies = [];
-  for (let i = 0; i < resp.length; i++) {
-    let data;
-    try {
-      data = JSON.parse(resp[i]);
-      if (data.postId == postId) replies.push(data);
-    } catch (error) {
-      // console.log(error)
-      continue;
-    }
-  }
-
-  return replies.length;
-}
-
 // check the state of bookmark
 export function isBookmarked(bookmarks: any, id: string) {
   for (let i = 0; i < bookmarks.length; i++) {

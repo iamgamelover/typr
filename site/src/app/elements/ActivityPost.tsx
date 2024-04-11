@@ -31,7 +31,7 @@ interface ActivityPostState {
   avatar: string;
   nickname: string;
   address: string;
-  // isBookmarked: boolean;
+  isBookmarked: boolean;
 }
 
 class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState> {
@@ -61,7 +61,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       avatar: '',
       nickname: '',
       address: '',
-      // isBookmarked: false
+      isBookmarked: false
     };
 
     this.onClose = this.onClose.bind(this);
@@ -94,7 +94,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   async start() {
     // for testing
-    // this.setState({ isBookmarked: this.props.data.isBookmarked });
+    this.setState({ isBookmarked: this.props.data.isBookmarked });
 
     let address = await getWalletAddress();
     this.setState({ address });
@@ -167,7 +167,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   async onBookmark(e: any) {
     e.stopPropagation();
-    // this.setState({ isBookmarked: true });
+    this.setState({ isBookmarked: true });
 
     let process = await getDefaultProcess(Server.service.getActiveAddress());
     let resp = await messageToAO(
@@ -175,6 +175,10 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       { data: this.props.data },
       'AOTwitter.setBookmark'
     );
+
+    // testing
+    this.props.data.isBookmarked = true;
+    Server.service.addPostToCache(this.props.data);
   }
 
   goProfilePage(e: any, id: string) {
@@ -208,7 +212,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
               <BsChat />
             </div>
             <div className='activity-post-action-number'>
-              {numberWithCommas(Number(data.replies))}
+              {numberWithCommas(data.replies)}
             </div>
           </div>
         }
@@ -218,7 +222,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
             <BsHeart />
           </div>
           <div className='activity-post-action-number'>
-            {numberWithCommas(Number(data.likes))}
+            {numberWithCommas(data.likes)}
           </div>
         </div>
 
@@ -227,14 +231,14 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
             <BsCoin />
           </div>
           <div className='activity-post-action-number'>
-            {numberWithCommas(Number(data.coins))}
+            {numberWithCommas(data.coins)}
           </div>
         </div>
 
         {Server.service.getIsLoggedIn() && !this.props.isReply &&
           <div className='activity-post-action'>
             <div className='activity-post-action-icon'>
-              {data.isBookmarked
+              {data.isBookmarked || this.state.isBookmarked
                 ?
                 <BsBookmarkFill
                   data-tooltip-id="my-tooltip"

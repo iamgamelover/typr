@@ -7,7 +7,7 @@ import MessageModal from '../modals/MessageModal';
 import AlertModal from '../modals/AlertModal';
 import { BsFillArrowLeftCircleFill, BsPlugin, BsReply } from 'react-icons/bs';
 import { subscribe } from '../util/event';
-import { checkContent, getDataFromAO, getNumOfReplies, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, getDefaultProcess, isBookmarked } from '../util/util';
+import { checkContent, getDataFromAO, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, getDefaultProcess, isBookmarked } from '../util/util';
 import { AO_TWITTER, TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
 import { AiOutlineFire } from "react-icons/ai";
@@ -88,8 +88,6 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
         this.setState({ alert: 'Post not found.' });
         return;
       }
-
-      post.replies = await getNumOfReplies(post.id);
     }
 
     this.setState({ post, loading: false });
@@ -178,14 +176,18 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     let nickname = localStorage.getItem('nickname');
     if (!nickname) nickname = 'anonymous';
 
-    let data = { id: uuid(), postId: this.state.post.id, address, nickname, post, likes: '0', replies: '0', coins: '0', time: timeOfNow() };
+    let data = { id: uuid(), postId: this.postId, address, nickname, post, 
+      likes: 0, replies: 0, coins: 0, time: timeOfNow() };
     let response = await messageToAO(AO_TWITTER, data, 'SendReply');
 
     if (response) {
       this.quillRef.setText('');
-      // this.setState({ message: '', alert: 'Reply successful.' });
-      this.setState({ message: '' });
-      this.getReplies(this.state.post.id);
+      this.state.replies.push(data);
+      this.state.post.replies += 1;
+      this.setState({ message: '', replies: this.state.replies, post: this.state.post });
+
+      // update the amount of replies
+      messageToAO(AO_TWITTER, this.postId, 'UpdateReply');
     }
     else
       this.setState({ message: '', alert: TIP_IMG })
@@ -197,7 +199,11 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
 
   renderReplies() {
     if (this.state.loading_reply)
-      return (<div>Loading...</div>);
+      return (
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <div id="loading" />
+        </div>
+      );
 
     let divs = [];
     let replies = this.state.replies;
@@ -242,7 +248,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
           </div>
         }
 
-        {!this.state.loading && this.state.isLoggedIn &&
+        {!this.state.loading && this.state.isLoggedIn && !this.state.loading_reply &&
           <div className="activity-post-page-reply-container">
             <SharedQuillEditor
               placeholder='Enter reply...'
