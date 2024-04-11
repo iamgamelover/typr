@@ -121,39 +121,14 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
   }
 
   async getPostById(id: string) {
-    let resp = await getDataFromAO(AO_TWITTER, 'GetPosts');
-    if (!resp) this.setState({ loading: false });
-
-    for (let i = 0; i < resp.length; i++) {
-      let data;
-      try {
-        data = JSON.parse(resp[i]);
-        Server.service.addPostToCache(data);
-        if (data.id == id) return data;
-      } catch (error) {
-        // console.log(error)
-        continue;
-      }
-    }
+    let resp = await getDataFromAO(AO_TWITTER, 'GetPosts', null, null, id);
+    let data = JSON.parse(resp[0]);
+    Server.service.addPostToCache(data);
+    return data;
   }
 
   async getReplies(postId: string) {
-    let resp = await getDataFromAO(AO_TWITTER, 'GetReplies');
-    if (!resp) this.setState({ loading: false, loading_reply: false });
-
-    let replies = [];
-    for (let i = 0; i < resp.length; i++) {
-      let data;
-      try {
-        data = JSON.parse(resp[i]);
-        // HomePage.service.addPostToCache(data);
-        if (data.postId == postId) replies.push(data);
-      } catch (error) {
-        // console.log(error)
-        continue;
-      }
-    }
-
+    let replies = await getDataFromAO(AO_TWITTER, 'GetReplies', null, null, postId);
     this.setState({ replies, loading_reply: false });
   }
 
@@ -176,8 +151,11 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     let nickname = localStorage.getItem('nickname');
     if (!nickname) nickname = 'anonymous';
 
-    let data = { id: uuid(), postId: this.postId, address, nickname, post, 
-      likes: 0, replies: 0, coins: 0, time: timeOfNow() };
+    let data = {
+      id: uuid(), postId: this.postId, address, nickname, post,
+      likes: 0, replies: 0, coins: 0, time: timeOfNow()
+    };
+
     let response = await messageToAO(AO_TWITTER, data, 'SendReply');
 
     if (response) {
@@ -209,10 +187,15 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     let replies = this.state.replies;
 
     for (let i = replies.length - 1; i >= 0; i--)
-      divs.push(<ActivityPost key={i} data={replies[i]} isReply={true} />)
+      divs.push(
+        <ActivityPost
+          key={i}
+          data={JSON.parse(replies[i])}
+          isReply={true}
+        />
+      )
 
     return divs;
-    // return divs.length > 0 ? divs : <div>No post yet.</div>
   }
 
   onBack() {

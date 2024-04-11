@@ -428,13 +428,21 @@ export async function messageToAO(process: string, data: any, action: string) {
   }
 }
 
-export async function getDataFromAO(process: string, action: string, pageNo?: number, pageSize?: string) {
+export async function getDataFromAO(
+  process: string,
+  action: string,
+  pageNo?: number,
+  pageSize?: string,
+  postId?: string,
+) {
+
   let start = performance.now();
   // console.log('==> [getDataFromAO]');
 
-  let valPN = '', valPS = '';
+  let valPN = '', valPS = '', valPID = '';
   if (pageNo) valPN = pageNo.toString();
   if (pageSize) valPS = pageSize;
+  if (postId) valPID = postId;
 
   let result;
   try {
@@ -443,13 +451,17 @@ export async function getDataFromAO(process: string, action: string, pageNo?: nu
       tags: [
         { name: 'Action', value: action },
         { name: 'pageNo', value: valPN },
-        { name: 'pageSize', value: valPS }
+        { name: 'pageSize', value: valPS },
+        { name: 'postId', value: valPID },
       ],
     });
   } catch (error) {
-    console.log(error)
+    console.log('getDataFromAO --> ERR:', error)
     return '';
   }
+
+  // console.log('action', action);
+  // console.log('result', result);
 
   if (result.Messages.length == 0) return '';
 
@@ -576,7 +588,7 @@ export async function getProcessFromOwner(owner: string) {
 }
 
 export async function downloadFromArweave(txid: string) {
-  let url  = ARWEAVE_GATEWAY + txid;
+  let url = ARWEAVE_GATEWAY + txid;
   let resp = await fetch(url);
   let data = await resp.json();
   return data;
