@@ -137,6 +137,12 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
     // console.log("data:", data)
 
     let process = await getDefaultProcess(Server.service.getActiveAddress());
+    console.log("Your default process:", process)
+    if (!process) {
+      this.setState({ alert: 'You have not a default process, try to disconnect and reconnect to ArConnect wallet. Then you would get a process right now.' })
+      return;
+    }
+
     let response = await messageToAO(process, data, 'AOTwitter.setProfile');
 
     if (response) {

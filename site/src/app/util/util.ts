@@ -526,10 +526,8 @@ export async function isLoggedIn() {
 export async function getDefaultProcess(address: string) {
   let resp = await getProcessFromOwner(address);
   if (resp.success) {
-    // console.log("default process:", resp.process)
     return resp.process;
   } else {
-    console.log("err:", resp.message)
     return '';
   }
 }
