@@ -12,6 +12,7 @@ import { AO_TWITTER, TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
 import { AiOutlineFire } from "react-icons/ai";
 import QuestionModal from '../modals/QuestionModal';
+import Loading from '../elements/Loading';
 
 interface ActivityPostPageState {
   post: any;
@@ -73,6 +74,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
   }
 
   async start() {
+    window.scrollTo(0, 0);
     let address = await isLoggedIn();
     this.setState({ isLoggedIn: address, address });
     this.getPost();
@@ -179,12 +181,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
   }
 
   renderReplies() {
-    if (this.state.loading_reply)
-      return (
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <div id="loading" />
-        </div>
-      );
+    if (this.state.loading_reply) return (<Loading />);
 
     let divs = [];
     let replies = this.state.replies;

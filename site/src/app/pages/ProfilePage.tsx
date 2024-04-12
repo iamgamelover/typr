@@ -4,18 +4,24 @@ import AlertModal from '../modals/AlertModal';
 import EditProfileModal from '../modals/EditProfileModal';
 import MessageModal from '../modals/MessageModal';
 import QuestionModal from '../modals/QuestionModal';
-import { getBannerImage, getDataFromAO, getDefaultProcess, isLoggedIn } from '../util/util';
+import { getBannerImage, getDataFromAO, getDefaultProcess, isLoggedIn, parsePosts } from '../util/util';
 import { BsCalendarWeek, BsPencilFill } from 'react-icons/bs';
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
-import { AO_TWITTER } from '../util/consts';
+import { AO_TWITTER, PAGE_SIZE } from '../util/consts';
 import { Server } from '../../server/server';
+import Loading from '../elements/Loading';
+import ActivityPost from '../elements/ActivityPost';
+import { subscribe } from '../util/event';
+
+declare var window: any;
 
 interface ProfilePageState {
   question: string;
   alert: string;
   message: string;
   loading: boolean;
+  loadNextPage: boolean;
   isLoggedIn: string;
   address: string;
   openEditProfile: boolean;
@@ -24,6 +30,8 @@ interface ProfilePageState {
   avatar: string;
   bio: string;
   joined: string;
+  posts: any;
+  isAll: boolean;
 }
 
 class ProfilePage extends React.Component<{}, ProfilePageState> {
@@ -37,6 +45,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
       alert: '',
       message: '',
       loading: true,
+      loadNextPage: false,
       isLoggedIn: '',
       address: '',
       openEditProfile: false,
@@ -45,42 +54,120 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
       avatar: '',
       bio: '',
       joined: '',
+      posts: '',
+      isAll: false
     };
 
     this.openEditProfile = this.openEditProfile.bind(this);
     this.onCloseEditProfile = this.onCloseEditProfile.bind(this);
+    this.atBottom = this.atBottom.bind(this);
+    this.onPopState = this.onPopState.bind(this);
     // this.onQuestionYes = this.onQuestionYes.bind(this);
     // this.onQuestionNo = this.onQuestionNo.bind(this);
+
+    // subscribe('profile', () => {
+    //   this.forceUpdate();
+    //   this.start();
+    // });
   }
 
   componentDidMount() {
     this.start();
+    window.addEventListener('scroll', this.atBottom);
+    window.addEventListener('popstate', this.onPopState);
+  }
+
+  componentWillUnmount(): void {
+    // clearInterval(this.refresh);
+    window.removeEventListener('scroll', this.atBottom);
+    window.removeEventListener('popstate', this.onPopState);
+    Server.service.addPositionInProfileToCache(window.pageYOffset);
+  }
+
+  atBottom() {
+    const scrollHeight = document.documentElement.scrollHeight;
+    const scrollTop = document.documentElement.scrollTop;
+    const clientHeight = document.documentElement.clientHeight;
+
+    if (scrollTop + clientHeight + 300 >= scrollHeight)
+      if (!this.state.loading && !this.state.loadNextPage && !this.state.isAll)
+        this.nextPage();
+  }
+
+  onPopState(event: any) {
+    this.start();
   }
 
   async start() {
+    // let id = window.location.pathname.substring(6);
+    // console.log("id:", id)
+
     this.setState({ banner: '/banner-default.png' });
 
-    setTimeout(async () => {
-      let address = await isLoggedIn();
-      this.setState({ isLoggedIn: address, address });
-      this.getDateOfJoined(address);
-  
-      let profile = JSON.parse(localStorage.getItem('profile'));
-      if (profile) {
-        this.setState({
-          banner: profile.banner,
-          avatar: profile.avatar,
-          nickname: profile.nickname,
-          bio: profile.bio,
-          loading: false
-        });
-      }
-      else {
-        // the avatar from dicebear.com
-        this.createAvatar();
-        this.getProfile(address);
-      }
+    let address = await isLoggedIn();
+    this.setState({ isLoggedIn: address, address });
+    this.getDateOfJoined(address);
+    this.getPosts(address);
+
+    let profile = JSON.parse(localStorage.getItem('profile'));
+    if (profile) {
+      this.setState({
+        banner: profile.banner,
+        avatar: profile.avatar,
+        nickname: profile.nickname,
+        bio: profile.bio,
+      });
+    }
+    else {
+      // the avatar from dicebear.com
+      this.createAvatar();
+      this.getProfile(address);
+    }
+  }
+
+  async getPosts(address: string) {
+    let posts = Server.service.getPostsInProfileFromCache(address);
+    let position = Server.service.getPositionInProfileFromCache();
+
+    if (!posts) {
+      posts = await getDataFromAO(AO_TWITTER, 'GetOwnerPosts', 1, PAGE_SIZE, null, address);
+
+      if (posts.length < PAGE_SIZE)
+        this.setState({ isAll: true })
+
+      let final = parsePosts(posts);
+      this.setState({ posts: final, loading: false });
+      Server.service.addPostsInProfileToCache(address, final);
+      // this.checkBookmarks();
+      return;
+    }
+
+    this.setState({ posts, loading: false });
+
+    setTimeout(() => {
+      window.scrollTo(0, position);
     }, 10);
+  }
+
+  async nextPage() {
+    this.setState({ loadNextPage: true });
+
+    let pageNo = Server.service.getPageNoInProfile();
+    pageNo += 1;
+    Server.service.setPageNoInProfile(pageNo);
+    console.log("setPageNoInProfile:", pageNo)
+
+    let posts = await getDataFromAO(AO_TWITTER, 'GetOwnerPosts', pageNo, PAGE_SIZE, null, this.state.address);
+    console.log("nextPage posts:", posts.length)
+
+    if (posts.length < PAGE_SIZE)
+      this.setState({ isAll: true })
+
+    let final = parsePosts(posts);
+    let total = this.state.posts.concat(final);
+    Server.service.addPostsInProfileToCache(this.state.address, total);
+    this.setState({ posts: total, loadNextPage: false });
+    // this.checkBookmarks();
   }
 
   // load profile from the process of user's
@@ -106,7 +193,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     }
 
     localStorage.setItem('profile', JSON.stringify(profile));
-    this.setState({ loading: false });
+    // this.setState({ loading: false });
   }
 
   async getDateOfJoined(address: string) {
@@ -176,7 +263,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
 
   renderFilters() {
-    let filters = ['Posts', 'Likes'];
+    let filters = ['Posts'];
 
     let divs = [];
     for (let i = 0; i < filters.length; i++) {
@@ -193,6 +280,21 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     return divs;
   }
 
+  renderPosts() {
+    if (this.state.loading) return (<Loading />);
+
+    let divs = [];
+    for (let i = 0; i < this.state.posts.length; i++)
+      divs.push(
+        <ActivityPost
+          key={i}
+          data={this.state.posts[i]}
+        />
+      )
+
+    return divs;
+  }
+
   render() {
     let joined = new Date(Number(this.state.joined) * 1000).toLocaleString();
     // let bannerImage = getBannerImage('');
@@ -203,34 +305,36 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
 
     return (
       <div className='profile-page'>
-        <div className='profile-page-container'>
-          {this.state.loading && <div id="loading" />}
-
-          <div className='profile-page-header'>
-            <img className="profile-page-banner" src={this.state.banner} />
-            <img className="profile-page-portrait" src={this.state.avatar} />
-          </div>
-
-          {this.renderActionButtons()}
-
-          {/* <div className="profile-page-name">{localStorage.getItem('nickname')}</div> */}
-          <div className="profile-page-name">{this.state.nickname}</div>
-          <div className="profile-page-id">{shortId}</div>
-          <div className="profile-page-desc">{this.state.bio}</div>
-          <div className='profile-page-joined-container'>
-            <BsCalendarWeek />
-            <div className='profile-page-joined'>Joined {joined}</div>
-          </div>
-
-          {/* <div className='profile-page-social-container'>
-            <div className='profile-page-social-header'>
-              <div style={{ display: 'flex' }}>{this.renderFilters()}</div>
-            </div>
-          </div> */}
+        <div className='profile-page-header'>
+          <img className="profile-page-banner" src={this.state.banner} />
+          <img className="profile-page-portrait" src={this.state.avatar} />
         </div>
+
+        {this.renderActionButtons()}
+
+        <div className="profile-page-name">{this.state.nickname}</div>
+        <div className="profile-page-id">{shortId}</div>
+        <div className="profile-page-desc">{this.state.bio}</div>
+        <div className='profile-page-joined-container'>
+          <BsCalendarWeek />
+          <div className='profile-page-joined'>Joined {joined}</div>
+        </div>
+
+        <div className='profile-page-filter-container'>
+          {this.renderFilters()}
+        </div>
+
+        {this.renderPosts()}
 
         {!this.state.loading &&
           <EditProfileModal open={this.state.openEditProfile} onClose={this.onCloseEditProfile} />
+        }
+
+        {this.state.loadNextPage && <Loading />}
+        {this.state.isAll &&
+          <div style={{ marginTop: '20px', fontSize: '18px', color: 'gray' }}>
+            No more post.
+          </div>
         }
 
         <MessageModal message={this.state.message} />

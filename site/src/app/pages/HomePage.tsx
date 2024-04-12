@@ -4,13 +4,14 @@ import { publish, subscribe } from '../util/event';
 import { dryrun } from "@permaweb/aoconnect";
 import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
-import { checkContent, connectWallet, getDataFromAO, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, getDefaultProcess, spawnProcess, evaluate, isBookmarked, downloadFromArweave } from '../util/util';
+import { checkContent, connectWallet, getDataFromAO, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, getDefaultProcess, spawnProcess, evaluate, isBookmarked, downloadFromArweave, parsePosts } from '../util/util';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
 import { AO_TWITTER, LUA, PAGE_SIZE, TIP_IMG } from '../util/consts';
 import QuestionModal from '../modals/QuestionModal';
 import { Server } from '../../server/server';
 import { BsSend } from 'react-icons/bs';
+import Loading from '../elements/Loading';
 
 declare var window: any;
 
@@ -202,7 +203,7 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   async showNewPosts() {
     let posts = await getDataFromAO(AO_TWITTER, 'GetPosts', 1, this.state.newPosts.toString());
-    let final = this.parsePosts(posts);
+    let final = parsePosts(posts);
     let total = final.concat(this.state.posts);
     this.setState({ posts: [] });
 
@@ -211,23 +212,6 @@ class HomePage extends React.Component<{}, HomePageState> {
       this.setState({ posts: total, newPosts: 0 });
       Server.service.addPostsToCache(total);
     }, 10);
-  }
-
-  parsePosts(posts: any) {
-    let result = [];
-    for (let i = posts.length - 1; i >= 0; i--) {
-      let data;
-      try {
-        data = JSON.parse(posts[i]);
-        Server.service.addPostToCache(data);
-      } catch (error) {
-        continue;
-      }
-
-      result.push(data)
-    }
-
-    return result;
   }
 
   async getPosts(new_post?: boolean) {
@@ -241,7 +225,7 @@ class HomePage extends React.Component<{}, HomePageState> {
         return;
       }
 
-      let final = this.parsePosts(posts);
+      let final = parsePosts(posts);
       this.setState({ posts: final, loading: false });
       Server.service.addPostsToCache(final);
       this.checkBookmarks();
@@ -268,7 +252,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       return;
     }
 
-    let final = this.parsePosts(posts);
+    let final = parsePosts(posts);
     let total = this.state.posts.concat(final);
     Server.service.addPostsToCache(total);
     this.setState({ posts: total, loadNextPage: false });
@@ -292,12 +276,7 @@ class HomePage extends React.Component<{}, HomePageState> {
   }
 
   renderPosts() {
-    if (this.state.loading)
-      return (
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
-          <div id="loading" />
-        </div>
-      );
+    if (this.state.loading) return (<Loading />);
 
     let divs = [];
     for (let i = 0; i < this.state.posts.length; i++) {
@@ -429,12 +408,7 @@ class HomePage extends React.Component<{}, HomePageState> {
           </div>
         }
 
-        {this.state.loadNextPage &&
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <div id="loading" />
-          </div>
-        }
-
+        {this.state.loadNextPage && <Loading />}
         <MessageModal message={this.state.message} />
         <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />
         <QuestionModal message={this.state.question} onYes={this.onQuestionYes} onNo={this.onQuestionNo} />

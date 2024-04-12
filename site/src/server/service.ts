@@ -1,14 +1,18 @@
 export class Service {
   protected posts:any;
+  protected postsInProfile:any;
   protected post:any;
   protected position:number;
+  protected positionInProfile:number;
   protected pageNo:number = 1;
+  protected pageNoInProfile:number = 1;
 
   protected isLoggedIn:string;
   protected activeAddress:string;
 
   constructor() {
     this.post = [];
+    this.postsInProfile = [];
   }
 
   public addPositionToCache(position:number) {
@@ -17,6 +21,14 @@ export class Service {
 
   public getPositionFromCache() {
     return this.position;
+  }
+
+  public addPositionInProfileToCache(position:number) {
+    this.positionInProfile = position;
+  }
+
+  public getPositionInProfileFromCache() {
+    return this.positionInProfile;
   }
 
   public addPostsToCache(posts:any) {
@@ -33,6 +45,14 @@ export class Service {
 
   public getPostFromCache(id:string) {
     return this.post[id];
+  }
+  
+  public addPostsInProfileToCache(id: string, posts:any) {
+    this.postsInProfile[id] = posts;
+  }
+
+  public getPostsInProfileFromCache(id:string) {
+    return this.postsInProfile[id];
   }
   
   public setIsLoggedIn(isLoggedIn:string) {
@@ -57,5 +77,13 @@ export class Service {
 
   public getPageNo() {
     return this.pageNo;
+  }
+  
+  public setPageNoInProfile(pageNo:number) {
+    this.pageNoInProfile = pageNo;
+  }
+
+  public getPageNoInProfile() {
+    return this.pageNoInProfile;
   }
 }

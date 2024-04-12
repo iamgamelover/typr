@@ -183,10 +183,10 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   goProfilePage(e: any, id: string) {
     e.stopPropagation();
-    if (window.location.pathname.indexOf('/profile/') == 0)
+    if (window.location.pathname.indexOf('/user/') == 0)
       return;
 
-    this.setState({ navigate: '/profile/' + id });
+    this.setState({ navigate: '/user/' + id });
   }
 
   goPostPage(id: string) {
@@ -291,7 +291,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           <img
             className='home-msg-portrait'
             src={owner ? avatar : this.state.avatar}
-            // onClick={(e) => this.newAvatar(e)}
+            // onClick={(e) => this.goProfilePage(e, data.address)}
             // title={owner ? 'Click to change your avatar' : ''}
           />
           <div className="home-msg-nickname">
@@ -299,7 +299,10 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           </div>
 
           <div className="home-msg-address">{address}</div>
-          <div className='home-msg-time'>&#x2022;&nbsp;&nbsp;{formatTimestamp(data.time)}</div>
+          <div className='home-msg-time'>
+            &#x2022;&nbsp;&nbsp;{formatTimestamp(data.time)}
+          </div>
+
           {this.props.isPostPage && this.props.txid &&
             <img
               className='activity-post-arweave-icon'

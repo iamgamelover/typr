@@ -1,5 +1,6 @@
 import { createDataItemSigner, dryrun, message, spawn } from "@permaweb/aoconnect/browser";
 import { AO_TWITTER, ARWEAVE_GATEWAY, MODULE, SCHEDULER } from "./consts";
+import { Server } from "../../server/server";
 
 declare var window: any;
 
@@ -434,15 +435,17 @@ export async function getDataFromAO(
   pageNo?: number,
   pageSize?: string,
   postId?: string,
+  address?: string,
 ) {
 
   let start = performance.now();
   // console.log('==> [getDataFromAO]');
 
-  let valPN = '', valPS = '', valPID = '';
+  let valPN = '', valPS = '', valPID = '', valAddress = '';
   if (pageNo) valPN = pageNo.toString();
   if (pageSize) valPS = pageSize;
   if (postId) valPID = postId;
+  if (address) valAddress = address;
 
   let result;
   try {
@@ -453,6 +456,7 @@ export async function getDataFromAO(
         { name: 'pageNo', value: valPN },
         { name: 'pageSize', value: valPS },
         { name: 'postId', value: valPID },
+        { name: 'address', value: valAddress },
       ],
     });
   } catch (error) {
@@ -594,4 +598,21 @@ export async function downloadFromArweave(txid: string) {
   let resp = await fetch(url);
   let data = await resp.json();
   return data;
+}
+
+export function parsePosts(posts: any) {
+  let result = [];
+  for (let i = posts.length - 1; i >= 0; i--) {
+    let data;
+    try {
+      data = JSON.parse(posts[i]);
+      Server.service.addPostToCache(data);
+    } catch (error) {
+      continue;
+    }
+
+    result.push(data)
+  }
+
+  return result;
 }
