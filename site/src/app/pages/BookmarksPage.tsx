@@ -58,9 +58,14 @@ class BookmarksPage extends React.Component<{}, BookmarksPageState> {
     if (this.state.loading)
       return (<div>Loading...</div>);
 
+    let bookmarks = this.state.bookmarks;
+    bookmarks.sort((a:any, b:any) => {
+      return b.timestamp - a.timestamp;
+    });
+
     let divs = [];
-    for (let i = this.state.bookmarks.length - 1; i >= 0; i--) {
-      let data = this.state.bookmarks[i];
+    for (let i = 0; i < bookmarks.length; i++) {
+      let data = bookmarks[i];
       data.isBookmarked = true;
       Server.service.addPostToCache(data);
 
