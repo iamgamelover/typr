@@ -474,6 +474,7 @@ export async function getDataFromAO(
   }
 
   let data = result.Messages[0].Data;
+  if (!data) return '';
   let final = data.split("▲");
 
   let end = performance.now();

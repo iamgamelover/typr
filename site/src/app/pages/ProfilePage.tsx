@@ -4,7 +4,7 @@ import AlertModal from '../modals/AlertModal';
 import EditProfileModal from '../modals/EditProfileModal';
 import MessageModal from '../modals/MessageModal';
 import QuestionModal from '../modals/QuestionModal';
-import { getBannerImage, getDataFromAO, getDefaultProcess, isLoggedIn, parsePosts } from '../util/util';
+import { getBannerImage, getDataFromAO, getDefaultProcess, isBookmarked, isLoggedIn, parsePosts } from '../util/util';
 import { BsCalendarWeek, BsPencilFill } from 'react-icons/bs';
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
@@ -102,10 +102,9 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     // let id = window.location.pathname.substring(6);
     // console.log("id:", id)
 
-    this.setState({ banner: '/banner-default.png' });
-
     let address = await isLoggedIn();
     this.setState({ isLoggedIn: address, address });
+
     this.getDateOfJoined(address);
     this.getPosts(address);
 
@@ -131,17 +130,14 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
 
     if (!posts) {
       posts = await getDataFromAO(AO_TWITTER, 'GetOwnerPosts', 1, PAGE_SIZE, null, address);
-
       if (posts.length < PAGE_SIZE)
         this.setState({ isAll: true })
 
-      let final = parsePosts(posts);
-      this.setState({ posts: final, loading: false });
-      Server.service.addPostsInProfileToCache(address, final);
-      // this.checkBookmarks();
+      this.checkBookmarks(parsePosts(posts));
       return;
     }
 
+    this.checkBookmarks(posts);
     this.setState({ posts, loading: false });
 
     setTimeout(() => {
@@ -155,19 +151,28 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     let pageNo = Server.service.getPageNoInProfile();
     pageNo += 1;
     Server.service.setPageNoInProfile(pageNo);
-    console.log("setPageNoInProfile:", pageNo)
 
     let posts = await getDataFromAO(AO_TWITTER, 'GetOwnerPosts', pageNo, PAGE_SIZE, null, this.state.address);
-    console.log("nextPage posts:", posts.length)
 
     if (posts.length < PAGE_SIZE)
       this.setState({ isAll: true })
 
-    let final = parsePosts(posts);
-    let total = this.state.posts.concat(final);
-    Server.service.addPostsInProfileToCache(this.state.address, total);
-    this.setState({ posts: total, loadNextPage: false });
-    // this.checkBookmarks();
+    let total = this.state.posts.concat(parsePosts(posts));
+    this.checkBookmarks(total);
+  }
+
+  async checkBookmarks(posts: any) {
+    let bookmarks = [];
+    let val = localStorage.getItem('bookmarks');
+    if (val) bookmarks = JSON.parse(val);
+
+    for (let i = 0; i < posts.length; i++) {
+      let resp = isBookmarked(bookmarks, posts[i].id);
+      posts[i].isBookmarked = resp;
+    }
+
+    this.setState({ posts, loading: false, loadNextPage: false });
+    Server.service.addPostsInProfileToCache(this.state.address, posts);
   }
 
   // load profile from the process of user's
@@ -183,7 +188,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     };
 
     if (response) {
-      profile = JSON.parse(response[response.length - 1]);
+      profile = JSON.parse(response[0]);
       this.setState({
         banner: profile.banner,
         avatar: profile.avatar,
@@ -193,7 +198,6 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     }
 
     localStorage.setItem('profile', JSON.stringify(profile));
-    // this.setState({ loading: false });
   }
 
   async getDateOfJoined(address: string) {
@@ -230,9 +234,10 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
         avatar: profile.avatar,
         nickname: profile.nickname,
         bio: profile.bio,
-        openEditProfile: false
       });
     }
+
+    this.setState({ openEditProfile: false });
   }
 
   renderActionButtons() {

@@ -28,9 +28,7 @@ class SitePage extends React.Component<{}, SitePageState> {
   }
 
   async start() {
-    // for testing
     let activeAddress = await isLoggedIn();
-    // console.log("activeAddress:", activeAddress)
     Server.service.setIsLoggedIn(activeAddress);
     Server.service.setActiveAddress(activeAddress);
 

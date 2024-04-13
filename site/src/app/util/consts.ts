@@ -17,15 +17,13 @@ export const LUA =
     Handlers.add("AOTwitter.setBookmark",
       Handlers.utils.hasMatchingTag("Action", "AOTwitter.setBookmark"),
       function(msg)
-        print("Setting a bookmark")
-        table.insert(Bookmarks, msg.Data)
+        Bookmarks = msg.Data
       end
     )
 
     Handlers.add("AOTwitter.getBookmarks",
       Handlers.utils.hasMatchingTag("Action", "AOTwitter.getBookmarks"),
       function(msg)
-        print("Get bookmarks")
         Handlers.utils.reply(table.concat(Bookmarks, "▲"))(msg)
       end
     )
@@ -33,16 +31,14 @@ export const LUA =
     Handlers.add("AOTwitter.setProfile",
       Handlers.utils.hasMatchingTag("Action", "AOTwitter.setProfile"),
       function(msg)
-        print("Setting the profile")
-        table.insert(Profile, msg.Data)
+        Profile = msg.Data
       end
     )
 
     Handlers.add("AOTwitter.getProfile",
       Handlers.utils.hasMatchingTag("Action", "AOTwitter.getProfile"),
       function(msg)
-        print("Get the profile")
-        Handlers.utils.reply(table.concat(Profile, "▲"))(msg)
+        Handlers.utils.reply(Profile)(msg)
       end
     )
 `;
