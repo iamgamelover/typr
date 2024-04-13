@@ -76,12 +76,12 @@ class BookmarksPage extends React.Component<{}, BookmarksPageState> {
   }
 
   async upload2AO() {
-    this.setState({ message: 'Upload to AO...' });
+    this.setState({ message: 'Upload bookmarks to AO...' });
 
     let process = await getDefaultProcess(Server.service.getActiveAddress());
     let resp = await messageToAO(
       process,
-      { data: this.state.bookmarks },
+      this.state.bookmarks,
       'AOTwitter.setBookmark'
     );
 

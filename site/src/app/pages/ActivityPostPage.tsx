@@ -90,6 +90,8 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
         this.setState({ alert: 'Post not found.' });
         return;
       }
+
+      this.checkBookmark(post);
     }
 
     this.setState({ post, loading: false });
@@ -97,13 +99,15 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
 
     let txid = await this.getTxidOfPost(this.postId);
     this.setState({ txid });
+  }
 
-    // TEMP WAY -- to check the state of bookmark
-    let process = await getDefaultProcess(this.state.address);
-    let bookmarks = await getDataFromAO(process, 'AOTwitter.getBookmarks');
+  checkBookmark(post: any) {
+    let bookmarks = [];
+    let val = localStorage.getItem('bookmarks');
+    if (val) bookmarks = JSON.parse(val);
+
     let resp = isBookmarked(bookmarks, post.id);
     post.isBookmarked = resp;
-    this.setState({ post });
   }
 
   async getTxidOfPost(postId: string) {
