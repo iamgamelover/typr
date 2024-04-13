@@ -169,16 +169,46 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     e.stopPropagation();
     this.setState({ isBookmarked: true });
 
-    let process = await getDefaultProcess(Server.service.getActiveAddress());
-    let resp = await messageToAO(
-      process,
-      { data: this.props.data },
-      'AOTwitter.setBookmark'
-    );
+    let data = this.props.data;
 
-    // testing
-    this.props.data.isBookmarked = true;
-    Server.service.addPostToCache(this.props.data);
+    // stored in localStorage
+    let list = [];
+    let val = localStorage.getItem('bookmarks');
+    if (val) list = JSON.parse(val);
+    list.push(data);
+
+    localStorage.setItem('bookmarks', JSON.stringify(list))
+
+    // ==> stored in Arweave
+    // let process = await getDefaultProcess(Server.service.getActiveAddress());
+    // let resp = await messageToAO(
+    //   process,
+    //   { data: data },
+    //   'AOTwitter.setBookmark'
+    // );
+
+    data.isBookmarked = true;
+    Server.service.addPostToCache(data);
+  }
+
+  async removeBookmark(e: any, id: string) {
+    e.stopPropagation();
+    this.setState({ isBookmarked: false });
+
+    let data = this.props.data;
+
+    // get from localStorage
+    let list = [];
+    let val = localStorage.getItem('bookmarks');
+    list = JSON.parse(val);
+
+    let result = list.filter((item:any) => {
+      return item.id !== id;
+    });
+
+    localStorage.setItem('bookmarks', JSON.stringify(result))
+    data.isBookmarked = false;
+    Server.service.addPostToCache(data);
   }
 
   goProfilePage(e: any, id: string) {
@@ -217,14 +247,14 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           </div>
         }
 
-        <div className='activity-post-action' onClick={(e) => this.onLike(e)}>
+        {/* <div className='activity-post-action' onClick={(e) => this.onLike(e)}>
           <div className='activity-post-action-icon'>
             <BsHeart />
           </div>
           <div className='activity-post-action-number'>
             {numberWithCommas(data.likes)}
           </div>
-        </div>
+        </div> */}
 
         <div className='activity-post-action' onClick={(e) => this.onCoin(e)}>
           <div className='activity-post-action-icon'>
@@ -242,8 +272,9 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
                 ?
                 <BsBookmarkFill
                   data-tooltip-id="my-tooltip"
-                  data-tooltip-content="Can't be removed now"
+                  data-tooltip-content="Remove from bookmarks"
                   color='rgb(114, 114, 234)'
+                  onClick={(e) => this.removeBookmark(e, data.id)}
                 />
                 :
                 <BsBookmark

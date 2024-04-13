@@ -8,3 +8,13 @@
   /* row-gap: 20px; */
 }
 
+.bookmarks-page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.bookmarks-page-header-title {
+  font-size: 20px;
+}

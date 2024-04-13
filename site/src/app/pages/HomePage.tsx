@@ -220,18 +220,12 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     if (!posts || new_post) {
       posts = await getDataFromAO(AO_TWITTER, 'GetPosts', 1, PAGE_SIZE);
-      if (!posts) {
-        this.setState({ loading: false });
-        return;
-      }
-
       let final = parsePosts(posts);
-      this.setState({ posts: final, loading: false });
-      Server.service.addPostsToCache(final);
-      this.checkBookmarks();
+      this.checkBookmarks(final);
       return;
     }
 
+    this.checkBookmarks(posts);
     this.setState({ posts, loading: false });
     setTimeout(() => {
       window.scrollTo(0, position);
@@ -247,32 +241,27 @@ class HomePage extends React.Component<{}, HomePageState> {
     console.log("pageNo:", pageNo)
 
     let posts = await getDataFromAO(AO_TWITTER, 'GetPosts', pageNo, PAGE_SIZE);
-    if (!posts) {
-      this.setState({ loading: false });
-      return;
-    }
-
-    let final = parsePosts(posts);
-    let total = this.state.posts.concat(final);
-    Server.service.addPostsToCache(total);
-    this.setState({ posts: total, loadNextPage: false });
-    this.checkBookmarks();
+    let total = this.state.posts.concat(parsePosts(posts));
+    this.checkBookmarks(total);
   }
 
-  async checkBookmarks() {
-    try {
-      let process = await getDefaultProcess(this.state.address);
-      let bookmarks = await getDataFromAO(process, 'AOTwitter.getBookmarks');
+  async checkBookmarks(posts: any) {
+    // ==> get from localStorage
+    let bookmarks = [];
+    let val = localStorage.getItem('bookmarks');
+    if (val) bookmarks = JSON.parse(val);
 
-      let posts = this.state.posts;
-      for (let i = 0; i < posts.length; i++) {
-        let resp = isBookmarked(bookmarks, posts[i].id);
-        posts[i].isBookmarked = resp;
-        this.setState({ posts });
-      }
-    } catch (error) {
-      console.log('ERR ==>', error)
+    // ==> get from Arweave
+    // let process = await getDefaultProcess(this.state.address);
+    // let bookmarks = await getDataFromAO(process, 'AOTwitter.getBookmarks');
+
+    for (let i = 0; i < posts.length; i++) {
+      let resp = isBookmarked(bookmarks, posts[i].id);
+      posts[i].isBookmarked = resp;
     }
+
+    Server.service.addPostsToCache(posts);
+    this.setState({ posts, loading: false, loadNextPage: false });
   }
 
   renderPosts() {
@@ -317,11 +306,6 @@ class HomePage extends React.Component<{}, HomePageState> {
     if (!nickname) nickname = 'anonymous';
     let time = timeOfNow();
     let postId = uuid();
-
-    // let data = {
-    //   id: postId, address, nickname, post, range: this.state.range,
-    //   likes: '0', replies: '0', coins: '0', time
-    // };
 
     let data = {
       id: postId, address, nickname, post, range: this.state.range,

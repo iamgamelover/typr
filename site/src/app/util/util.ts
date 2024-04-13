@@ -486,8 +486,7 @@ export async function getDataFromAO(
 // check the state of bookmark
 export function isBookmarked(bookmarks: any, id: string) {
   for (let i = 0; i < bookmarks.length; i++) {
-    let index = bookmarks[i].indexOf(id)
-    if (index > -1) return true
+    if (id == bookmarks[i].id) return true
   }
 
   return false;
