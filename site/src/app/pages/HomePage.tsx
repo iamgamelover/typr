@@ -304,12 +304,10 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     localStorage.setItem('nickname', nickname);
     if (!nickname) nickname = 'anonymous';
-    let time = timeOfNow();
-    let postId = uuid();
 
     let data = {
-      id: postId, address, nickname, post, range: this.state.range,
-      likes: 0, replies: 0, coins: 0, time
+      id: uuid(), address, nickname, post, range: this.state.range,
+      likes: 0, replies: 0, coins: 0, time: timeOfNow()
     };
 
     let response = await messageToAO(AO_TWITTER, data, 'SendPost');
@@ -320,8 +318,8 @@ class HomePage extends React.Component<{}, HomePageState> {
       this.getPosts(true);
 
       // This code store the post id. 
-      let data = { address, postId, txid: response, time };
-      messageToAO(AO_TWITTER, data, 'SendPostID');
+      let idInfo = { address, postId: data.id, txid: response, time: data.time };
+      messageToAO(AO_TWITTER, idInfo, 'SendPostID');
     }
     else
       this.setState({ message: '', alert: TIP_IMG });

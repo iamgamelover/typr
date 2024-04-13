@@ -5,11 +5,13 @@ import { BsPeopleFill, BsReplyFill, BsSend, BsSendFill } from 'react-icons/bs';
 import { getDataFromAO, isLoggedIn } from '../util/util';
 import { AO_TWITTER } from '../util/consts';
 import { Server } from '../../server/server';
+import PostModal from '../modals/PostModal';
 
 interface SitePageState {
   members: number;
   posts: number;
   replies: number;
+  open: boolean;
 }
 
 class SitePage extends React.Component<{}, SitePageState> {
@@ -20,7 +22,11 @@ class SitePage extends React.Component<{}, SitePageState> {
       members: 0,
       posts: 0,
       replies: 0,
+      open: false
     };
+
+    this.onOpen = this.onOpen.bind(this);
+    this.onClose = this.onClose.bind(this);
   }
 
   componentDidMount() {
@@ -34,6 +40,14 @@ class SitePage extends React.Component<{}, SitePageState> {
 
     this.getStatus();
     setInterval(() => this.getStatus(), 60000); // 1 min
+  }
+
+  onOpen() {
+    this.setState({ open: true });
+  }
+
+  onClose() {
+    this.setState({ open: false });
   }
 
   async getStatus() {
@@ -86,10 +100,11 @@ class SitePage extends React.Component<{}, SitePageState> {
         <div className="app-content">
           <div className="app-navbar">
             <NavBar />
-            <NavLink className="app-post-button" to='/'>
+            
+            <div className="app-post-button" onClick={this.onOpen}>
               <BsSend size={22} />
               <div>Post</div>
-            </NavLink>
+            </div>
 
             {/* <div className='app-portrait-container'>
               <img className='testao-msg-portrait' src='/portrait-default.png' />
@@ -101,6 +116,8 @@ class SitePage extends React.Component<{}, SitePageState> {
             <Outlet />
           </div>
         </div>
+
+        <PostModal open={this.state.open} onClose={this.onClose} />
       </div>
     );
   }

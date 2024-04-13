@@ -1,0 +1,10 @@
+.post-modal-content {
+  padding-top: 50px;
+  width: 500px;
+}
+
+.post-modal-actions {
+  display: flex;
+  justify-content: space-between;
+  margin: 10px;
+}

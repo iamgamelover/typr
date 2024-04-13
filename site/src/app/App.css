@@ -218,6 +218,7 @@ a {
   margin-left: 10px;
   margin-top: 50px;
   text-decoration: none;
+  cursor: pointer;
   background-color: var(--section-header-color);
 }
 
@@ -234,7 +235,6 @@ a {
   column-gap: 7px;
   border-radius: 10px;
   background-color: rgb(207, 82, 45);
-  cursor: pointer;
 }
 
 .story:hover {
