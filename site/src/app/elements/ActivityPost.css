@@ -93,6 +93,10 @@
   color: gray;
 }
 
+.activity-post-action-number.coins {
+  color: rgb(207, 82, 45);
+}
+
 .activity-post-hashtag {
   display: flex;
   text-decoration: none;

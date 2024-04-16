@@ -13,6 +13,7 @@ import { Service } from '../../server/service';
 import { Server } from '../../server/server';
 import { subscribe } from '../util/event';
 import { Tooltip } from 'react-tooltip'
+import BountyModal from '../modals/BountyModal';
 
 interface ActivityPostProps {
   data: any;
@@ -25,6 +26,7 @@ interface ActivityPostProps {
 
 interface ActivityPostState {
   openImage: boolean;
+  openBounty: boolean;
   navigate: string;
   content: string;
   alert: string;
@@ -55,6 +57,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     super(props);
     this.state = {
       openImage: false,
+      openBounty: false,
       navigate: '',
       content: '',
       alert: '',
@@ -64,6 +67,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       isBookmarked: false
     };
 
+    this.onBounty = this.onBounty.bind(this);
+    this.openBounty = this.openBounty.bind(this);
     this.onClose = this.onClose.bind(this);
 
     subscribe('wallet-events', () => {
@@ -155,14 +160,31 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     this.setState({ openImage: true })
   }
 
+  openBounty(e: any) {
+    e.stopPropagation();
+
+    let alert;
+    if (!Server.service.getIsLoggedIn())
+      alert = 'Please connect to wallet.';
+    if (this.props.data.address == Server.service.getActiveAddress())
+      alert = "You can't bounty to yourself.";
+
+    if (alert) {
+      this.setState({ alert });
+      return;
+    }
+
+    this.setState({ openBounty: true })
+  }
+
+  onBounty(qty: string) {
+    // console.log('onBounty -> qty: ', qty)
+    this.props.data.coins = qty;
+  }
+
   async onLike(e: any) {
     e.stopPropagation();
     this.setState({ alert: 'Like a Post with CRED ^_^' })
-  }
-
-  async onCoin(e: any) {
-    e.stopPropagation();
-    this.setState({ alert: 'See the earned CRED ^_^' })
   }
 
   async onBookmark(e: any) {
@@ -179,14 +201,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
     localStorage.setItem('bookmarks', JSON.stringify(list))
 
-    // ==> stored in Arweave
-    // let process = await getDefaultProcess(Server.service.getActiveAddress());
-    // let resp = await messageToAO(
-    //   process,
-    //   { data: data },
-    //   'AOTwitter.setBookmark'
-    // );
-
     data.isBookmarked = true;
     Server.service.addPostToCache(data);
   }
@@ -202,7 +216,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     let val = localStorage.getItem('bookmarks');
     list = JSON.parse(val);
 
-    let result = list.filter((item:any) => {
+    let result = list.filter((item: any) => {
       return item.id !== id;
     });
 
@@ -230,7 +244,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   onClose() {
-    this.setState({ openImage: false });
+    this.setState({ openImage: false, openBounty: false });
   }
 
   renderActionsRow(data: any) {
@@ -256,7 +270,12 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           </div>
         </div> */}
 
-        <div className='activity-post-action' onClick={(e) => this.onCoin(e)}>
+        <div
+          className='activity-post-action'
+          data-tooltip-id="my-tooltip"
+          data-tooltip-content="Bounty"
+          onClick={(e) => this.openBounty(e)}
+        >
           <div className='activity-post-action-icon'>
             <BsCoin />
           </div>
@@ -322,8 +341,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           <img
             className='home-msg-portrait'
             src={owner ? avatar : this.state.avatar}
-            // onClick={(e) => this.goProfilePage(e, data.address)}
-            // title={owner ? 'Click to change your avatar' : ''}
+          // onClick={(e) => this.goProfilePage(e, data.address)}
+          // title={owner ? 'Click to change your avatar' : ''}
           />
           <div className="home-msg-nickname">
             {owner ? nickname : this.state.nickname ? this.state.nickname : data.nickname}
@@ -352,6 +371,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         {this.renderActionsRow(data)}
 
         <Tooltip id="my-tooltip" />
+        <BountyModal open={this.state.openBounty} onClose={this.onClose} onBounty={this.onBounty} data={this.props.data} />
         <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />
         <ViewImageModal open={this.state.openImage} src={this.imgUrl} onClose={this.onClose} />
       </div>

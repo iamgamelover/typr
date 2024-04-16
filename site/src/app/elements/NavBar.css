@@ -74,11 +74,10 @@
   color: white;
   padding: 0px 5px;
   line-height: 17px;
-  /* border-radius: 10px; */
   background-color: red;
   position: absolute;
   right: 0px;
-  top: -5px;
+  top: -15px;
 }
 
 .new {

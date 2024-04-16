@@ -1,0 +1,61 @@
+.bounty-modal-content {
+  padding-left: 20px;
+}
+
+.bounty-modal-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bounty-modal-header-title {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.bounty-modal-header-balance {
+  display: flex;
+  align-items: center;
+  column-gap: 5px;
+  color: gray;
+  margin-right: 105px;
+}
+
+.bounty-modal-header-line {
+  width: 300px;
+  height: 1px;
+  margin-bottom: 20px;
+  background-color: lightgray;
+}
+
+.bounty-modal-token-row {
+  display: flex;
+  column-gap: 15px;
+  margin: 15px 0;
+}
+
+.bounty-modal-token-row.bounty {
+  margin: 5px 0;
+}
+
+.bounty-modal-token {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: 5px;
+  padding: 2px 10px;
+  color: white;
+  cursor: pointer;
+  background-color: var(--section-header-color);
+}
+
+.bounty-modal-input {
+  width: 235px;
+  text-align: center;
+  font-size: 20px;
+}
+
+.bounty-modal-token.bounty {
+  border-radius: 5px;
+  background-color: rgb(207, 82, 45);
+}

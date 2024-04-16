@@ -130,12 +130,12 @@
 .home-actions {
   display: flex;
   margin: 10px;
+  justify-content: space-between;
 }
 
 .home-filter {
   width: 120px;
   border: none;
-  margin-right: 50px;
 }
 
 .home-page-tip-new-posts {
@@ -151,4 +151,15 @@
 
 .home-page-tip-new-posts:hover {
   background-color: rgb(80, 80, 209);
+}
+
+.home-page-temp-tip {
+  display: flex;
+  flex-direction: column;
+  row-gap: 5px;
+  position: fixed;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  background-color: rgb(114, 114, 234);
 }

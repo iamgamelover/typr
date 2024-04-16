@@ -1,7 +1,10 @@
 import React from 'react';
 import './TokenPage.css';
-import { getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO } from '../util/util';
-import { createDataItemSigner, dryrun, message, result } from "@permaweb/aoconnect/browser";
+import { getTokenBalance, getDefaultProcess, getWalletAddress, numberWithCommas, transferToken } from '../util/util';
+import { CRED, AOT_TEST } from '../util/consts';
+import { dryrun } from "@permaweb/aoconnect/browser";
+import MessageModal from '../modals/MessageModal';
+import { Server } from '../../server/server';
 
 declare var window: any;
 
@@ -12,6 +15,9 @@ interface TokenPageState {
   loading: boolean;
   address: string;
   process: string;
+  balOfCRED: number;
+  balOfAOT: number;
+  hasAOT: boolean;
 }
 
 class TokenPage extends React.Component<{}, TokenPageState> {
@@ -25,6 +31,9 @@ class TokenPage extends React.Component<{}, TokenPageState> {
       loading: true,
       address: '',
       process: '',
+      balOfCRED: 0,
+      balOfAOT: 0,
+      hasAOT: true,
     };
   }
 
@@ -34,41 +43,99 @@ class TokenPage extends React.Component<{}, TokenPageState> {
 
   async start() {
     let address = await getWalletAddress();
-    console.log("address:", address)
-
     let process = await getDefaultProcess(address);
-    console.log("process:", process)
-
     this.setState({ address, process });
+
+    let balOfCRED = await getTokenBalance(CRED, process);
+    if (balOfCRED.length > 3) {
+      const length = balOfCRED.length;
+      balOfCRED = balOfCRED.slice(0, length - 3) + '.' + balOfCRED.slice(length - 3);
+    }
+
+    this.setState({ balOfCRED });
+    this.displayAOT(process);
+  }
+
+  async displayAOT(address: string) {
+    let balOfAOT = await getTokenBalance(AOT_TEST, address);
+    Server.service.setBalanceOfAOT(balOfAOT);
+    this.setState({ balOfAOT, loading: false });
+
+    // You can only get token-test once
+    let balances = await this.getBalances(AOT_TEST);
+    if (balances.indexOf(address) != -1)
+      this.setState({ hasAOT: true });
+    else
+      this.setState({ hasAOT: false });
+  }
+
+  async getBalances(process: string) {
+    const result = await dryrun({
+      process: process,
+      tags: [
+        { name: 'Action', value: 'Balances' },
+      ],
+    });
+
+    // console.log("getBalances:", result)
+    return result.Messages[0].Data;
+  }
+
+  async getAOT() {
+    let address = this.state.process;
+    this.setState({ message: 'Get AOT-Test...' });
+    await transferToken(AOT_TEST, address, '10000');
+    await this.displayAOT(address);
+    this.setState({ message: '' });
   }
 
   render() {
     return (
       <div className='token-page'>
+        {/* <div className='token-page-card'>
+          <div className='token-page-title'>Your wallet address</div>
+          <div className='token-page-text'>{this.state.address}</div>
+        </div> */}
+
         <div className='token-page-card'>
-          <div className='token-page-process-id'>Your Process ID</div>
+          <div className='token-page-title'>Your Process ID</div>
           <div className='token-page-text'>{this.state.process}</div>
         </div>
 
         <div className='token-page-card'>
-          <div className='token-page-process-id'>CRED</div>
-          <div className='token-page-text balance'>10,000.000</div>
+          <div className='token-page-title'>AOCRED-Test &nbsp;&nbsp;&nbsp; (AO testnet token)</div>
+          {this.state.loading
+            ? <div id="loading" />
+            : <div className='token-page-text balance'>{this.state.balOfCRED}</div>
+          }
         </div>
 
         <div className='token-page-card'>
-          <div className='token-page-header'>
-            <div className='token-page-process-id'>AOT</div>
-            <div className='token-page-text-small'>A community governance token</div>
-          </div>
-          <div className='token-page-text balance'>20,000.000</div>
+          <div className='token-page-title'>AOT-Test &nbsp;&nbsp;&nbsp; (AO Twitter testnet token)</div>
+          {this.state.loading
+            ? <div id="loading" />
+            : <div className='token-page-text balance'>{numberWithCommas(this.state.balOfAOT)}</div>
+          }
         </div>
 
-        <div className='token-page-card'>
+        {/* <div className='token-page-label'>Name</div>
+        <input
+          className="token-page-input"
+          placeholder="nickname"
+          value={this.state.nickname}
+          onChange={this.onChangeName}
+        /> */}
+
+        {!this.state.hasAOT &&
+          <div><button onClick={() => this.getAOT()}>Get 10,000 AOT-Test</button></div>
+        }
+
+        {/* <div className='token-page-card'>
           <div className='token-page-process-id'>Staking</div>
           <div className='token-page-text balance'>1000.000</div>
-        </div>
+        </div> */}
 
-        <div className='token-page-card'>
+        {/* <div className='token-page-card'>
           <div className='token-page-header'>
             <div className='token-page-process-id'>Voting</div>
             <div className='token-page-text-small'>which one feature should be put in.</div>
@@ -82,7 +149,9 @@ class TokenPage extends React.Component<{}, TokenPageState> {
           <div className='token-page-vote'>
             (30) A Big Plan: The Token Economic System.
           </div>
-        </div>
+        </div> */}
+
+        <MessageModal message={this.state.message} />
       </div>
     )
   }

@@ -3,8 +3,17 @@ import './NavBar.css';
 import { AppConfig } from '../AppConfig';
 import { getMenuIcon } from '../util/util';
 import NavBarButton from './NavBarButton';
+import { Server } from '../../server/server';
+import { subscribe } from '../util/event';
 
 class NavBar extends React.Component {
+
+  constructor(props: any) {
+    super(props);
+    subscribe('wallet-events', () => {
+      this.forceUpdate();
+    });
+  }
 
   renderButton(menu: any) {
     return (
@@ -25,8 +34,8 @@ class NavBar extends React.Component {
 
     for (let i = 0; i < menu.length; i++) {
       if (menu[i].loggedIn) {
-        // if (Server.account.isLoggedIn())
-        //   buttons.push(this.renderButton(menu[i]));
+        if (Server.service.getIsLoggedIn())
+          buttons.push(this.renderButton(menu[i]));
       }
       else
         buttons.push(this.renderButton(menu[i]));

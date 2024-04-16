@@ -17,14 +17,14 @@ class ViewImageModal extends React.Component<ViewImageModalProps, {}> {
   
   componentDidMount() {
     document.addEventListener('keydown', (e) => {
-      if (e.keyCode === 27) // Esc key
+      if (e.key === 'Escape') // Esc key
         this.onClose();
     });
   }
 
   componentWillUnmount() {
     document.removeEventListener('keydown', (e) => {
-      if (e.keyCode === 27)
+      if (e.key === 'Escape')
         this.onClose();
     });
   }

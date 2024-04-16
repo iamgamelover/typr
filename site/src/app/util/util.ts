@@ -385,7 +385,7 @@ export async function spawnProcess() {
 
     return processId;
   } catch (error) {
-    console.log("error:", error)
+    console.log("spawnProcess --> error:", error)
     return '';
   }
 }
@@ -407,7 +407,7 @@ export async function evaluate(process: string, data: string) {
 
     return messageId;
   } catch (error) {
-    console.log("error:", error)
+    console.log("evaluate --> error:", error)
     return '';
   }
 }
@@ -424,7 +424,7 @@ export async function messageToAO(process: string, data: any, action: string) {
     console.log("messageId:", messageId)
     return messageId;
   } catch (error) {
-    console.log("error:", error)
+    console.log("messageToAO -> error:", error)
     return '';
   }
 }
@@ -460,7 +460,7 @@ export async function getDataFromAO(
       ],
     });
   } catch (error) {
-    console.log('getDataFromAO --> ERR:', error)
+    // console.log('getDataFromAO --> ERR:', error)
     return '';
   }
 
@@ -578,7 +578,6 @@ export async function getProcessFromOwner(owner: string) {
 
   try {
     let response = await fetchGraphQL(queryObject);
-    // console.log("response:", response)
 
     let end = performance.now();
     // console.log(`<== [getProcessFromOwner] [${Math.round(end - start)} ms]`);
@@ -588,7 +587,7 @@ export async function getProcessFromOwner(owner: string) {
     else
       return { success: true, process: response[0].node.id };
   } catch (error) {
-    console.log("ERR:", error);
+    console.log("getProcessFromOwner -> ERR:", error);
     return { success: false, message: 'getProcessFromOwner failed.' };
   }
 }
@@ -615,4 +614,40 @@ export function parsePosts(posts: any) {
   }
 
   return result;
+}
+
+export function storePostInLocal(post: any) {
+  let list = [];
+  let val = localStorage.getItem('your_posts');
+  if (val) list = JSON.parse(val);
+  list.unshift(post);
+
+  localStorage.setItem('your_posts', JSON.stringify(list))
+}
+
+export async function getTokenBalance(process: string, address: string) {
+  const result = await dryrun({
+    process: process,
+    tags: [
+      { name: 'Action', value: 'Balance' },
+      { name: 'Target', value: address },
+    ],
+  });
+
+  return result.Messages[0].Data;
+}
+
+export async function transferToken(from: string, to: string, qty: string) {
+  const messageId = await message({
+    process: from,
+    signer: createDataItemSigner(window.arweaveWallet),
+    tags: [
+      { name: 'Action', value: 'TransferAOT' },
+      { name: 'Recipient', value: to },
+      { name: 'Quantity', value: qty },
+    ],
+  });
+
+  console.log("transferToken:", messageId)
+  return messageId;
 }

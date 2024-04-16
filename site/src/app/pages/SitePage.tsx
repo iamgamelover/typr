@@ -2,8 +2,8 @@ import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import NavBar from '../elements/NavBar';
 import { BsPeopleFill, BsReplyFill, BsSend, BsSendFill } from 'react-icons/bs';
-import { getDataFromAO, isLoggedIn } from '../util/util';
-import { AO_TWITTER } from '../util/consts';
+import { getDataFromAO, getDefaultProcess, getTokenBalance, isLoggedIn } from '../util/util';
+import { AOT_TEST, AO_TWITTER } from '../util/consts';
 import { Server } from '../../server/server';
 import PostModal from '../modals/PostModal';
 
@@ -35,11 +35,19 @@ class SitePage extends React.Component<{}, SitePageState> {
 
   async start() {
     let activeAddress = await isLoggedIn();
+    let process = await getDefaultProcess(activeAddress);
+
     Server.service.setIsLoggedIn(activeAddress);
     Server.service.setActiveAddress(activeAddress);
+    Server.service.setDefaultProcess(process);
 
+    this.forceUpdate();
+    
     this.getStatus();
     setInterval(() => this.getStatus(), 60000); // 1 min
+
+    let bal_aot = await getTokenBalance(AOT_TEST, process);
+    Server.service.setBalanceOfAOT(bal_aot);
   }
 
   onOpen() {

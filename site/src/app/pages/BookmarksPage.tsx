@@ -60,7 +60,7 @@ class BookmarksPage extends React.Component<{}, BookmarksPageState> {
 
     let bookmarks = this.state.bookmarks;
     bookmarks.sort((a:any, b:any) => {
-      return b.timestamp - a.timestamp;
+      return b.time - a.time;
     });
 
     let divs = [];

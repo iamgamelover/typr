@@ -3,16 +3,14 @@
   flex-direction: column;
   max-width: var(--page-max-width);
   margin: auto;
-  /* padding: 20px; */
-  padding-left: 100px;
+  padding-left: 50px;
   padding-bottom: 30px;
   row-gap: 20px;
 }
 
 .token-page-card {
-  width: 390px;
-  padding: 12px 25px;
-  border-radius: 30px;
+  padding: 6px 15px;
+  border-radius: 15px;
   background-color: var(--section-color);
 }
 
@@ -21,23 +19,16 @@
   column-gap: 30px;
 }
 
-.token-page-process-id {
-  font-size: 17px;
+.token-page-title {
+  color: gray;
 }
 
 .token-page-text {
-  color: gray;
   margin-top: 5px;
 }
 
 .balance {
-  color: gray;
   font-size: 20px;
-}
-
-.token-page-text-small {
-  font-size: 17px;
-  color: gray;
 }
 
 .token-page-vote {
@@ -46,4 +37,12 @@
   padding: 6px 15px;
   border-radius: 10px;
   background-color: var(--section-header-color);
+}
+
+.token-page-label {
+  color: gray;
+}
+
+.token-page-input {
+  width: 300px;
 }

@@ -6,7 +6,7 @@ import './PostModal.css'
 import MessageModal from './MessageModal';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import { AO_TWITTER, TIP_IMG } from '../util/consts';
-import { checkContent, getWalletAddress, timeOfNow, uuid, messageToAO } from '../util/util';
+import { checkContent, getWalletAddress, timeOfNow, uuid, messageToAO, storePostInLocal } from '../util/util';
 
 declare var window: any;
 
@@ -78,7 +78,8 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
       // this.quillRef.setText('');
       this.setState({ message: '' });
       this.props.onClose();
-
+      storePostInLocal(data);
+      
       // This code store the post id. 
       let idInfo = { address, postId: data.id, txid: response, time: data.time };
       messageToAO(AO_TWITTER, idInfo, 'SendPostID');

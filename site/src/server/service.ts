@@ -9,6 +9,8 @@ export class Service {
 
   protected isLoggedIn:string;
   protected activeAddress:string;
+  protected defaultProcess:string;
+  protected balanceOfAOT:string;
 
   constructor() {
     this.post = [];
@@ -69,6 +71,22 @@ export class Service {
 
   public getActiveAddress() {
     return this.activeAddress;
+  }
+  
+  public setDefaultProcess(process:string) {
+    this.defaultProcess = process;
+  }
+
+  public getDefaultProcess() {
+    return this.defaultProcess;
+  }
+  
+  public setBalanceOfAOT(process:string) {
+    this.balanceOfAOT = process;
+  }
+
+  public getBalanceOfAOT() {
+    return this.balanceOfAOT;
   }
   
   public setPageNo(pageNo:number) {

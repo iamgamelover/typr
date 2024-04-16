@@ -4,10 +4,10 @@ import { publish, subscribe } from '../util/event';
 import { dryrun } from "@permaweb/aoconnect";
 import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
-import { checkContent, connectWallet, getDataFromAO, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, getDefaultProcess, spawnProcess, evaluate, isBookmarked, downloadFromArweave, parsePosts } from '../util/util';
+import { checkContent, connectWallet, getDataFromAO, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, getDefaultProcess, spawnProcess, evaluate, isBookmarked, downloadFromArweave, parsePosts, storePostInLocal, getTokenBalance } from '../util/util';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
-import { AO_TWITTER, LUA, PAGE_SIZE, TIP_IMG } from '../util/consts';
+import { AOT_TEST, AO_TWITTER, LUA, PAGE_SIZE, TIP_IMG } from '../util/consts';
 import QuestionModal from '../modals/QuestionModal';
 import { Server } from '../../server/server';
 import { BsSend } from 'react-icons/bs';
@@ -26,7 +26,9 @@ interface HomePageState {
   range: string;
   isLoggedIn: string;
   address: string;
+  process: string;
   newPosts: number;
+  temp_tip: boolean;
 }
 
 class HomePage extends React.Component<{}, HomePageState> {
@@ -48,7 +50,9 @@ class HomePage extends React.Component<{}, HomePageState> {
       range: 'everyone',
       isLoggedIn: '',
       address: '',
+      process: '',
       newPosts: 0,
+      temp_tip: false
     };
 
     this.getPosts = this.getPosts.bind(this);
@@ -113,13 +117,13 @@ class HomePage extends React.Component<{}, HomePageState> {
       this.setState({ isLoggedIn: 'true', address });
       this.register(address);
 
-      // for testing
       Server.service.setIsLoggedIn(address);
       Server.service.setActiveAddress(address);
       publish('wallet-events');
 
-      // for testing - load lua code into the process of users
+      // your own default process 
       let process = await getDefaultProcess(address);
+      console.log("Your default process:", process)
 
       // Spawn a new process
       if (!process) {
@@ -127,9 +131,15 @@ class HomePage extends React.Component<{}, HomePageState> {
         console.log("Spawn --> processId:", process)
       }
 
-      // load lua into the process
+      // load lua code into the process
       let messageId = await evaluate(process, LUA);
       console.log("evaluate -->", messageId)
+
+      // for testing - will be removed
+      this.setState({ temp_tip: true, process });
+
+      let bal_aot = await getTokenBalance(AOT_TEST, process);
+      Server.service.setBalanceOfAOT(bal_aot);
     }
   }
 
@@ -161,18 +171,6 @@ class HomePage extends React.Component<{}, HomePageState> {
 
   onQuestionNo() {
     this.setState({ question: '' });
-  }
-
-  async getBalance(process: string) {
-    const result = await dryrun({
-      process: 'Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc',
-      tags: [
-        { name: 'Action', value: 'Balance' },
-        { name: 'Target', value: 'rN1B9kLV3ilqMQSd0bqc-sjrvMXzQkKB-JtfUeUUnl8' }
-      ],
-    });
-
-    console.log("getBalance:", result)
   }
 
   async getTokens() {
@@ -316,6 +314,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       this.quillRef.setText('');
       this.setState({ message: '', alert: 'Post successful.', posts: [], loading: true });
       this.getPosts(true);
+      storePostInLocal(data);
 
       // This code store the post id. 
       let idInfo = { address, postId: data.id, txid: response, time: data.time };
@@ -387,6 +386,18 @@ class HomePage extends React.Component<{}, HomePageState> {
         {this.state.newPosts > 0 &&
           <div className='home-page-tip-new-posts' onClick={() => this.showNewPosts()}>
             {this.state.newPosts}&nbsp;&nbsp;New Posts
+          </div>
+        }
+
+        {/* For testing - Will be removed */}
+        {this.state.temp_tip &&
+          <div className='home-page-temp-tip'>
+            <div style={{ color: 'yellow' }}>MAKE SURE TO GET YOUR PROCESS:</div>
+            <div>Your process id is:</div>
+            <div style={{ color: 'yellow' }}>{this.state.process}</div>
+            <div>Try to run "aos PROCESS_ID_ABOVE --wallet PATH_WALLET_KEY.json".</div>
+            <div>And see the handlers via "Handlers.list" in a termianl.</div>
+            <button style={{ width: '150px' }} onClick={() => this.setState({ temp_tip: false })}>Close</button>
           </div>
         }
 

@@ -125,7 +125,11 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
 
   async getPosts(address: string) {
-    let posts = Server.service.getPostsInProfileFromCache(address);
+    let posts;
+    let val = localStorage.getItem('your_posts');
+    if (val && val != '[]') posts = JSON.parse(val);
+    // let posts = Server.service.getPostsInProfileFromCache(address);
+    
     let position = Server.service.getPositionInProfileFromCache();
 
     if (!posts) {
@@ -172,7 +176,8 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     }
 
     this.setState({ posts, loading: false, loadNextPage: false });
-    Server.service.addPostsInProfileToCache(this.state.address, posts);
+    // Server.service.addPostsInProfileToCache(this.state.address, posts);
+    localStorage.setItem('your_posts', JSON.stringify(posts))
   }
 
   // load profile from the process of user's

@@ -13,7 +13,7 @@ export class AppConfig {
       text: 'Story',
       icon: 'story',
       to: '/story',
-      beta: true,
+      // beta: true,
       loggedIn: false
     },
     {
@@ -26,7 +26,8 @@ export class AppConfig {
       text: 'TokenEco',
       icon: 'token',
       to: '/token',
-      loggedIn: false
+      beta: true,
+      loggedIn: true
     },
     {
       text: 'Chatroom',
@@ -38,21 +39,21 @@ export class AppConfig {
       text: 'Notifications',
       icon: 'notifications',
       to: '/notifications',
-      loggedIn: false
+      loggedIn: true
     },
     {
       text: 'Bookmarks',
       icon: 'bookmarks',
       to: '/bookmarks',
-      new: true,
-      loggedIn: false
+      new: false,
+      loggedIn: true
     },
     {
       text: 'Profile',
       icon: 'profile',
       to: '/profile',
       new: true,
-      loggedIn: false
+      loggedIn: true
     },
   ];
 }
