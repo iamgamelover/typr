@@ -563,8 +563,7 @@ export async function getProcessFromOwner(owner: string) {
           owners: "${owner}"
           tags: [
             { name: "Data-Protocol", values: ["ao"] },
-            { name: "Type", values: ["Process"] },
-            { name: "Name", values: ["default"] }
+            { name: "Type", values: ["Process"] }
           ]
         ) {
           edges {
