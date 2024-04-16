@@ -77,6 +77,7 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
     // your own process 
     let from = Server.service.getDefaultProcess();
+    console.log("from:", from)
     // the user's process to tranfer a bounty
     let to = await getDefaultProcess(this.props.data.address);
     console.log("to:", to)
@@ -84,6 +85,7 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     let alert;
     let bal = Number(Server.service.getBalanceOfAOT());
     let qty = Math.abs(this.state.bounty).toString();
+    console.log("qty:", qty)
 
     if (!to)
       alert = 'He/She has not a default process to transfer bounty.';
@@ -111,6 +113,7 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
     // update the bounty (coins) to AO
     let data = { id: this.props.data.id, coins: qty }
+    console.log("data:", data)
     messageToAO(AO_TWITTER, data, 'UpdateBounty');
   }
 
