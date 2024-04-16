@@ -121,9 +121,9 @@ class HomePage extends React.Component<{}, HomePageState> {
       Server.service.setActiveAddress(address);
       publish('wallet-events');
 
-      // your own default process 
+      // your own process 
       let process = await getDefaultProcess(address);
-      console.log("Your default process:", process)
+      console.log("Your process:", process)
 
       // Spawn a new process
       if (!process) {
@@ -131,9 +131,11 @@ class HomePage extends React.Component<{}, HomePageState> {
         console.log("Spawn --> processId:", process)
       }
 
-      // load lua code into the process
-      let messageId = await evaluate(process, LUA);
-      console.log("evaluate -->", messageId)
+      setTimeout(async () => {
+        // load lua code into the process
+        let messageId = await evaluate(process, LUA);
+        console.log("evaluate -->", messageId)
+      }, 20000);
 
       // for testing - will be removed
       this.setState({ temp_tip: true, process });
@@ -244,14 +246,9 @@ class HomePage extends React.Component<{}, HomePageState> {
   }
 
   async checkBookmarks(posts: any) {
-    // ==> get from localStorage
     let bookmarks = [];
     let val = localStorage.getItem('bookmarks');
     if (val) bookmarks = JSON.parse(val);
-
-    // ==> get from Arweave
-    // let process = await getDefaultProcess(this.state.address);
-    // let bookmarks = await getDataFromAO(process, 'AOTwitter.getBookmarks');
 
     for (let i = 0; i < posts.length; i++) {
       let resp = isBookmarked(bookmarks, posts[i].id);

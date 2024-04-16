@@ -42,14 +42,9 @@ class BookmarksPage extends React.Component<{}, BookmarksPageState> {
   }
 
   async getBookmarks(address: string) {
-    // ==> get from localStorage
     let bookmarks = [];
     let val = localStorage.getItem('bookmarks');
     if (val) bookmarks = JSON.parse(val);
-
-    // ==> get from Arweave
-    // let process = await getDefaultProcess(address);
-    // let bookmarks = await getDataFromAO(process, 'AOTwitter.getBookmarks');
 
     this.setState({ bookmarks, loading: false });
   }

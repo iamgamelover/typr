@@ -381,6 +381,7 @@ export async function spawnProcess() {
       module: MODULE,
       scheduler: SCHEDULER,
       signer: createDataItemSigner(window.arweaveWallet),
+      tags: [{ name: 'Name', value: 'aotwitter' }]
     });
 
     return processId;
@@ -527,15 +528,6 @@ export async function isLoggedIn() {
     return '';
 }
 
-export async function getDefaultProcess(address: string) {
-  let resp = await getProcessFromOwner(address);
-  if (resp.success) {
-    return resp.process;
-  } else {
-    return '';
-  }
-}
-
 export async function fetchGraphQL(queryObject: any) {
   const response = await fetch('https://arweave.net/graphql', {
     method: 'POST',
@@ -551,9 +543,9 @@ export async function fetchGraphQL(queryObject: any) {
   return data.data.transactions.edges;
 }
 
-export async function getProcessFromOwner(owner: string) {
+export async function getDefaultProcess(owner: string) {
   let start = performance.now();
-  // console.log('==> [getProcessFromOwner]');
+  // console.log('==> [getDefaultProcess]');
 
   const queryObject = {
     query:
@@ -563,7 +555,8 @@ export async function getProcessFromOwner(owner: string) {
           owners: "${owner}"
           tags: [
             { name: "Data-Protocol", values: ["ao"] },
-            { name: "Type", values: ["Process"] }
+            { name: "Type", values: ["Process"] },
+            { name: "Name", values: ["aotwitter"]}
           ]
         ) {
           edges {
@@ -579,15 +572,15 @@ export async function getProcessFromOwner(owner: string) {
     let response = await fetchGraphQL(queryObject);
 
     let end = performance.now();
-    // console.log(`<== [getProcessFromOwner] [${Math.round(end - start)} ms]`);
+    // console.log(`<== [getDefaultProcess] [${Math.round(end - start)} ms]`);
 
     if (response.length == 0)
-      return { success: true, process: '' };
+      return '';
     else
-      return { success: true, process: response[0].node.id };
+      return response[0].node.id;
   } catch (error) {
-    console.log("getProcessFromOwner -> ERR:", error);
-    return { success: false, message: 'getProcessFromOwner failed.' };
+    console.log("getDefaultProcess -> ERR:", error);
+    return '';
   }
 }
 

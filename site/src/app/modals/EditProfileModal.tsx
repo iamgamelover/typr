@@ -137,7 +137,7 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
 
     let process = await getDefaultProcess(Server.service.getActiveAddress());
     if (!process) {
-      this.setState({ alert: 'You have not a default process, try to disconnect and reconnect to ArConnect wallet. Then you would get a process right now.' })
+      this.setState({ alert: 'You have not a process, try to disconnect and reconnect to ArConnect wallet. Then you would get a process right now.' })
       return;
     }
 
