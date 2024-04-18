@@ -368,7 +368,7 @@ class HomePage extends React.Component<{}, HomePageState> {
                 <option value="private">Private</option>
               </select>
 
-              <div className="app-post-button story post reply" onClick={() => this.onPost()}>
+              <div className="app-icon-button" onClick={() => this.onPost()}>
                 <BsSend size={20} />
                 <div>Post</div>
               </div>

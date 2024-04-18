@@ -8,3 +8,23 @@
   justify-content: space-between;
   margin: 10px;
 }
+
+.post-modal-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: -30px;
+}
+
+.post-modal-header-title {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.post-modal-header-balance {
+  display: flex;
+  align-items: center;
+  column-gap: 5px;
+  color: gray;
+  margin-right: 200px;
+}

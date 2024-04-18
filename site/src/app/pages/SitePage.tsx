@@ -59,8 +59,6 @@ class SitePage extends React.Component<{}, SitePageState> {
   }
 
   async getStatus() {
-    console.log("getStatus")
-
     let posts = await getDataFromAO(AO_TWITTER, 'GetPosts');
     // console.log("posts amount:", posts.length)
     this.setState({ posts: posts.length });
@@ -110,8 +108,7 @@ class SitePage extends React.Component<{}, SitePageState> {
             <NavBar />
             
             <div className="app-post-button" onClick={this.onOpen}>
-              <BsSend size={22} />
-              <div>Post</div>
+              <BsSend size={22} />Post
             </div>
 
             {/* <div className='app-portrait-container'>

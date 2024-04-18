@@ -242,15 +242,37 @@ export function isValidUrl(url: string) {
   return pattern.test(url);
 }
 
-// find the first image in the plan content
-export function getFirstImage(content: any) {
-  let image = '';
-  let start = content.indexOf('<img');
+/**
+ * Find the first text line in the string
+ * @param str 
+ * @returns the first text line
+ */
+export function getFirstLine(str: any) {
+  let text = '';
+  let start = str.indexOf('<p>');
 
   if (start != -1) {
-    let end = content.indexOf('>', start);
+    let end = str.indexOf('</p>', start);
     if (end != -1)
-      image = content.substring(start + 10, end - 1);
+      text = str.substring(start + 3, end);
+  }
+
+  return text.substring(0, 100);
+}
+
+/**
+ * Find the first image in the string
+ * @param str 
+ * @returns the image in base64
+ */
+export function getFirstImage(str: any) {
+  let image = '';
+  let start = str.indexOf('<img');
+
+  if (start != -1) {
+    let end = str.indexOf('>', start);
+    if (end != -1)
+      image = str.substring(start + 10, end - 1);
   }
 
   return image;
@@ -342,13 +364,13 @@ export function getTimestamp(exDays: number, hour: number) {
 export function checkContent(quillRef: any, wordCount: number) {
   let message = '';
   let mediaAmount = getMediaAmount(quillRef);
-  if (mediaAmount > 3)
-    return 'Contains up to 3 media files.';
+  if (mediaAmount > 1)
+    return 'Contains up to 1 media file.';
 
   if (wordCount == 0 && mediaAmount == 0)
     message = 'Post is empty.';
-  else if (wordCount > 1000)
-    message = 'Content can be up to 1000 characters long.';
+  else if (wordCount > 500)
+    message = 'Content can be up to 500 characters long.';
 
   return message;
 }
@@ -370,9 +392,14 @@ export function uuid() {
   });
 }
 
+/**
+ * Get the timestamp of now in seconds
+ * @returns Timestamp of now in seconds
+ */
 export function timeOfNow() {
   let now = Math.floor(Date.now() / 1000);
-  return now.toString();
+  return now;
+  // return now.toString();
 }
 
 export async function spawnProcess() {
@@ -483,6 +510,48 @@ export async function getDataFromAO(
 
   if (final.length == 1 && final[0] == '') return '';
   return final;
+}
+
+export async function getDataViaSQLite(
+  process: string,
+  action: string,
+  offset: string,
+  postId?: string,
+  address?: string,
+) {
+
+  let start = performance.now();
+  console.log('==> [getDataViaSQLite]');
+
+  let valPID = '', valAddress = '';
+  if (postId) valPID = postId;
+  if (address) valAddress = address;
+
+  let result;
+  try {
+    result = await dryrun({
+      process: process,
+      tags: [
+        { name: 'Action', value: action },
+        { name: 'offset', value: offset },
+        { name: 'postId', value: valPID },
+        { name: 'address', value: valAddress },
+      ],
+    });
+  } catch (error) {
+    console.log('getDataViaSQLite --> ERR:', error)
+    return '';
+  }
+
+  console.log('action', action);
+  console.log('result', result);
+
+  let data = result.Messages[0].Data;
+
+  let end = performance.now();
+  console.log(`<== [getDataViaSQLite] [${Math.round(end - start)} ms]`);
+
+  return JSON.parse(data);
 }
 
 // check the state of bookmark

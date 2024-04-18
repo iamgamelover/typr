@@ -105,7 +105,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
         <div className='token-page-card'>
           <div className='token-page-title'>AOCRED-Test &nbsp;&nbsp;&nbsp; (AO testnet token)</div>
           {this.state.loading
-            ? <div id="loading" />
+            ? <div style={{ marginTop: '15px', marginBottom: '2px' }} id="loading" />
             : <div className='token-page-text balance'>{this.state.balOfCRED}</div>
           }
         </div>
@@ -113,7 +113,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
         <div className='token-page-card'>
           <div className='token-page-title'>AOT-Test &nbsp;&nbsp;&nbsp; (AO Twitter testnet token)</div>
           {this.state.loading
-            ? <div id="loading" />
+            ? <div style={{ marginTop: '15px', marginBottom: '2px' }} id="loading" />
             : <div className='token-page-text balance'>{numberWithCommas(this.state.balOfAOT)}</div>
           }
         </div>

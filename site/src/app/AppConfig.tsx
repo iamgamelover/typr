@@ -13,7 +13,7 @@ export class AppConfig {
       text: 'Story',
       icon: 'story',
       to: '/story',
-      // beta: true,
+      new: true,
       loggedIn: false
     },
     {
@@ -45,14 +45,12 @@ export class AppConfig {
       text: 'Bookmarks',
       icon: 'bookmarks',
       to: '/bookmarks',
-      new: false,
       loggedIn: true
     },
     {
       text: 'Profile',
       icon: 'profile',
       to: '/profile',
-      new: true,
       loggedIn: true
     },
   ];

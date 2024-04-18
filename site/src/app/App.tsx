@@ -26,7 +26,8 @@ class App extends React.Component<{}, {}> {
         <Routes>
           <Route path='/' element={<SitePage />}>
             <Route index element={<HomePage />} />
-            <Route path='/activity/post/:id' element={<ActivityPostPage />} />
+            <Route path='/post/:id' element={<ActivityPostPage type='post' />} />
+            <Route path='/story/:id' element={<ActivityPostPage type='story' />} />
             <Route path="/story" element={<StoryPage />} />
             <Route path="/token" element={<TokenPage />} />
             <Route path="/games" element={<GamesPage />} />

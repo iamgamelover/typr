@@ -8,6 +8,8 @@
   --section-header-color: rgb(65, 67, 72);
   --link-color: rgb(99, 99, 229);
   --page-max-width: 650px;
+  --fire-color: rgb(207, 82, 45);
+  --fire-color-hover: rgb(185, 71, 36);
 
   --rt-color-white: #fff;
   --rt-color-dark: #222;
@@ -73,7 +75,6 @@ button {
   padding: 0px 20px 0px 20px;
   min-height: 40px;
   min-width: 80px;
-  color: white;
 }
 
 .button:disabled, button[disabled] {
@@ -205,6 +206,33 @@ a {
   font-size: large;
 }
 
+.app-icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  column-gap: 10px;
+  padding: 2px 13px;
+  color: white;
+  cursor: pointer;
+  border-radius: 7px;
+  cursor: pointer;
+  min-width: 80px;
+  min-height: 40px;
+  background-color: var(--section-header-color);
+}
+
+.app-icon-button:hover {
+  background-color: rgb(85, 87, 92);
+}
+
+.fire-color {
+  background-color: var(--fire-color);
+}
+
+.fire-color:hover {
+  background-color: var(--fire-color-hover);
+}
+
 .app-post-button {
   display: flex;
   align-items: center;
@@ -223,35 +251,6 @@ a {
 }
 
 .app-post-button:hover {
-  background-color: rgb(85, 87, 92);
-}
-
-.story {
-  width: 100px;
-  padding: 7px 10px;
-  margin-left: 0px;
-  margin-top: 2px;
-  font-size: 16px;
-  column-gap: 7px;
-  border-radius: 10px;
-  background-color: rgb(207, 82, 45);
-}
-
-.story:hover {
-  background-color: rgb(185, 71, 36);
-}
-
-.post {
-  margin-top: 0px;
-  font-size: 17px;
-}
-
-.reply {
-  column-gap: 10px;
-  background-color: var(--section-header-color);
-}
-
-.reply:hover {
   background-color: rgb(85, 87, 92);
 }
 

@@ -14,6 +14,9 @@ import { Server } from '../../server/server';
 import { subscribe } from '../util/event';
 import { Tooltip } from 'react-tooltip'
 import BountyModal from '../modals/BountyModal';
+import { FaCoins } from 'react-icons/fa';
+import { IoMdChatbubbles } from 'react-icons/io';
+import { PiChatsFill, PiChatsThin } from "react-icons/pi";
 
 interface ActivityPostProps {
   data: any;
@@ -77,7 +80,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   componentDidMount() {
-    this.getPostContent();
     this.start();
 
     const links = document.querySelectorAll("[id^='url']");
@@ -98,6 +100,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   async start() {
+    this.getPostContent();
+    
     // for testing
     this.setState({ isBookmarked: this.props.data.isBookmarked });
 
@@ -234,13 +238,9 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   goPostPage(id: string) {
-    if (window.location.pathname.indexOf('/activity/post/') == 0)
-      return;
-
-    this.setState({ navigate: "/activity/post/" + id });
-
-    // if (this.props.beforeJump)
-    //   this.props.beforeJump();
+    let pathname = window.location.pathname;
+    if (pathname.indexOf('/post/') == 0 || pathname.indexOf('/story/') == 0) return;
+    this.setState({ navigate: "/post/" + id });
   }
 
   onClose() {
@@ -277,7 +277,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           onClick={(e) => this.openBounty(e)}
         >
           <div className='activity-post-action-icon'>
-            <BsCoin />
+            {/* <BsCoin /> */}
+            <FaCoins />
           </div>
           <div className='activity-post-action-number'>
             {numberWithCommas(data.coins)}
@@ -350,7 +351,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
           <div className="home-msg-address">{address}</div>
           <div className='home-msg-time'>
-            &#x2022;&nbsp;&nbsp;{formatTimestamp(data.time)}
+            ·&nbsp;&nbsp;{formatTimestamp(data.time)}
           </div>
 
           {this.props.isPostPage && this.props.txid &&

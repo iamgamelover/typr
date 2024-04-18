@@ -5,14 +5,17 @@ import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
 import MessageModal from '../modals/MessageModal';
 import AlertModal from '../modals/AlertModal';
-import { BsFillArrowLeftCircleFill, BsPlugin, BsReply } from 'react-icons/bs';
+import { BsFillArrowLeftCircleFill, BsReply } from 'react-icons/bs';
 import { subscribe } from '../util/event';
-import { checkContent, getDataFromAO, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, getDefaultProcess, isBookmarked } from '../util/util';
-import { AO_TWITTER, TIP_IMG } from '../util/consts';
+import { checkContent, getDataFromAO, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, isBookmarked, getDataViaSQLite } from '../util/util';
+import { AO_STORY, AO_TWITTER, TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
-import { AiOutlineFire } from "react-icons/ai";
 import QuestionModal from '../modals/QuestionModal';
 import Loading from '../elements/Loading';
+
+interface ActivityPostPageProps {
+  type: string;
+}
 
 interface ActivityPostPageState {
   post: any;
@@ -27,13 +30,14 @@ interface ActivityPostPageState {
   txid: string;
 }
 
-class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
+class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPostPageState> {
 
   quillRef: any;
   wordCount = 0;
   postId: string;
+  process: string;
 
-  constructor(props: {}) {
+  constructor(props: ActivityPostPageProps) {
     super(props);
     this.state = {
       post: '',
@@ -77,11 +81,33 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     window.scrollTo(0, 0);
     let address = await isLoggedIn();
     this.setState({ isLoggedIn: address, address });
-    this.getPost();
+
+    let type = this.props.type;
+    if (type == 'post') {
+      this.postId = window.location.pathname.substring(6);
+      this.process = AO_TWITTER;
+      this.getPost();
+    }
+    else if (type == 'story') {
+      this.postId = window.location.pathname.substring(7);
+      this.process = AO_STORY;
+      this.getStory();
+    }
+  }
+
+  async getStory() {
+    let post = await getDataViaSQLite(AO_STORY, 'GetStories', '0', this.postId);
+    console.log("story:", post)
+    if (post.length == 0) {
+      this.setState({ alert: 'Story not found.' });
+      return;
+    }
+
+    this.setState({ post: post[0], loading: false });
+    this.getReplies();
   }
 
   async getPost() {
-    this.postId = window.location.pathname.substring(15);
     let post = Server.service.getPostFromCache(this.postId);
 
     if (!post) {
@@ -95,7 +121,7 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     }
 
     this.setState({ post, loading: false });
-    this.getReplies(this.postId);
+    this.getReplies();
 
     let txid = await this.getTxidOfPost(this.postId);
     this.setState({ txid });
@@ -133,8 +159,17 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     return data;
   }
 
-  async getReplies(postId: string) {
-    let replies = await getDataFromAO(AO_TWITTER, 'GetReplies', null, null, postId);
+  async getReplies() {
+    let replies;
+    let type = this.props.type;
+    if (type == 'post') {
+      replies = await getDataFromAO(AO_TWITTER, 'GetReplies', null, null, this.postId);
+    }
+    else if (type == 'story') {
+      replies = await getDataViaSQLite(AO_STORY, 'GetReplies', '0', this.postId);
+      console.log("Story:replies:", replies)
+    }
+
     this.setState({
       replies: replies ? replies : [],
       loading_reply: false
@@ -165,16 +200,35 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
       likes: 0, replies: 0, coins: 0, time: timeOfNow()
     };
 
-    let response = await messageToAO(AO_TWITTER, data, 'SendReply');
+    let response = await messageToAO(this.process, data, 'SendReply');
+    // if (this.props.type == 'story') {
+    //   console.log('AO_STORY -> reply', data)
+    //   response = await messageToAO(AO_STORY, data, 'SendReply');
+    // }
+    // else
+    //   response = await messageToAO(AO_TWITTER, data, 'SendReply');
 
     if (response) {
       this.quillRef.setText('');
       this.state.post.replies += 1;
-      this.state.replies.push(JSON.stringify(data));
-      this.setState({ message: '', replies: this.state.replies, post: this.state.post });
+
+      if (this.props.type == 'story')
+        this.state.replies.push(data);
+      else
+        this.state.replies.push(JSON.stringify(data));
+
+      this.setState({
+        message: '',
+        replies: this.state.replies,
+        post: this.state.post
+      });
 
       // update the amount of replies
-      messageToAO(AO_TWITTER, this.postId, 'UpdateReply');
+      messageToAO(this.process, this.postId, 'UpdateReply');
+      // if (this.props.type == 'story')
+      //   messageToAO(AO_STORY, this.postId, 'UpdateReply');
+      // else
+      //   messageToAO(AO_TWITTER, this.postId, 'UpdateReply');
     }
     else
       this.setState({ message: '', alert: TIP_IMG })
@@ -190,11 +244,11 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     let divs = [];
     let replies = this.state.replies;
 
-    for (let i = replies.length - 1; i >= 0; i--)
+    for (let i = 0; i < replies.length; i++)
       divs.push(
         <ActivityPost
           key={i}
-          data={JSON.parse(replies[i])}
+          data={this.props.type == 'post' ? JSON.parse(replies[i]) : replies[i]}
           isReply={true}
         />
       )
@@ -206,10 +260,6 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
     window.history.back();
   }
 
-  toStory() {
-    this.setState({ question: "Why don't you turn the post into a story? Show your support for the author!" });
-  }
-
   render() {
     let date = new Date(this.state.post.time * 1000).toLocaleString();
 
@@ -217,22 +267,15 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
       <div className="activity-post-page">
         <div className="activity-post-page-header" onClick={() => this.onBack()}>
           <div className="activity-post-page-back-button"><BsFillArrowLeftCircleFill /></div>
-          <div>{this.state.loading ? 'Loading...' : 'Post'}</div>
+          <div>
+            {this.state.loading ? 'Loading...' :
+              this.props.type == 'post' ? 'Post' : 'Story'}
+          </div>
           {date != 'Invalid Date' && <div className='activity-post-time'>&#x2022;&nbsp;&nbsp;{date}</div>}
         </div>
 
         {!this.state.loading &&
           <ActivityPost data={this.state.post} isPostPage={true} txid={this.state.txid} />
-        }
-
-        {!this.state.loading &&
-          <div className='activity-post-page-story-row'>
-            <div className="app-post-button story" onClick={() => this.toStory()}>
-              <AiOutlineFire size={23} />
-              <div>To Story</div>
-            </div>
-            <div><BsPlugin size={18} />&nbsp;&nbsp;&nbsp;1 / 100</div>
-          </div>
         }
 
         {!this.state.loading && this.state.isLoggedIn && !this.state.loading_reply &&
@@ -244,9 +287,8 @@ class ActivityPostPage extends React.Component<{}, ActivityPostPageState> {
             />
 
             <div className='activity-post-page-action'>
-              <div className="app-post-button story reply" onClick={() => this.onReply()}>
-                <BsReply size={23} />
-                <div>Reply</div>
+              <div className="app-icon-button" onClick={() => this.onReply()}>
+                <BsReply size={20} />Reply
               </div>
             </div>
           </div>

@@ -36,6 +36,7 @@ class BookmarksPage extends React.Component<{}, BookmarksPageState> {
   }
 
   async start() {
+    window.scrollTo(0, 0);
     let address = await isLoggedIn();
     this.setState({ isLoggedIn: address, address });
     this.getBookmarks(address);
@@ -54,7 +55,7 @@ class BookmarksPage extends React.Component<{}, BookmarksPageState> {
       return (<div>Loading...</div>);
 
     let bookmarks = this.state.bookmarks;
-    bookmarks.sort((a:any, b:any) => {
+    bookmarks.sort((a: any, b: any) => {
       return b.time - a.time;
     });
 
@@ -95,14 +96,8 @@ class BookmarksPage extends React.Component<{}, BookmarksPageState> {
           <div className='bookmarks-page-header-title'>Bookmarks</div>
 
           {this.state.bookmarks.length > 0 &&
-            <div
-              className="app-post-button story reply"
-              data-tooltip-id="my-tooltip"
-              data-tooltip-content="Upload bookmarks to AO"
-              onClick={() => this.upload2AO()}
-            >
-              <BsCloudUpload size={23} />
-              <div>Upload</div>
+            <div className="app-icon-button" onClick={() => this.upload2AO()}>
+              <BsCloudUpload size={20} />Upload to AO
             </div>
           }
         </div>

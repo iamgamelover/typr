@@ -109,3 +109,9 @@
   color: black;
   min-width: 45px;
 }
+
+.question-modal-button-no {
+  color: black;
+  background-color: white;
+  border: 1px solid gray;
+}

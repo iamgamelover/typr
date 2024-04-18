@@ -5,20 +5,28 @@ import './Modal.css'
 import './PostModal.css'
 import MessageModal from './MessageModal';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
-import { AO_TWITTER, TIP_IMG } from '../util/consts';
-import { checkContent, getWalletAddress, timeOfNow, uuid, messageToAO, storePostInLocal } from '../util/util';
+import { AO_STORY, AO_TWITTER, STORY_INCOME, TIP_IMG } from '../util/consts';
+import { checkContent, getWalletAddress, timeOfNow, uuid, messageToAO, storePostInLocal, numberWithCommas, transferToken } from '../util/util';
+import { MdOutlineToken } from 'react-icons/md';
+import { Server } from '../../server/server';
+import { AiOutlineFire } from 'react-icons/ai';
+import QuestionModal from './QuestionModal';
 
 declare var window: any;
 
 interface PostModalProps {
   open: boolean;
   onClose: Function;
+  isStory?: boolean;
 }
 
 interface PostModalState {
   message: string;
   alert: string;
+  question: string;
+  title: string;
   range: string;
+  category: string;
 }
 
 class PostModal extends React.Component<PostModalProps, PostModalState> {
@@ -32,11 +40,26 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
     this.state = {
       message: '',
       alert: '',
+      question: '',
+      title: '',
       range: 'everyone',
+      category: 'Travel',
     }
 
     this.onContentChange = this.onContentChange.bind(this);
     this.onRangeChange = this.onRangeChange.bind(this);
+    this.onCategoryChange = this.onCategoryChange.bind(this);
+    this.onQuestionYes = this.onQuestionYes.bind(this);
+    this.onQuestionNo = this.onQuestionNo.bind(this);
+  }
+
+  onQuestionYes() {
+    this.onPost();
+    this.setState({ question: '' });
+  }
+
+  onQuestionNo() {
+    this.setState({ question: '' });
   }
 
   onContentChange(length: number) {
@@ -46,6 +69,19 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
   onRangeChange(e: React.FormEvent<HTMLSelectElement>) {
     const element = e.target as HTMLSelectElement;
     this.setState({ range: element.value });
+  }
+
+  onCategoryChange(e: any) {
+    this.setState({ category: e.currentTarget.value });
+  };
+
+  // onCategoryChange(e: React.FormEvent<HTMLSelectElement>) {
+  //   const element = e.target as HTMLSelectElement;
+  //   this.setState({ category: element.value });
+  // }
+
+  tipTransfer() {
+    this.setState({ question: 'Publish a story will spend 100 AOT-Test token.' })
   }
 
   async onPost() {
@@ -69,23 +105,56 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
 
     let data = {
       id: uuid(), address, nickname, post, range: this.state.range,
+      category: this.state.category,
       likes: 0, replies: 0, coins: 0, time: timeOfNow()
     };
 
-    let response = await messageToAO(AO_TWITTER, data, 'SendPost');
+    let response;
+    if (this.props.isStory)
+      response = await messageToAO(AO_STORY, data, 'SendStory');
+    else
+      response = await messageToAO(AO_TWITTER, data, 'SendPost');
 
     if (response) {
       // this.quillRef.setText('');
+      if (this.props.isStory)
+        await this.transferFee();
+
       this.setState({ message: '' });
-      this.props.onClose();
-      storePostInLocal(data);
-      
-      // This code store the post id. 
-      let idInfo = { address, postId: data.id, txid: response, time: data.time };
-      messageToAO(AO_TWITTER, idInfo, 'SendPostID');
+      this.props.onClose(data);
+
+      if (!this.props.isStory)
+        storePostInLocal(data);
+
+      if (!this.props.isStory) {
+        // This code store the post id. 
+        let idInfo = { address, postId: data.id, txid: response, time: data.time };
+        messageToAO(AO_TWITTER, idInfo, 'SendPostID');
+      }
     }
     else
       this.setState({ message: '', alert: TIP_IMG });
+  }
+
+  async transferFee() {
+    this.setState({ message: 'transferFee...' });
+
+    // your own process 
+    let from = Server.service.getDefaultProcess();
+    console.log("from:", from)
+
+    let bal = Number(Server.service.getBalanceOfAOT());
+    if (bal < 100) {
+      this.setState({ alert: 'Insufficient balance.', message: '' });
+      return;
+    }
+
+    await transferToken(from, STORY_INCOME, '100');
+
+    this.setState({ message: '' });
+
+    let bal_new = (bal - 100).toString();
+    Server.service.setBalanceOfAOT(bal_new);
   }
 
   render() {
@@ -99,34 +168,70 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
             <BsFillXCircleFill />
           </button>
 
+          {this.props.isStory &&
+            <div>
+              <div className='post-modal-header-row'>
+                <div className="post-modal-header-title">New Story</div>
+                <div className='post-modal-header-balance'>
+                  <MdOutlineToken size={20} />
+                  {numberWithCommas(Number(Server.service.getBalanceOfAOT()))}
+                </div>
+              </div>
+              <div className='bounty-modal-header-line' />
+            </div>
+          }
+
           <div className="home-input-container">
             <SharedQuillEditor
-              placeholder='What is happening?!'
+              placeholder={this.props.isStory ? 'The first text line and image are the story name and cover.' : 'What is happening?!'}
               onChange={this.onContentChange}
               getRef={(ref: any) => this.quillRef = ref}
             />
 
             <div className='post-modal-actions'>
-              <select
-                className="home-filter"
-                value={this.state.range}
-                onChange={this.onRangeChange}
-              >
-                <option value="everyone">Everyone</option>
-                <option value="following">Following</option>
-                <option value="private">Private</option>
-              </select>
+              {this.props.isStory
+                ?
+                <select
+                  className="home-filter"
+                  value={this.state.category}
+                  onChange={this.onCategoryChange}
+                >
+                  <option value="travel">Travel</option>
+                  <option value="travel">Learn</option>
+                  <option value="normal">Fiction</option>
+                  <option value="music">Music</option>
+                  <option value="sports">Sports</option>
+                  <option value="movies">Movies</option>
+                </select>
+                :
+                <select
+                  className="home-filter"
+                  value={this.state.range}
+                  onChange={this.onRangeChange}
+                >
+                  <option value="everyone">Everyone</option>
+                  <option value="following">Following</option>
+                  <option value="private">Private</option>
+                </select>
+              }
 
-              <div className="app-post-button story post reply" onClick={() => this.onPost()}>
-                <BsSend size={20} />
-                <div>Post</div>
-              </div>
+              {this.props.isStory
+                ?
+                <div className="app-icon-button fire-color" onClick={() => this.tipTransfer()}>
+                  <AiOutlineFire size={20} />New Story
+                </div>
+                :
+                <div className="app-icon-button" onClick={() => this.onPost()}>
+                  <BsSend size={20} />Post
+                </div>
+              }
             </div>
           </div>
         </div>
 
         <MessageModal message={this.state.message} />
         <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />
+        <QuestionModal message={this.state.question} onYes={this.onQuestionYes} onNo={this.onQuestionNo} />
       </div>
     )
   }

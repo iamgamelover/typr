@@ -136,6 +136,7 @@
 .home-filter {
   width: 120px;
   border: none;
+  outline: none;
 }
 
 .home-page-tip-new-posts {

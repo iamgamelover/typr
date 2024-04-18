@@ -8,7 +8,7 @@ import { getDefaultProcess, messageToAO, numberWithCommas, transferToken } from 
 import { MdOutlineToken } from "react-icons/md";
 import { AiOutlineFire } from 'react-icons/ai';
 import { Server } from '../../server/server';
-import { AO_TWITTER } from '../util/consts';
+import { AO_STORY, AO_TWITTER } from '../util/consts';
 
 interface BountyModalProps {
   open: boolean;
@@ -111,10 +111,16 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     let bal_new = (bal - Number(qty)).toString();
     Server.service.setBalanceOfAOT(bal_new);
 
-    // update the bounty (coins) to AO
+    // TODO: update the bounty (coins)
     let data = { id: this.props.data.id, coins: qty }
     console.log("data:", data)
-    messageToAO(AO_TWITTER, data, 'UpdateBounty');
+
+    let pathname = window.location.pathname;
+    console.log("pathname:", pathname)
+    if (pathname.indexOf('/story/') == 0)
+      messageToAO(AO_STORY, data, 'UpdateBounty');
+    else
+      messageToAO(AO_TWITTER, data, 'UpdateBounty');
   }
 
   render() {
