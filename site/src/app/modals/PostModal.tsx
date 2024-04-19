@@ -6,7 +6,7 @@ import './PostModal.css'
 import MessageModal from './MessageModal';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import { AO_STORY, AO_TWITTER, STORY_INCOME, TIP_IMG } from '../util/consts';
-import { checkContent, getWalletAddress, timeOfNow, uuid, messageToAO, storePostInLocal, numberWithCommas, transferToken } from '../util/util';
+import { checkContent, getWalletAddress, timeOfNow, uuid, messageToAO, storePostInLocal, numberWithCommas, transferToken, getDefaultProcess } from '../util/util';
 import { MdOutlineToken } from 'react-icons/md';
 import { Server } from '../../server/server';
 import { AiOutlineFire } from 'react-icons/ai';
@@ -97,6 +97,11 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
       return;
     }
 
+    if (this.props.isStory) {
+      let resp = await this.transferFee();
+      if (!resp) return;
+    }
+
     this.setState({ message: 'Posting...' });
 
     let post = this.quillRef.root.innerHTML;
@@ -116,9 +121,6 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
       response = await messageToAO(AO_TWITTER, data, 'SendPost');
 
     if (response) {
-      if (this.props.isStory)
-        await this.transferFee();
-
       this.setState({ message: '' });
       this.props.onClose(data);
 
@@ -142,14 +144,28 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
   async transferFee() {
     this.setState({ message: 'Transfering Fee...' });
 
+    //-------------------
+    // TODO: need to update...
     // your own process 
     let from = Server.service.getDefaultProcess();
     console.log("from:", from)
+    if (!from) {
+      let address = await getWalletAddress();
+      from = await getDefaultProcess(address);
+      console.log("from 2:", from)
+    }
+
+    if (!from) {
+      this.setState({ alert: "You haven't a process yet, try to reconnect to wallet.", message: '' });
+      return false;
+    }
+    //-------------------
 
     let bal = Number(Server.service.getBalanceOfAOT());
+    console.log("bal:", bal)
     if (bal < 100) {
       this.setState({ alert: 'Insufficient balance.', message: '' });
-      return;
+      return false;
     }
 
     await transferToken(from, STORY_INCOME, '100');
@@ -158,6 +174,7 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
 
     let bal_new = (bal - 100).toString();
     Server.service.setBalanceOfAOT(bal_new);
+    return true;
   }
 
   render() {

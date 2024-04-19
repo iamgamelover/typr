@@ -116,7 +116,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
   async getStats(posts: any) {
     for (let i = 0; i < posts.length; i++) {
       let stats = await getDataViaSQLite(AO_STORY, 'GetStats', '0', posts[i].id);
-      console.log("stats:", stats)
+      // console.log("stats:", stats)
       if (stats[0].total_coins) {
         posts[i].coins += stats[0].total_coins;
         posts[i].likes += stats[0].total_likes;
