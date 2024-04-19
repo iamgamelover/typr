@@ -210,7 +210,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  column-gap: 10px;
+  column-gap: 5px;
   padding: 2px 13px;
   color: white;
   cursor: pointer;

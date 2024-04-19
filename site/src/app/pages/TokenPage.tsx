@@ -90,16 +90,17 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   }
 
   render() {
+    let process = this.state.process;
+    if (!process) process = 'Try to disconnect and reconnect to the wallet on the Home page.';
+
     return (
       <div className='token-page'>
-        {/* <div className='token-page-card'>
-          <div className='token-page-title'>Your wallet address</div>
-          <div className='token-page-text'>{this.state.address}</div>
-        </div> */}
-
         <div className='token-page-card'>
           <div className='token-page-title'>Your Process ID</div>
-          <div className='token-page-text'>{this.state.process}</div>
+          {this.state.loading
+            ? <div style={{ marginTop: '15px', marginBottom: '2px' }} id="loading" />
+            : <div className='token-page-text'>{process}</div>
+          }
         </div>
 
         <div className='token-page-card'>
@@ -117,14 +118,6 @@ class TokenPage extends React.Component<{}, TokenPageState> {
             : <div className='token-page-text balance'>{numberWithCommas(this.state.balOfAOT)}</div>
           }
         </div>
-
-        {/* <div className='token-page-label'>Name</div>
-        <input
-          className="token-page-input"
-          placeholder="nickname"
-          value={this.state.nickname}
-          onChange={this.onChangeName}
-        /> */}
 
         {!this.state.hasAOT &&
           <div><button onClick={() => this.getAOT()}>Get 10,000 AOT-Test</button></div>

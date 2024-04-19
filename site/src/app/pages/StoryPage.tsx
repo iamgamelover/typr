@@ -6,21 +6,14 @@ import PostModal from '../modals/PostModal';
 import { getDataViaSQLite } from '../util/util';
 import { AO_STORY, PAGE_SIZE } from '../util/consts';
 import Loading from '../elements/Loading';
+import { Server } from '../../server/server';
 
 declare var window: any;
 
 interface StoryPageState {
   posts: any;
-  nickname: string;
-  question: string;
-  alert: string;
-  message: string;
   loading: boolean;
   loadNextPage: boolean;
-  range: string;
-  isLoggedIn: string;
-  address: string;
-  process: string;
   open: boolean;
   isAll: boolean;
 }
@@ -33,16 +26,8 @@ class StoryPage extends React.Component<{}, StoryPageState> {
     super(props);
     this.state = {
       posts: [],
-      nickname: '',
-      question: '',
-      alert: '',
-      message: '',
       loading: true,
       loadNextPage: false,
-      range: 'everyone',
-      isLoggedIn: '',
-      address: '',
-      process: '',
       open: false,
       isAll: false
     };
@@ -87,7 +72,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
   }
 
   onClose(data: any) {
-    console.log("onClose:", data)
+    // console.log("onClose:", data)
     this.setState({ open: false });
     if (data) {
       this.getStory();
@@ -107,6 +92,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
       this.setState({ isAll: true })
 
     this.setState({ posts, loading: false });
+    this.getStats(posts);
   }
 
   async nextPage() {
@@ -124,6 +110,20 @@ class StoryPage extends React.Component<{}, StoryPageState> {
 
     // Server.service.addPostsToCache(posts);
     this.setState({ posts: total, loadNextPage: false });
+    this.getStats(posts);
+  }
+
+  async getStats(posts: any) {
+    for (let i = 0; i < posts.length; i++) {
+      let stats = await getDataViaSQLite(AO_STORY, 'GetStats', '0', posts[i].id);
+      console.log("stats:", stats)
+      if (stats[0].total_coins) {
+        posts[i].coins += stats[0].total_coins;
+        posts[i].likes += stats[0].total_likes;
+      }
+    }
+
+    this.forceUpdate();
   }
 
   renderStories() {
@@ -179,22 +179,15 @@ class StoryPage extends React.Component<{}, StoryPageState> {
   }
 
   render() {
-    let data = {
-      id: 1, publisher: 'ZC', time: '12',
-      title: 'A Journey of Train Station Stamp at Tokyo, Japan.'
-    }
-
     return (
       <div className='story-page'>
         <div className='story-page-header'>
           <div className='story-page-title'>Stories</div>
-          <div className="app-icon-button fire-color" onClick={this.onOpen}>
-            <AiOutlineFire size={20} />New Story
-          </div>
-
-          {/* <div className="app-icon-button" onClick={()=>this.getStory()}>
-            <AiOutlineFire size={20} />Test Get
-          </div> */}
+          {Server.service.getIsLoggedIn() &&
+            <div className="app-icon-button fire-color" onClick={this.onOpen}>
+              <AiOutlineFire size={20} />New Story
+            </div>
+          }
         </div>
 
         <div className='story-page-filter-row'>
@@ -204,8 +197,8 @@ class StoryPage extends React.Component<{}, StoryPageState> {
 
           <select
             className="story-page-category"
-            // value={this.state.category}
-            // onChange={this.onCategoryChange}
+          // value={this.state.category}
+          // onChange={this.onCategoryChange}
           >
             <option value="travel">Travel</option>
             <option value="travel">Learn</option>
@@ -221,20 +214,9 @@ class StoryPage extends React.Component<{}, StoryPageState> {
         {this.state.loadNextPage && <Loading />}
         {this.state.isAll &&
           <div style={{ marginTop: '20px', fontSize: '18px', color: 'gray' }}>
-            No more post.
+            No more story.
           </div>
         }
-
-        {/* <div className='story-intro-line'>
-          Once a post receives enough support. <br/>
-          It becomes a featured story. <br/>
-          And the author will earn rewards. <br/>
-          This will inspire the author to write better stories.
-        </div> */}
-
-        {/* <div className='story-intro-line game'>
-          This is a platform where amazing stories can be showcased. 
-        </div> */}
 
         <PostModal isStory={true} open={this.state.open} onClose={this.onClose} />
       </div>

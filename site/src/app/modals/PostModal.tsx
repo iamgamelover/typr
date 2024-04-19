@@ -116,7 +116,6 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
       response = await messageToAO(AO_TWITTER, data, 'SendPost');
 
     if (response) {
-      // this.quillRef.setText('');
       if (this.props.isStory)
         await this.transferFee();
 
@@ -127,9 +126,13 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
         storePostInLocal(data);
 
       if (!this.props.isStory) {
-        // This code store the post id. 
+        // This code store the message id to ao. 
         let idInfo = { address, postId: data.id, txid: response, time: data.time };
         messageToAO(AO_TWITTER, idInfo, 'SendPostID');
+      }
+      else {
+        let idInfo = { id: data.id, txid: response };
+        messageToAO(AO_STORY, idInfo, 'SendTxid');
       }
     }
     else
@@ -137,7 +140,7 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
   }
 
   async transferFee() {
-    this.setState({ message: 'transferFee...' });
+    this.setState({ message: 'Transfering Fee...' });
 
     // your own process 
     let from = Server.service.getDefaultProcess();

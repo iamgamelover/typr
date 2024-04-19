@@ -1,6 +1,6 @@
 import React from 'react';
-import { BsBookmark, BsBookmarkFill, BsChat, BsCoin, BsHeart } from 'react-icons/bs';
-import { convertUrls, getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO, numberWithCommas, uuid } from '../util/util';
+import { BsBookmark, BsBookmarkFill, BsChat, BsHeart, BsHeartFill } from 'react-icons/bs';
+import { convertUrls, getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO, numberWithCommas, timeOfNow, transferToken, uuid } from '../util/util';
 import { formatTimestamp } from '../util/util';
 import './ActivityPost.css';
 import parse, { attributesToProps } from 'html-react-parser';
@@ -15,8 +15,9 @@ import { subscribe } from '../util/event';
 import { Tooltip } from 'react-tooltip'
 import BountyModal from '../modals/BountyModal';
 import { FaCoins } from 'react-icons/fa';
-import { IoMdChatbubbles } from 'react-icons/io';
-import { PiChatsFill, PiChatsThin } from "react-icons/pi";
+import { AO_STORY, STORY_INCOME } from '../util/consts';
+import QuestionModal from '../modals/QuestionModal';
+import MessageModal from '../modals/MessageModal';
 
 interface ActivityPostProps {
   data: any;
@@ -32,7 +33,9 @@ interface ActivityPostState {
   openBounty: boolean;
   navigate: string;
   content: string;
+  message: string;
   alert: string;
+  question: string;
   avatar: string;
   nickname: string;
   address: string;
@@ -63,16 +66,20 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       openBounty: false,
       navigate: '',
       content: '',
+      message: '',
       alert: '',
+      question: '',
       avatar: '',
       nickname: '',
       address: '',
-      isBookmarked: false
+      isBookmarked: false,
     };
 
     this.onBounty = this.onBounty.bind(this);
     this.openBounty = this.openBounty.bind(this);
     this.onClose = this.onClose.bind(this);
+    // this.onQuestionYes = this.onQuestionYes.bind(this);
+    // this.onQuestionNo = this.onQuestionNo.bind(this);
 
     subscribe('wallet-events', () => {
       this.forceUpdate();
@@ -99,9 +106,18 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     }
   }
 
+  // onQuestionYes() {
+  //   this.onLike();
+  //   this.setState({ question: '' });
+  // }
+
+  // onQuestionNo() {
+  //   this.setState({ question: '' });
+  // }
+
   async start() {
     this.getPostContent();
-    
+
     // for testing
     this.setState({ isBookmarked: this.props.data.isBookmarked });
 
@@ -186,9 +202,57 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     this.props.data.coins = qty;
   }
 
-  async onLike(e: any) {
-    e.stopPropagation();
-    this.setState({ alert: 'Like a Post with CRED ^_^' })
+  async onLike() {
+    if (!Server.service.getIsLoggedIn()) {
+      this.setState({ alert:'Please connect to wallet.' });
+      return;
+    }
+
+    this.setState({ message: 'Liking the story...' });
+
+    let id = this.props.data.id;
+    let action = 'UpdateLike';
+    if (this.props.isReply) action = 'UpdateLikeForReply';
+    
+    await messageToAO(AO_STORY, id, action);
+
+    // record the list of liked to ao
+    let data = { id, address: this.props.data.address, time: timeOfNow() }
+    // console.log("data:", data)
+    let SendLike = await messageToAO(AO_STORY, data, 'SendLike');
+
+    // this.onTransfer()
+
+    this.props.data.likes += 1;
+    this.props.data.isLiked = true;
+    this.setState({ message: '' });
+  }
+
+  async onTransfer() {
+    // the user's process to tranfer a bounty
+    let to = await getDefaultProcess(this.props.data.address);
+    console.log("to:", to)
+
+    let alert;
+    if (!to)
+      alert = 'He/She has not a default process to transfer bounty.';
+
+    if (alert) {
+      this.setState({ alert, message: '' });
+      return;
+    }
+
+    await transferToken(STORY_INCOME, to, '1');
+
+    this.setState({ message: '' });
+
+    // refreshing the number that displayed on the post.
+    // this.props.data.coins += 1;
+
+    // TODO: update the bounty (coins)
+    // let data = { id: this.props.data.id, coins: '1' }
+    // console.log("data:", data)
+    // messageToAO(AO_STORY, data, 'UpdateBounty');
   }
 
   async onBookmark(e: any) {
@@ -248,6 +312,10 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   renderActionsRow(data: any) {
+    let isStory = false;
+    if (window.location.pathname.indexOf('/story/') == 0)
+      isStory = true;
+
     return (
       <div className='activity-post-action-row'>
         {!this.props.isReply &&
@@ -261,31 +329,56 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           </div>
         }
 
-        {/* <div className='activity-post-action' onClick={(e) => this.onLike(e)}>
-          <div className='activity-post-action-icon'>
-            <BsHeart />
+        {(isStory || !this.props.isReply) &&
+          <div
+            className='activity-post-action'
+            data-tooltip-id="my-tooltip"
+            data-tooltip-content="Bounty"
+            onClick={(e) => this.openBounty(e)}
+          >
+            <div className='activity-post-action-icon'>
+              <FaCoins />
+            </div>
+            <div className='activity-post-action-number'>
+              {numberWithCommas(data.coins)}
+            </div>
           </div>
-          <div className='activity-post-action-number'>
-            {numberWithCommas(data.likes)}
-          </div>
-        </div> */}
+        }
 
-        <div
-          className='activity-post-action'
-          data-tooltip-id="my-tooltip"
-          data-tooltip-content="Bounty"
-          onClick={(e) => this.openBounty(e)}
-        >
-          <div className='activity-post-action-icon'>
-            {/* <BsCoin /> */}
-            <FaCoins />
+        {isStory &&
+          <div>
+            {data.isLiked
+              ?
+              <div
+                className='activity-post-action'
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content="Liked!"
+              >
+                <div className='activity-post-action-icon'>
+                  <BsHeartFill color='red' />
+                </div>
+                <div className='activity-post-action-number'>
+                  {numberWithCommas(data.likes)}
+                </div>
+              </div>
+              :
+              <div
+                className='activity-post-action'
+                data-tooltip-id="my-tooltip"
+                data-tooltip-content="Like the story and that will get a reward from Life."
+                onClick={() => this.onLike()}
+              >
+                <div className='activity-post-action-icon'>
+                  <BsHeart />
+                </div>
+                <div className='activity-post-action-number'>
+                  {numberWithCommas(data.likes)}
+                </div>
+              </div>}
           </div>
-          <div className='activity-post-action-number'>
-            {numberWithCommas(data.coins)}
-          </div>
-        </div>
+        }
 
-        {Server.service.getIsLoggedIn() && !this.props.isReply &&
+        {Server.service.getIsLoggedIn() && !this.props.isReply && !isStory &&
           <div className='activity-post-action'>
             <div className='activity-post-action-icon'>
               {data.isBookmarked || this.state.isBookmarked
@@ -371,9 +464,18 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
         {this.renderActionsRow(data)}
 
+        <BountyModal
+          open={this.state.openBounty}
+          onClose={this.onClose}
+          onBounty={this.onBounty}
+          data={this.props.data}
+          isReply={this.props.isReply}
+        />
+
         <Tooltip id="my-tooltip" />
-        <BountyModal open={this.state.openBounty} onClose={this.onClose} onBounty={this.onBounty} data={this.props.data} />
+        <MessageModal message={this.state.message} />
         <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />
+        {/* <QuestionModal message={this.state.question} onYes={this.onQuestionYes} onNo={this.onQuestionNo} /> */}
         <ViewImageModal open={this.state.openImage} src={this.imgUrl} onClose={this.onClose} />
       </div>
     )

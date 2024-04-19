@@ -103,8 +103,19 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
       return;
     }
 
+    let isLiked = await getDataViaSQLite(AO_STORY, 'GetLike', '0', this.postId, Server.service.getActiveAddress());
+    console.log("isLiked:", isLiked)
+    if (isLiked.length > 0) {
+      post[0].isLiked = true;
+    }
+
     this.setState({ post: post[0], loading: false });
     this.getReplies();
+
+    let txid = await getDataViaSQLite(AO_STORY, 'GetTxid', '0', this.postId);
+    console.log("txid:", txid)
+    if (txid.length > 0)
+      this.setState({ txid: txid[0].txid });
   }
 
   async getPost() {
@@ -162,18 +173,27 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
   async getReplies() {
     let replies;
     let type = this.props.type;
-    if (type == 'post') {
+    if (type == 'post')
       replies = await getDataFromAO(AO_TWITTER, 'GetReplies', null, null, this.postId);
-    }
-    else if (type == 'story') {
+    else
       replies = await getDataViaSQLite(AO_STORY, 'GetReplies', '0', this.postId);
-      console.log("Story:replies:", replies)
-    }
+
+    console.log("replies:", replies)
 
     this.setState({
       replies: replies ? replies : [],
       loading_reply: false
     });
+
+    //
+    let address = Server.service.getActiveAddress();
+    for (let i = 0; i < replies.length; i++) {
+      let isLiked = await getDataViaSQLite(AO_STORY, 'GetLike', '0', replies[i].id, address);
+      console.log("reply isLiked:", isLiked)
+      if (isLiked.length > 0)
+        replies[i].isLiked = true;
+      this.forceUpdate()
+    }
   }
 
   async onReply() {
@@ -201,19 +221,13 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     };
 
     let response = await messageToAO(this.process, data, 'SendReply');
-    // if (this.props.type == 'story') {
-    //   console.log('AO_STORY -> reply', data)
-    //   response = await messageToAO(AO_STORY, data, 'SendReply');
-    // }
-    // else
-    //   response = await messageToAO(AO_TWITTER, data, 'SendReply');
 
     if (response) {
       this.quillRef.setText('');
       this.state.post.replies += 1;
 
       if (this.props.type == 'story')
-        this.state.replies.push(data);
+        this.state.replies.unshift(data);
       else
         this.state.replies.push(JSON.stringify(data));
 
@@ -225,10 +239,10 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
       // update the amount of replies
       messageToAO(this.process, this.postId, 'UpdateReply');
-      // if (this.props.type == 'story')
-      //   messageToAO(AO_STORY, this.postId, 'UpdateReply');
-      // else
-      //   messageToAO(AO_TWITTER, this.postId, 'UpdateReply');
+
+      // update the txid of this message
+      let idInfo = { id: data.id, txid: response };
+      messageToAO(this.process, idInfo, 'SendTxid');
     }
     else
       this.setState({ message: '', alert: TIP_IMG })
@@ -247,7 +261,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     for (let i = 0; i < replies.length; i++)
       divs.push(
         <ActivityPost
-          key={i}
+          key={uuid()}
           data={this.props.type == 'post' ? JSON.parse(replies[i]) : replies[i]}
           isReply={true}
         />

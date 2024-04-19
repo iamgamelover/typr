@@ -3,10 +3,11 @@ import { Server } from '../../server/server';
 import { formatTimestamp, getFirstImage, getFirstLine } from '../util/util';
 import './StoryCard.css';
 import { NavLink } from 'react-router-dom';
-import { BsGlobe2, BsPersonFillLock, BsTrophy, BsTrophyFill } from 'react-icons/bs';
+import { BsGlobe2, BsHeart, BsHeartFill, BsPersonFillLock, BsTrophy, BsTrophyFill } from 'react-icons/bs';
 import { HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
 import { FaCoins } from "react-icons/fa";
 import { IoMdChatbubbles } from "react-icons/io";
+import { AiOutlineFire } from 'react-icons/ai';
 
 interface StoryCardProps {
   data: any;
@@ -73,9 +74,8 @@ class StoryCard extends React.Component<StoryCardProps, StoryCardState> {
             </div>
 
             <div className='story-card-state'>
-              {/* <FaCoins /> */}
-              <BsGlobe2 />
-              <div className='story-card-state-number'>100</div>
+              <BsHeartFill />
+              <div className='story-card-state-number'>{data.likes}</div>
             </div>
           </div>
         </div>

@@ -67,13 +67,14 @@
   align-items: center;
   cursor: pointer;
   margin-top: 15px;
+  padding: 5px 10px 0 10px;
+  /* background-color: yellowgreen; */
 }
 
-/* .activity-post-action:hover {
+.activity-post-action:hover {
   border-radius: 20px;
-  padding: 0px 10px;
-  background-color: rgb(54, 154, 54);
-} */
+  background-color: yellowgreen;
+}
 
 .activity-post-action-icon {
   margin-right: 7px;

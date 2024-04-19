@@ -515,13 +515,13 @@ export async function getDataFromAO(
 export async function getDataViaSQLite(
   process: string,
   action: string,
-  offset: string,
+  offset?: string,
   postId?: string,
   address?: string,
 ) {
 
   let start = performance.now();
-  console.log('==> [getDataViaSQLite]');
+  // console.log('==> [getDataViaSQLite]');
 
   let valPID = '', valAddress = '';
   if (postId) valPID = postId;
@@ -543,13 +543,13 @@ export async function getDataViaSQLite(
     return '';
   }
 
-  console.log('action', action);
-  console.log('result', result);
+  // console.log('action', action);
+  // console.log('result', result);
 
   let data = result.Messages[0].Data;
 
   let end = performance.now();
-  console.log(`<== [getDataViaSQLite] [${Math.round(end - start)} ms]`);
+  // console.log(`<== [getDataViaSQLite] [${Math.round(end - start)} ms]`);
 
   return JSON.parse(data);
 }

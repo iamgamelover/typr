@@ -13,6 +13,10 @@
   text-decoration: none;
 }
 
+.story-card:hover {
+  background-color: rgb(81, 83, 88);
+}
+
 .story-card-header {
   display: flex;
   align-items: center;
@@ -53,7 +57,7 @@
 
 .story-card-state-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   margin-top: 8px;
 }
 

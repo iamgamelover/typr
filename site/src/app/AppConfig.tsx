@@ -13,7 +13,7 @@ export class AppConfig {
       text: 'Story',
       icon: 'story',
       to: '/story',
-      new: true,
+      beta: true,
       loggedIn: false
     },
     {

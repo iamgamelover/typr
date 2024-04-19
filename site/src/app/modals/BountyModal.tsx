@@ -15,6 +15,7 @@ interface BountyModalProps {
   onClose: Function;
   onBounty: Function;
   data: any;
+  isReply: boolean;
 }
 
 interface BountyModalState {
@@ -111,16 +112,15 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     let bal_new = (bal - Number(qty)).toString();
     Server.service.setBalanceOfAOT(bal_new);
 
-    // TODO: update the bounty (coins)
+    // update the bounty (coins)
     let data = { id: this.props.data.id, coins: qty }
-    console.log("data:", data)
-
-    let pathname = window.location.pathname;
-    console.log("pathname:", pathname)
-    if (pathname.indexOf('/story/') == 0)
-      messageToAO(AO_STORY, data, 'UpdateBounty');
+    let action = 'UpdateBounty';
+    if (this.props.isReply) action = 'UpdateBountyForReply';
+    
+    if (window.location.pathname.indexOf('/story/') == 0)
+      messageToAO(AO_STORY, data, action);
     else
-      messageToAO(AO_TWITTER, data, 'UpdateBounty');
+      messageToAO(AO_TWITTER, data, action);
   }
 
   render() {
