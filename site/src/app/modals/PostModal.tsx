@@ -109,7 +109,7 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
     if (!nickname) nickname = 'anonymous';
 
     let data = {
-      id: uuid(), address, nickname, post, range: this.state.range,
+      id: uuid(), address, post, range: this.state.range,
       category: this.state.category,
       likes: 0, replies: 0, coins: 0, time: timeOfNow()
     };

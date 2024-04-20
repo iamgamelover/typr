@@ -216,7 +216,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     if (!nickname) nickname = 'anonymous';
 
     let data = {
-      id: uuid(), postId: this.postId, address, nickname, post,
+      id: uuid(), post_id: this.postId, address, post,
       likes: 0, replies: 0, coins: 0, time: timeOfNow()
     };
 
