@@ -1,7 +1,7 @@
 import React from 'react';
 import { BsCamera, BsFillXCircleFill } from 'react-icons/bs';
 import { Server } from '../../server/server';
-import { getBannerImage, getDefaultProcess, getPortraitImage, messageToAO, timeOfNow, uuid } from '../util/util';
+import { getBannerImage, getDataFromAO, getDefaultProcess, getPortraitImage, messageToAO, randomAvatar, timeOfNow, uuid } from '../util/util';
 import './Modal.css'
 import './EditProfileModal.css'
 import MessageModal from './MessageModal';
@@ -9,10 +9,12 @@ import AlertModal from './AlertModal';
 import Compressor from 'compressorjs';
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
+import { AO_TWITTER } from '../util/consts';
 
 interface EditProfileModalProps {
   open: boolean;
   onClose: Function;
+  data: any;
 }
 
 interface EditProfileModalState {
@@ -63,16 +65,19 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
     this.start();
   }
 
-  start() {
-    let profile = JSON.parse(localStorage.getItem('profile'));
-    if (profile) {
-      this.setState({
-        banner: profile.banner,
-        avatar: profile.avatar,
-        nickname: profile.nickname,
-        bio: profile.bio,
-      });
-    }
+  async start() {
+    // let profile = JSON.parse(localStorage.getItem('profile'));
+    // let profile = await getDataFromAO(
+    //   MINI_SOCIAL, 'GetProfile', '0', '', Server.service.getActiveAddress()
+    // );
+    // console.log("profile:", profile)
+
+    this.setState({
+      banner: this.props.data.banner,
+      avatar: this.props.data.avatar,
+      nickname: this.props.data.nickname,
+      bio: this.props.data.bio,
+    });
   }
 
   onOpenBannerList() {
@@ -102,18 +107,18 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
   }
 
   async saveProfile() {
-    let profile = JSON.parse(localStorage.getItem('profile'));
+    // let profile = JSON.parse(localStorage.getItem('profile'));
 
-    let dirty = false;
-    if (this.state.banner != profile.banner) dirty = true;
-    if (this.state.avatar != profile.avatar) dirty = true;
-    if (this.state.nickname != profile.nickname) dirty = true;
-    if (this.state.bio != profile.bio) dirty = true;
+    // let dirty = false;
+    // if (this.state.banner != profile.banner) dirty = true;
+    // if (this.state.avatar != profile.avatar) dirty = true;
+    // if (this.state.nickname != profile.nickname) dirty = true;
+    // if (this.state.bio != profile.bio) dirty = true;
 
-    if (!dirty) {
-      this.props.onClose();
-      return;
-    }
+    // if (!dirty) {
+    //   this.props.onClose();
+    //   return;
+    // }
 
     let errorMsg = '';
     if (this.state.nickname.length < 2)
@@ -128,23 +133,25 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
     this.setState({ message: 'Saving profile...' });
 
     let data = {
-      nickname: this.state.nickname,
+      address: Server.service.getActiveAddress(),
       avatar: this.state.avatar,
       banner: this.state.banner,
+      nickname: this.state.nickname,
       bio: this.state.bio,
       time: timeOfNow()
     };
+    console.log("data:", data)
 
-    let process = await getDefaultProcess(Server.service.getActiveAddress());
-    if (!process) {
-      this.setState({ alert: 'You have not a process, try to disconnect and reconnect to ArConnect wallet. Then you would get a process right now.' })
-      return;
-    }
+    // let process = await getDefaultProcess(Server.service.getActiveAddress());
+    // if (!process) {
+    //   this.setState({ alert: 'You have not a process, try to disconnect and reconnect to ArConnect wallet. Then you would get a process right now.' })
+    //   return;
+    // }
 
-    let response = await messageToAO(process, data, 'AOTwitter.setProfile');
+    let response = await messageToAO(AO_TWITTER, data, 'Register');
 
     if (response) {
-      localStorage.setItem('profile', JSON.stringify(data));
+      // localStorage.setItem('profile', JSON.stringify(data));
       this.setState({ message: '' });
       this.props.onClose();
     }
@@ -200,7 +207,7 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
 
   createAvatar() {
     let random = uuid();
-    localStorage.setItem('avatar', random);
+    // localStorage.setItem('avatar', random);
     
     let nickname = localStorage.getItem('nickname');
     const resp = createAvatar(micah, {
@@ -228,8 +235,11 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
           <div>
             <div className="edit-profile-banner-container">
               {/* <img className="edit-profile-banner" src={bannerImage} onClick={()=>this.selectImage(true)} /> */}
-              <img className="edit-profile-banner" src={this.state.banner} />
-              <img className="edit-profile-portrait" src={this.state.avatar} onClick={() => this.selectImage(false)} />
+              <img className="edit-profile-banner" 
+              src={this.state.banner ? this.state.banner : '/banner-default.png'} />
+              <img className="edit-profile-portrait" 
+              src={this.state.avatar ? this.state.avatar : randomAvatar()} 
+              onClick={() => this.selectImage(false)} />
               {/* <BsCamera className="edit-profile-camera" onClick={() => this.selectImage(false)} /> */}
 
               <button

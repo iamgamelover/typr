@@ -105,8 +105,6 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
     this.setState({ message: 'Posting...' });
 
     let post = this.quillRef.root.innerHTML;
-    let nickname = localStorage.getItem('nickname');
-    if (!nickname) nickname = 'anonymous';
 
     let data = {
       id: uuid(), address, post, range: this.state.range,
@@ -127,15 +125,9 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
       if (!this.props.isStory)
         storePostInLocal(data);
 
-      if (!this.props.isStory) {
-        // This code store the message id to ao. 
-        let idInfo = { address, postId: data.id, txid: response, time: data.time };
-        messageToAO(AO_TWITTER, idInfo, 'SendPostID');
-      }
-      else {
-        let idInfo = { id: data.id, txid: response };
-        messageToAO(AO_STORY, idInfo, 'SendTxid');
-      }
+      // store the txid of a post. 
+      let txid = { id: data.id, txid: response };
+      messageToAO(this.props.isStory ? AO_STORY : AO_TWITTER, txid, 'SendTxid');
     }
     else
       this.setState({ message: '', alert: TIP_IMG });

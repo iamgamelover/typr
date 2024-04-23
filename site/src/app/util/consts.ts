@@ -1,5 +1,7 @@
 // export const AO_TWITTER = "Y4ZXUT9jFoHFg3K2XH5MVFf4_mXKHAcCsqgLta1au2U";
-export const AO_TWITTER = "Ekm_mCHSs9mawVqwqTi35qBaT-8DaORzYJ-c9Z3qMhY";
+// export const AO_TWITTER = "Ekm_mCHSs9mawVqwqTi35qBaT-8DaORzYJ-c9Z3qMhY";
+export const AO_TWITTER = "8s1ZpAx_NueKS4N2ZOMYWCkl5qVcGkgnBFSnqSVX9Fo";
+
 export const AO_STORY = "Ur_5hhtX6zQEpFg9jPzFULMTLRvkBfp4bn7Od4Qj4Jk";
 export const STORY_INCOME = "LsNy8F1GSkGvE0IJ6g1RFpHHjKE6tmtXUT91WIv3PMQ";
 export const CRED = "Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc";
@@ -17,42 +19,6 @@ export const ARWEAVE_GATEWAY = "https://arweave.net/";
 export const LUA =
   `
   AOT_TEST = "UabERwDSwechOsHg9M1N6qTk2O7EXPf63qABDTAj_Vs";
-  
-  Bookmarks  = Bookmarks or {}
-  Profile    = Profile or {}
-  
-  Handlers.add("AOTwitter.setBookmark",
-    Handlers.utils.hasMatchingTag("Action", "AOTwitter.setBookmark"),
-    function(msg)
-      print("Setting a bookmark")
-      Bookmarks = msg.Data
-      -- table.insert(Bookmarks, msg.Data)
-    end
-  )
-  
-  Handlers.add("AOTwitter.getBookmarks",
-    Handlers.utils.hasMatchingTag("Action", "AOTwitter.getBookmarks"),
-    function(msg)
-      print("Get bookmarks")
-      Handlers.utils.reply(table.concat(Bookmarks, "▲"))(msg)
-    end
-  )
-  
-  Handlers.add("AOTwitter.setProfile",
-    Handlers.utils.hasMatchingTag("Action", "AOTwitter.setProfile"),
-    function(msg)
-      print("Setting the profile")
-      Profile = msg.Data
-    end
-  )
-  
-  Handlers.add("AOTwitter.getProfile",
-    Handlers.utils.hasMatchingTag("Action", "AOTwitter.getProfile"),
-    function(msg)
-      print("Get the profile")
-      Handlers.utils.reply(Profile)(msg)
-    end
-  )
   
   Handlers.add(
     "TransferAOT",

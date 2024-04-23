@@ -1,0 +1,37 @@
+
+.site-page-portrait-container {
+  display: flex;
+  align-items: center;
+  column-gap: 10px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 30px;
+  margin-top: 30px;
+}
+
+.site-page-portrait-container:hover {
+  background-color: lightgray;
+}
+
+.site-page-portrait {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.site-page-nickname {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.site-page-addr {
+  font-size: 13px;
+  color: gray;
+  /* margin-top: 3px; */
+}
+
+.connect {
+  width: 100px;
+  margin-top: 50px;
+  margin-left: 10px;
+}

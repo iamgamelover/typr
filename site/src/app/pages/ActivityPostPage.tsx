@@ -7,7 +7,7 @@ import MessageModal from '../modals/MessageModal';
 import AlertModal from '../modals/AlertModal';
 import { BsFillArrowLeftCircleFill, BsReply } from 'react-icons/bs';
 import { subscribe } from '../util/event';
-import { checkContent, getDataFromAO, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, isBookmarked, getDataViaSQLite } from '../util/util';
+import { checkContent, getDataFromAO, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, isBookmarked } from '../util/util';
 import { AO_STORY, AO_TWITTER, TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
 import QuestionModal from '../modals/QuestionModal';
@@ -96,14 +96,16 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
   }
 
   async getStory() {
-    let post = await getDataViaSQLite(AO_STORY, 'GetStories', '0', this.postId);
+    // let post = await getDataFromAO(AO_STORY, 'GetStories', '0', this.postId);
+    let post = await getDataFromAO(AO_STORY, 'GetStories', '0');
     console.log("story:", post)
     if (post.length == 0) {
       this.setState({ alert: 'Story not found.' });
       return;
     }
 
-    let isLiked = await getDataViaSQLite(AO_STORY, 'GetLike', '0', this.postId, Server.service.getActiveAddress());
+    // let isLiked = await getDataFromAO(AO_STORY, 'GetLike', '0', this.postId, Server.service.getActiveAddress());
+    let isLiked = await getDataFromAO(AO_STORY, 'GetLike', '0');
     console.log("isLiked:", isLiked)
     if (isLiked.length > 0) {
       post[0].isLiked = true;
@@ -112,7 +114,8 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     this.setState({ post: post[0], loading: false });
     this.getReplies();
 
-    let txid = await getDataViaSQLite(AO_STORY, 'GetTxid', '0', this.postId);
+    // let txid = await getDataFromAO(AO_STORY, 'GetTxid', '0', this.postId);
+    let txid = await getDataFromAO(AO_STORY, 'GetTxid', '0');
     console.log("txid:", txid)
     if (txid.length > 0)
       this.setState({ txid: txid[0].txid });
@@ -134,8 +137,9 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     this.setState({ post, loading: false });
     this.getReplies();
 
-    let txid = await this.getTxidOfPost(this.postId);
-    this.setState({ txid });
+    let txid = await getDataFromAO(AO_TWITTER, 'GetTxid', { id: this.postId });
+    console.log("txid:", txid)
+    this.setState({ txid: txid[0].txid });
   }
 
   checkBookmark(post: any) {
@@ -147,36 +151,20 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     post.isBookmarked = resp;
   }
 
-  async getTxidOfPost(postId: string) {
-    let resp = await getDataFromAO(AO_TWITTER, 'GetPostIDs');
-
-    for (let i = 0; i < resp.length; i++) {
-      let data;
-      try {
-        data = JSON.parse(resp[i]);
-        if (data.postId == postId) return data.txid;
-      } catch (error) {
-        continue;
-      }
-    }
-
-    return '';
-  }
-
   async getPostById(id: string) {
-    let resp = await getDataFromAO(AO_TWITTER, 'GetPosts', null, null, id);
-    let data = JSON.parse(resp[0]);
-    Server.service.addPostToCache(data);
-    return data;
+    let resp = await getDataFromAO(AO_TWITTER, 'GetPosts', { id });
+    console.log("resp:", resp)
+    Server.service.addPostToCache(resp[0]);
+    return resp[0];
   }
 
   async getReplies() {
     let replies;
     let type = this.props.type;
     if (type == 'post')
-      replies = await getDataFromAO(AO_TWITTER, 'GetReplies', null, null, this.postId);
+      replies = await getDataFromAO(AO_TWITTER, 'GetReplies', { post_id: this.postId, offset: 0 });
     else
-      replies = await getDataViaSQLite(AO_STORY, 'GetReplies', '0', this.postId);
+      replies = await getDataFromAO(AO_STORY, 'GetReplies', '0');
 
     console.log("replies:", replies)
 
@@ -188,7 +176,8 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     //
     let address = Server.service.getActiveAddress();
     for (let i = 0; i < replies.length; i++) {
-      let isLiked = await getDataViaSQLite(AO_STORY, 'GetLike', '0', replies[i].id, address);
+      // let isLiked = await getDataFromAO(AO_STORY, 'GetLike', '0', replies[i].id, address);
+      let isLiked = await getDataFromAO(AO_STORY, 'GetLike', '0');
       console.log("reply isLiked:", isLiked)
       if (isLiked.length > 0)
         replies[i].isLiked = true;
@@ -295,7 +284,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
         {!this.state.loading && this.state.isLoggedIn && !this.state.loading_reply &&
           <div className="activity-post-page-reply-container">
             <SharedQuillEditor
-              placeholder='Enter reply...'
+              placeholder='Post your reply'
               onChange={this.onContentChange}
               getRef={(ref: any) => this.quillRef = ref}
             />

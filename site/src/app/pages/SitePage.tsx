@@ -6,12 +6,15 @@ import { getDataFromAO, getDefaultProcess, getTokenBalance, isLoggedIn } from '.
 import { AOT_TEST, AO_TWITTER } from '../util/consts';
 import { Server } from '../../server/server';
 import PostModal from '../modals/PostModal';
+import Portrait from '../elements/Portrait';
+import { subscribe } from '../util/event';
 
 interface SitePageState {
   members: number;
   posts: number;
   replies: number;
   open: boolean;
+  address: string;
 }
 
 class SitePage extends React.Component<{}, SitePageState> {
@@ -22,11 +25,18 @@ class SitePage extends React.Component<{}, SitePageState> {
       members: 0,
       posts: 0,
       replies: 0,
-      open: false
+      open: false,
+      address: '',
     };
 
     this.onOpen = this.onOpen.bind(this);
     this.onClose = this.onClose.bind(this);
+
+    subscribe('wallet-events', () => {
+      let address = Server.service.getIsLoggedIn();
+      console.log("wallet-events -> address:", address)
+      this.setState({ address })
+    });
   }
 
   componentDidMount() {
@@ -34,15 +44,16 @@ class SitePage extends React.Component<{}, SitePageState> {
   }
 
   async start() {
-    let activeAddress = await isLoggedIn();
-    let process = await getDefaultProcess(activeAddress);
+    let address = await isLoggedIn();
+    console.log("site page -> address:", address)
 
-    Server.service.setIsLoggedIn(activeAddress);
-    Server.service.setActiveAddress(activeAddress);
+    Server.service.setIsLoggedIn(address);
+    Server.service.setActiveAddress(address);
+    this.setState({ address })
+
+    let process = await getDefaultProcess(address);
     Server.service.setDefaultProcess(process);
 
-    this.forceUpdate();
-    
     this.getStatus();
     setInterval(() => this.getStatus(), 60000); // 1 min
 
@@ -59,6 +70,8 @@ class SitePage extends React.Component<{}, SitePageState> {
   }
 
   async getStatus() {
+    return
+
     let posts = await getDataFromAO(AO_TWITTER, 'GetPosts');
     // console.log("posts amount:", posts.length)
     this.setState({ posts: posts.length });
@@ -106,15 +119,19 @@ class SitePage extends React.Component<{}, SitePageState> {
         <div className="app-content">
           <div className="app-navbar">
             <NavBar />
-            
-            <div className="app-post-button" onClick={this.onOpen}>
-              <BsSend size={22} />Post
-            </div>
+
+            {this.state.address &&
+              <div className="app-post-button" onClick={this.onOpen}>
+                <BsSend size={22} />Post
+              </div>
+            }
 
             {/* <div className='app-portrait-container'>
               <img className='testao-msg-portrait' src='/portrait-default.png' />
               <div className="testao-msg-nicknam">name</div>
             </div> */}
+
+            <Portrait />
           </div>
 
           <div id="id-app-page" className="app-page">

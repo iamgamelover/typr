@@ -48,12 +48,9 @@ class ChatPage extends React.Component<{}, ChatPageState> {
 
   async start() {
     let address = await getWalletAddress();
-    // console.log("Chat Page --> address:", address)
-    let nickname = localStorage.getItem('nickname');
-    // console.log("Chat Page --> nickname:", nickname)
-
-    this.setState({ address, nickname });
+    this.setState({ address });
     msg_timer = setInterval(this.getMessages, 2000);
+
     setTimeout(() => {
       this.scrollToBottom();
     }, 5000);
@@ -74,6 +71,7 @@ class ChatPage extends React.Component<{}, ChatPageState> {
 
     let data = result.Messages[0].Data;
     let messages = data.split("▲");
+    // console.log("messages:", messages)
 
     if (messages.length == 1 && messages[0] == '') {
       this.setState({ loading: false });
@@ -104,14 +102,17 @@ class ChatPage extends React.Component<{}, ChatPageState> {
       let address = data.address;
       address = address.substring(0, 4) + '...' + address.substring(address.length - 4);
 
-      let avatar;
-      if (owner) {
-        let profile = JSON.parse(localStorage.getItem('profile'));
-        avatar = profile.avatar;
-      }
-      else {
-        avatar = this.createAvatar(data.nickname);
-      }
+      // temp...
+      let avatar = '/portrait-default.png';
+
+      // if (owner) {
+      //   let profile = JSON.parse(localStorage.getItem('profile'));
+      //   console.log("profile:", profile)
+      //   avatar = profile.avatar;
+      // }
+      // else {
+      //   avatar = this.createAvatar(data.nickname);
+      // }
 
       divs.push(
         <div key={i} className={`chat-msg-line ${owner ? 'my-line' : 'other-line'}`}>
@@ -193,17 +194,19 @@ class ChatPage extends React.Component<{}, ChatPageState> {
           {this.renderMessages()}
         </div>
 
-        <div>
-          <input
-            id='input_msg'
-            className="chat-input-message"
-            placeholder="message"
-            value={this.state.msg}
-            onChange={(e) => this.setState({ msg: e.target.value })}
-            onKeyDown={this.handleKeyDown}
-          />
-          <button className="chat-send-button" onClick={() => this.sendMessage()}>Send</button>
-        </div>
+        {this.state.address &&
+          <div>
+            <input
+              id='input_msg'
+              className="chat-input-message"
+              placeholder="message"
+              value={this.state.msg}
+              onChange={(e) => this.setState({ msg: e.target.value })}
+              onKeyDown={this.handleKeyDown}
+            />
+            <button className="chat-send-button" onClick={() => this.sendMessage()}>Send</button>
+          </div>
+        }
 
         {/* <MessageModal message={this.state.message} /> */}
         <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />

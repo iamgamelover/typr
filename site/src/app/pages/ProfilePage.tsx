@@ -4,7 +4,8 @@ import AlertModal from '../modals/AlertModal';
 import EditProfileModal from '../modals/EditProfileModal';
 import MessageModal from '../modals/MessageModal';
 import QuestionModal from '../modals/QuestionModal';
-import { getBannerImage, getDataFromAO, getDefaultProcess, isBookmarked, isLoggedIn, parsePosts } from '../util/util';
+import { getBannerImage, getDataFromAO, getDefaultProcess, getProfile, isBookmarked, 
+  isLoggedIn, messageToAO, randomAvatar, timeOfNow } from '../util/util';
 import { BsCalendarWeek, BsPencilFill } from 'react-icons/bs';
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
@@ -13,6 +14,9 @@ import { Server } from '../../server/server';
 import Loading from '../elements/Loading';
 import ActivityPost from '../elements/ActivityPost';
 import { subscribe } from '../util/event';
+// import Logo from '../elements/Logo';
+import { CiMail } from "react-icons/ci";
+import { NavLink } from 'react-router-dom';
 
 declare var window: any;
 
@@ -32,6 +36,13 @@ interface ProfilePageState {
   joined: string;
   posts: any;
   isAll: boolean;
+  profile: any;
+  followers: number;
+  following: number;
+  isFollowing: boolean;
+  showUnfollow: boolean;
+  butDisable: boolean;
+  isFriend: boolean;
 }
 
 class ProfilePage extends React.Component<{}, ProfilePageState> {
@@ -55,7 +66,14 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
       bio: '',
       joined: '',
       posts: '',
-      isAll: false
+      isAll: false,
+      profile: '',
+      followers: 0,
+      following: 0,
+      isFollowing: false,
+      showUnfollow: false,
+      butDisable: true,
+      isFriend: false,
     };
 
     this.openEditProfile = this.openEditProfile.bind(this);
@@ -99,46 +117,36 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
 
   async start() {
-    // let id = window.location.pathname.substring(6);
+    let id = window.location.pathname.substring(6);
     // console.log("id:", id)
 
     let address = await isLoggedIn();
-    this.setState({ isLoggedIn: address, address });
+    this.setState({ isLoggedIn: address, address: id });
 
-    this.getDateOfJoined(address);
-    this.getPosts(address);
-
-    let profile = JSON.parse(localStorage.getItem('profile'));
-    if (profile) {
-      this.setState({
-        banner: profile.banner,
-        avatar: profile.avatar,
-        nickname: profile.nickname,
-        bio: profile.bio,
-      });
-    }
-    else {
-      // the avatar from dicebear.com
-      this.createAvatar();
-      this.getProfile(address);
-    }
+    // this.getDateOfJoined(address);
+    await this.getPosts(id);
+    await this.getProfile(id);
+    await this.isFollowing();
+    await this.getFollows();
+    // await this.tempGetFollowsTable();
   }
 
   async getPosts(address: string) {
     let posts;
-    let val = localStorage.getItem('your_posts');
-    if (val && val != '[]') posts = JSON.parse(val);
+    // let val = localStorage.getItem('your_posts');
+    // if (val && val != '[]') posts = JSON.parse(val);
     // let posts = Server.service.getPostsInProfileFromCache(address);
-    
+
     let position = Server.service.getPositionInProfileFromCache();
 
     if (!posts) {
-      posts = await getDataFromAO(AO_TWITTER, 'GetOwnerPosts', 1, PAGE_SIZE, null, address);
+      posts = await getDataFromAO(AO_TWITTER, 'GetPosts', '0');
+      console.log("profile->posts:", posts)
       if (posts.length < PAGE_SIZE)
         this.setState({ isAll: true })
 
-      this.checkBookmarks(parsePosts(posts));
-      return;
+      // this.checkBookmarks(parsePosts(posts));
+      // return;
     }
 
     this.checkBookmarks(posts);
@@ -152,20 +160,28 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   async nextPage() {
     this.setState({ loadNextPage: true });
 
-    let pageNo = Server.service.getPageNoInProfile();
-    pageNo += 1;
-    Server.service.setPageNoInProfile(pageNo);
-
-    let posts = await getDataFromAO(AO_TWITTER, 'GetOwnerPosts', pageNo, PAGE_SIZE, null, this.state.address);
+    let posts = await getDataFromAO(AO_TWITTER, 'GetOwnerPosts',null);
 
     if (posts.length < PAGE_SIZE)
       this.setState({ isAll: true })
 
-    let total = this.state.posts.concat(parsePosts(posts));
+    let total = this.state.posts.concat(posts);
     this.checkBookmarks(total);
   }
 
   async checkBookmarks(posts: any) {
+
+    //
+    let address = Server.service.getActiveAddress();
+    for (let i = 0; i < posts.length; i++) {
+      // let isLiked = await getDataFromAO(AO_TWITTER, 'GetLike', '0', posts[i].id, address);
+      let isLiked = await getDataFromAO(AO_TWITTER, 'GetLike', '0');
+      console.log("post isLiked:", isLiked)
+      if (isLiked.length > 0)
+        posts[i].isLiked = true;
+      // this.forceUpdate()
+    }
+
     let bookmarks = [];
     let val = localStorage.getItem('bookmarks');
     if (val) bookmarks = JSON.parse(val);
@@ -177,36 +193,48 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
 
     this.setState({ posts, loading: false, loadNextPage: false });
     // Server.service.addPostsInProfileToCache(this.state.address, posts);
-    localStorage.setItem('your_posts', JSON.stringify(posts))
+    // localStorage.setItem('your_posts', JSON.stringify(posts))
   }
 
   // load profile from the process of user's
   async getProfile(address: string) {
-    let process = await getDefaultProcess(address);
-    let response = await getDataFromAO(process, 'AOTwitter.getProfile');
-
-    let profile = {
-      banner: this.state.banner,
-      avatar: this.state.avatar,
-      nickname: this.state.nickname,
-      bio: this.state.bio,
-    };
-
-    if (response) {
-      profile = JSON.parse(response[0]);
+    let profile = await getProfile(address);
+    console.log("profile:", profile)
+    profile = profile[0];
+    if (profile)
       this.setState({
+        profile,
         banner: profile.banner,
         avatar: profile.avatar,
         nickname: profile.nickname,
         bio: profile.bio,
       })
-    }
 
-    localStorage.setItem('profile', JSON.stringify(profile));
+    // let process = await getDefaultProcess(address);
+    // let response = await getDataFromAO(process, 'AOTwitter.getProfile');
+
+    // let profile = {
+    //   banner: this.state.banner,
+    //   avatar: this.state.avatar,
+    //   nickname: this.state.nickname,
+    //   bio: this.state.bio,
+    // };
+
+    // if (response) {
+    //   profile = JSON.parse(response[0]);
+    //   this.setState({
+    //     banner: profile.banner,
+    //     avatar: profile.avatar,
+    //     nickname: profile.nickname,
+    //     bio: profile.bio,
+    //   })
+    // }
+
+    // localStorage.setItem('profile', JSON.stringify(profile));
   }
 
   async getDateOfJoined(address: string) {
-    let members = await getDataFromAO(AO_TWITTER, 'GetMembers');
+    let members = await getDataFromAO(AO_TWITTER, 'GetMembers',null);
     for (let i = 0; i < members.length; i++) {
       let data = JSON.parse(members[i]);
       if (data.address == address) {
@@ -216,43 +244,144 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     }
   }
 
-  createAvatar() {
-    let nickname = localStorage.getItem('nickname');
-    let random = localStorage.getItem('avatar');
-    const resp = createAvatar(micah, {
-      seed: nickname + random,
-    });
+  // createAvatar() {
+  //   let nickname = localStorage.getItem('nickname');
+  //   let random = localStorage.getItem('avatar');
+  //   const resp = createAvatar(micah, {
+  //     seed: nickname + random,
+  //   });
 
-    const avatar = resp.toDataUriSync();
-    this.setState({ nickname, avatar });
-  }
+  //   const avatar = resp.toDataUriSync();
+  //   this.setState({ nickname, avatar });
+  // }
 
   openEditProfile() {
     this.setState({ openEditProfile: true });
   }
 
   onCloseEditProfile() {
-    let profile = JSON.parse(localStorage.getItem('profile'));
-    if (profile) {
-      this.setState({
-        banner: profile.banner,
-        avatar: profile.avatar,
-        nickname: profile.nickname,
-        bio: profile.bio,
-      });
-    }
+    // let profile = JSON.parse(localStorage.getItem('profile'));
+    // if (profile) {
+    //   this.setState({
+    //     banner: profile.banner,
+    //     avatar: profile.avatar,
+    //     nickname: profile.nickname,
+    //     bio: profile.bio,
+    //   });
+    // }
 
     this.setState({ openEditProfile: false });
+    this.getProfile(this.state.address);
+  }
+
+  async follow() {
+    if (this.state.butDisable) return;
+    this.setState({ butDisable: true })
+
+    let data = { following: this.state.address, follower: Server.service.getActiveAddress(), time: timeOfNow() }
+    // console.log("follow data:", data)
+    await messageToAO(AO_TWITTER, data, 'Follow');
+    await this.isFollowing()
+
+    this.setState({ butDisable: false })
+    await this.getFollows();
+  }
+
+  async unfollow() {
+    if (this.state.butDisable) return;
+    this.setState({ butDisable: true })
+
+    let data = { following: this.state.address, follower: Server.service.getActiveAddress() }
+    // console.log("Unfollow data:", data)
+    await messageToAO(AO_TWITTER, data, 'Unfollow');
+    await this.isFollowing()
+
+    this.setState({ butDisable: false })
+    await this.getFollows();
+  }
+
+  async tempGetFollowsTable() {
+    // TODO: testing...
+    let tempGetFollowsTable = await getDataFromAO(AO_TWITTER, 'TempGetFollowsTable');
+    console.log("tempGetFollowsTable:", tempGetFollowsTable)
+  }
+
+  async getFollows() {
+    let following = await getDataFromAO(AO_TWITTER, 'GetFollowing', this.state.address);
+    console.log("following:", following)
+    this.setState({ following: following.length })
+
+    let followers = await getDataFromAO(AO_TWITTER, 'GetFollowers', this.state.address);
+    console.log("followers:", followers)
+    this.setState({ followers: followers.length })
+  }
+
+  async isFollowing() {
+    // let isFollowing = await getDataFromAO(AO_TWITTER, 'GetFollowing', '0', Server.service.getActiveAddress(), this.state.address);
+    let isFollowing = await getDataFromAO(AO_TWITTER, 'GetFollowing', '0');
+    console.log("isFollowing:", isFollowing)
+    if (isFollowing.length > 0)
+      this.setState({ isFollowing: true, butDisable: false })
+    else
+      this.setState({ isFollowing: false, butDisable: false })
+
+    // let isFollower = await getDataFromAO(AO_TWITTER, 'GetFollowing', '0', this.state.address, Server.service.getActiveAddress());
+    let isFollower = await getDataFromAO(AO_TWITTER, 'GetFollowing', '0');
+    console.log("isFollower:", isFollower)
+
+    if (isFollowing.length > 0 && isFollower.length > 0)
+      this.setState({ isFriend: true });
+    else
+      this.setState({ isFriend: false });
+  }
+
+  showUnfollow() {
+    this.setState({ showUnfollow: true })
+  }
+
+  notShowUnfollow() {
+    this.setState({ showUnfollow: false })
   }
 
   renderActionButtons() {
     if (this.state.loading)
       return (<div className="profile-page-button-container" style={{ height: '42px' }}></div>);
 
+    if (this.state.address !== Server.service.getActiveAddress())
+      return (
+        <div className="profile-page-button-container">
+          {this.state.isFriend &&
+            <NavLink className="profile-page-action-button" to={'/chat/' + this.state.address}>
+              <CiMail />
+            </NavLink>
+          }
+
+          {this.state.isFollowing
+            ? <div
+              className={`profile-page-follow-button ${this.state.showUnfollow ? 'unfollow' : 'following'}`}
+              onMouseEnter={() => this.showUnfollow()}
+              onMouseLeave={() => this.notShowUnfollow()}
+              onClick={() => this.unfollow()}
+            >
+              {this.state.butDisable
+                ? <Loading marginTop='10px' />
+                : this.state.showUnfollow ? 'Unfollow' : 'Following'
+              }
+            </div>
+            : <div className='profile-page-follow-button' onClick={() => this.follow()}>
+              {this.state.butDisable
+                ? <Loading marginTop='10px' />
+                : 'Follow'
+              }
+            </div>
+          }
+        </div>
+      )
+
     return (
       <div className="profile-page-button-container">
-        <div onClick={this.openEditProfile} className="profile-page-action-button">
-          <BsPencilFill />
+        <div onClick={this.openEditProfile} className="profile-page-follow-button following">
+          Edit
         </div>
       </div>
     )
@@ -305,6 +434,10 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     return divs;
   }
 
+  openUserList(str: string) {
+
+  }
+
   render() {
     let joined = new Date(Number(this.state.joined) * 1000).toLocaleString();
     // let bannerImage = getBannerImage('');
@@ -315,9 +448,11 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
 
     return (
       <div className='profile-page'>
+        {/* <Logo /> */}
+
         <div className='profile-page-header'>
-          <img className="profile-page-banner" src={this.state.banner} />
-          <img className="profile-page-portrait" src={this.state.avatar} />
+          <img className="profile-page-banner" src={this.state.banner ? this.state.banner : '/banner-default.png'} />
+          <img className="profile-page-portrait" src={this.state.avatar ? this.state.avatar : randomAvatar()} />
         </div>
 
         {this.renderActionButtons()}
@@ -330,14 +465,29 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
           <div className='profile-page-joined'>Joined {joined}</div>
         </div>
 
+        <div className='profile-page-follow-container'>
+          <div className="profile-page-follow-link" onClick={() => this.openUserList('following')}>
+            <div className='profile-page-follow-number'>{this.state.following}</div>
+            <div className='profile-page-follow-text'>Following</div>
+          </div>
+          <div className="profile-page-follow-link" onClick={() => this.openUserList('followers')}>
+            <div className='profile-page-follow-number'>{this.state.followers}</div>
+            <div className='profile-page-follow-text'>Followers</div>
+          </div>
+        </div>
+
         <div className='profile-page-filter-container'>
           {this.renderFilters()}
         </div>
 
         {this.renderPosts()}
 
-        {!this.state.loading &&
-          <EditProfileModal open={this.state.openEditProfile} onClose={this.onCloseEditProfile} />
+        {!this.state.loading && this.state.profile &&
+          <EditProfileModal
+            open={this.state.openEditProfile}
+            onClose={this.onCloseEditProfile}
+            data={this.state.profile}
+          />
         }
 
         {this.state.loadNextPage && <Loading />}

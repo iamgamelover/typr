@@ -1,6 +1,8 @@
 import { createDataItemSigner, dryrun, message, spawn } from "@permaweb/aoconnect/browser";
 import { AO_TWITTER, ARWEAVE_GATEWAY, MODULE, SCHEDULER } from "./consts";
 import { Server } from "../../server/server";
+import { createAvatar } from '@dicebear/core';
+import { micah } from '@dicebear/collection';
 
 declare var window: any;
 
@@ -408,7 +410,7 @@ export async function spawnProcess() {
       module: MODULE,
       scheduler: SCHEDULER,
       signer: createDataItemSigner(window.arweaveWallet),
-      tags: [{ name: 'Name', value: 'aotwitter' }]
+      tags: [{ name: 'Name', value: 'personal-life-app' }]
     });
 
     return processId;
@@ -460,98 +462,33 @@ export async function messageToAO(process: string, data: any, action: string) {
 export async function getDataFromAO(
   process: string,
   action: string,
-  pageNo?: number,
-  pageSize?: string,
-  postId?: string,
-  address?: string,
-) {
-
-  let start = performance.now();
-  // console.log('==> [getDataFromAO]');
-
-  let valPN = '', valPS = '', valPID = '', valAddress = '';
-  if (pageNo) valPN = pageNo.toString();
-  if (pageSize) valPS = pageSize;
-  if (postId) valPID = postId;
-  if (address) valAddress = address;
-
-  let result;
-  try {
-    result = await dryrun({
-      process: process,
-      tags: [
-        { name: 'Action', value: action },
-        { name: 'pageNo', value: valPN },
-        { name: 'pageSize', value: valPS },
-        { name: 'postId', value: valPID },
-        { name: 'address', value: valAddress },
-      ],
-    });
-  } catch (error) {
-    // console.log('getDataFromAO --> ERR:', error)
-    return '';
-  }
-
-  // console.log('action', action);
-  // console.log('result', result);
-
-  try {
-    if (result.Messages.length == 0) return '';
-  } catch (error) {
-    return '';
-  }
-
-  let data = result.Messages[0].Data;
-  if (!data) return '';
-  let final = data.split("▲");
-
-  let end = performance.now();
-  // console.log(`<== [getDataFromAO] [${Math.round(end - start)} ms]`);
-
-  if (final.length == 1 && final[0] == '') return '';
-  return final;
-}
-
-export async function getDataViaSQLite(
-  process: string,
-  action: string,
-  offset?: string,
-  postId?: string,
-  address?: string,
+  data?: any
 ) {
 
   let start = performance.now();
   // console.log('==> [getDataViaSQLite]');
 
-  let valPID = '', valAddress = '';
-  if (postId) valPID = postId;
-  if (address) valAddress = address;
-
   let result;
   try {
     result = await dryrun({
-      process: process,
-      tags: [
-        { name: 'Action', value: action },
-        { name: 'offset', value: offset },
-        { name: 'postId', value: valPID },
-        { name: 'address', value: valAddress },
-      ],
+      process,
+      data: JSON.stringify(data),
+      tags: [{ name: 'Action', value: action }]
     });
   } catch (error) {
     console.log('getDataViaSQLite --> ERR:', error)
     return '';
   }
 
-  // console.log('action', action);
-  // console.log('result', result);
+  console.log('action', action);
+  console.log('result', result);
 
-  let data = result.Messages[0].Data;
+  let resp = result.Messages[0].Data;
 
   let end = performance.now();
   // console.log(`<== [getDataViaSQLite] [${Math.round(end - start)} ms]`);
 
-  return JSON.parse(data);
+  return JSON.parse(resp);
 }
 
 // check the state of bookmark
@@ -625,7 +562,7 @@ export async function getDefaultProcess(owner: string) {
           tags: [
             { name: "Data-Protocol", values: ["ao"] },
             { name: "Type", values: ["Process"] },
-            { name: "Name", values: ["aotwitter"]}
+            { name: "Name", values: ["personal-life-app"]}
           ]
         ) {
           edges {
@@ -658,23 +595,6 @@ export async function downloadFromArweave(txid: string) {
   let resp = await fetch(url);
   let data = await resp.json();
   return data;
-}
-
-export function parsePosts(posts: any) {
-  let result = [];
-  for (let i = posts.length - 1; i >= 0; i--) {
-    let data;
-    try {
-      data = JSON.parse(posts[i]);
-      Server.service.addPostToCache(data);
-    } catch (error) {
-      continue;
-    }
-
-    result.push(data)
-  }
-
-  return result;
 }
 
 export function storePostInLocal(post: any) {
@@ -711,4 +631,19 @@ export async function transferToken(from: string, to: string, qty: string) {
 
   console.log("transferToken:", messageId)
   return messageId;
+}
+
+export function randomAvatar() {
+  const resp = createAvatar(micah, {
+    seed: uuid(),
+  });
+  return resp.toDataUriSync();
+}
+
+export async function getProfile(address: string) {
+  return await getDataFromAO(AO_TWITTER, 'GetProfile', { address });
+}
+
+export function shortStr(str: string, num: number) {
+  return str.substring(0, num) + '...' + str.substring(str.length - num);
 }

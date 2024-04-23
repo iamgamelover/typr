@@ -3,7 +3,7 @@ import './StoryPage.css';
 import StoryCard from '../elements/StoryCard';
 import { AiOutlineFire } from 'react-icons/ai';
 import PostModal from '../modals/PostModal';
-import { getDataViaSQLite } from '../util/util';
+import { getDataFromAO } from '../util/util';
 import { AO_STORY, PAGE_SIZE } from '../util/consts';
 import Loading from '../elements/Loading';
 import { Server } from '../../server/server';
@@ -85,7 +85,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
   // }
 
   async getStory() {
-    let posts = await getDataViaSQLite(AO_STORY, 'GetStories', '0');
+    let posts = await getDataFromAO(AO_STORY, 'GetStories', '0');
     console.log("stories:", posts)
 
     if (posts.length < PAGE_SIZE)
@@ -101,7 +101,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
     let offset = this.state.posts.length.toString();
     console.log("offset:", offset)
 
-    let posts = await getDataViaSQLite(AO_STORY, 'GetStories', offset);
+    let posts = await getDataFromAO(AO_STORY, 'GetStories', offset);
     console.log("stories:", posts)
     if (posts.length < PAGE_SIZE)
       this.setState({ isAll: true })
@@ -115,7 +115,8 @@ class StoryPage extends React.Component<{}, StoryPageState> {
 
   async getStats(posts: any) {
     for (let i = 0; i < posts.length; i++) {
-      let stats = await getDataViaSQLite(AO_STORY, 'GetStats', '0', posts[i].id);
+      // let stats = await getDataFromAO(AO_STORY, 'GetStats', '0', posts[i].id);
+      let stats = await getDataFromAO(AO_STORY, 'GetStats', '0');
       // console.log("stats:", stats)
       if (stats[0].total_coins) {
         posts[i].coins += stats[0].total_coins;
@@ -136,7 +137,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
       )
     }
 
-    return divs.length > 0 ? divs : <div>No story yet.</div>
+    return divs
   }
 
   onFilter(index: number) {

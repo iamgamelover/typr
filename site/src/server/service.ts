@@ -1,11 +1,10 @@
 export class Service {
+  protected profiles:any;
   protected posts:any;
   protected postsInProfile:any;
   protected post:any;
   protected position:number;
   protected positionInProfile:number;
-  protected pageNo:number = 1;
-  protected pageNoInProfile:number = 1;
 
   protected isLoggedIn:string;
   protected activeAddress:string;
@@ -13,8 +12,17 @@ export class Service {
   protected balanceOfAOT:string;
 
   constructor() {
+    this.profiles = [];
     this.post = [];
     this.postsInProfile = [];
+  }
+
+  public getProfile(id:string) {
+    return this.profiles[id];
+  }
+
+  public addProfileToCache(profile:any) {
+    this.profiles[profile.address] = profile;
   }
 
   public addPositionToCache(position:number) {
@@ -89,19 +97,4 @@ export class Service {
     return this.balanceOfAOT;
   }
   
-  public setPageNo(pageNo:number) {
-    this.pageNo = pageNo;
-  }
-
-  public getPageNo() {
-    return this.pageNo;
-  }
-  
-  public setPageNoInProfile(pageNo:number) {
-    this.pageNoInProfile = pageNo;
-  }
-
-  public getPageNoInProfile() {
-    return this.pageNoInProfile;
-  }
 }

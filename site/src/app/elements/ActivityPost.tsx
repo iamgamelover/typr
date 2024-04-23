@@ -36,8 +36,6 @@ interface ActivityPostState {
   message: string;
   alert: string;
   question: string;
-  avatar: string;
-  nickname: string;
   address: string;
   isBookmarked: boolean;
 }
@@ -69,8 +67,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       message: '',
       alert: '',
       question: '',
-      avatar: '',
-      nickname: '',
       address: '',
       isBookmarked: false,
     };
@@ -123,48 +119,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
     let address = await getWalletAddress();
     this.setState({ address });
-
-    let avatar = '';
-    if (this.props.data.address == address) {
-      avatar = localStorage.getItem('avatar');
-      if (!avatar) avatar = '';
-    }
-
-    this.createAvatar(avatar);
-    this.getProfile(this.props.data.address);
-  }
-
-  // load profile from the process of user's
-  async getProfile(address: string) {
-    let process = await getDefaultProcess(address);
-    if (!process) return;
-
-    let response = await getDataFromAO(process, 'AOTwitter.getProfile');
-    if (response) {
-      let profile = JSON.parse(response[response.length - 1]);
-      this.setState({
-        avatar: profile.avatar,
-        nickname: profile.nickname,
-      })
-    }
-  }
-
-  createAvatar(random: string) {
-    const resp = createAvatar(micah, {
-      seed: this.props.data.nickname + random,
-    });
-
-    const avatar = resp.toDataUriSync();
-    this.setState({ avatar });
-  }
-
-  newAvatar(e: any) {
-    if (this.props.data.address !== this.state.address) return;
-    e.stopPropagation();
-
-    let random = uuid();
-    localStorage.setItem('avatar', random);
-    this.createAvatar(random);
   }
 
   async getPostContent() {
@@ -410,13 +364,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   render() {
     let owner = (this.props.data.address == this.state.address);
 
-    let avatar, nickname;
-    let profile = JSON.parse(localStorage.getItem('profile'));
-    if (profile) {
-      avatar = profile.avatar
-      nickname = profile.nickname
-    }
-
     let data = this.props.data;
     let address = data.address;
     if (address)
@@ -434,12 +381,11 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         <div className='home-msg-header'>
           <img
             className='home-msg-portrait'
-            src={owner ? avatar : this.state.avatar}
+            src={data.avatar}
           // onClick={(e) => this.goProfilePage(e, data.address)}
-          // title={owner ? 'Click to change your avatar' : ''}
           />
           <div className="home-msg-nickname">
-            {owner ? nickname : this.state.nickname ? this.state.nickname : data.nickname}
+            {data.nickname}
           </div>
 
           <div className="home-msg-address">{address}</div>
