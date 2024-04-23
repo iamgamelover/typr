@@ -466,7 +466,7 @@ export async function getDataFromAO(
 ) {
 
   let start = performance.now();
-  // console.log('==> [getDataViaSQLite]');
+  // console.log('==> [getDataFromAO]');
 
   let result;
   try {
@@ -476,17 +476,17 @@ export async function getDataFromAO(
       tags: [{ name: 'Action', value: action }]
     });
   } catch (error) {
-    console.log('getDataViaSQLite --> ERR:', error)
+    console.log('getDataFromAO --> ERR:', error)
     return '';
   }
 
-  console.log('action', action);
-  console.log('result', result);
+  // console.log('action', action);
+  // console.log('result', result);
 
   let resp = result.Messages[0].Data;
 
   let end = performance.now();
-  // console.log(`<== [getDataViaSQLite] [${Math.round(end - start)} ms]`);
+  // console.log(`<== [getDataFromAO] [${Math.round(end - start)} ms]`);
 
   return JSON.parse(resp);
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { BsBookmark, BsBookmarkFill, BsChat, BsHeart, BsHeartFill } from 'react-icons/bs';
-import { convertUrls, getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO, numberWithCommas, timeOfNow, transferToken, uuid } from '../util/util';
+import { convertUrls, getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO, numberWithCommas, randomAvatar, timeOfNow, transferToken, uuid } from '../util/util';
 import { formatTimestamp } from '../util/util';
 import './ActivityPost.css';
 import parse, { attributesToProps } from 'html-react-parser';
@@ -381,8 +381,12 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         <div className='home-msg-header'>
           <img
             className='home-msg-portrait'
-            src={data.avatar}
-          // onClick={(e) => this.goProfilePage(e, data.address)}
+            data-tooltip-id="my-tooltip"
+              data-tooltip-content="Go to the profile page"
+              src={data.avatar ? data.avatar : randomAvatar()}
+              onClick={(e) => this.goProfilePage(e, data.address)}
+              // onMouseEnter={()=>this.openPopup()}
+              // onMouseLeave={(e)=>this.closePopup(e)}
           />
           <div className="home-msg-nickname">
             {data.nickname}

@@ -4,8 +4,10 @@ import AlertModal from '../modals/AlertModal';
 import EditProfileModal from '../modals/EditProfileModal';
 import MessageModal from '../modals/MessageModal';
 import QuestionModal from '../modals/QuestionModal';
-import { getBannerImage, getDataFromAO, getDefaultProcess, getProfile, isBookmarked, 
-  isLoggedIn, messageToAO, randomAvatar, timeOfNow } from '../util/util';
+import {
+  getBannerImage, getDataFromAO, getDefaultProcess, getProfile, isBookmarked,
+  isLoggedIn, messageToAO, randomAvatar, timeOfNow
+} from '../util/util';
 import { BsCalendarWeek, BsPencilFill } from 'react-icons/bs';
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
@@ -26,7 +28,6 @@ interface ProfilePageState {
   message: string;
   loading: boolean;
   loadNextPage: boolean;
-  isLoggedIn: string;
   address: string;
   openEditProfile: boolean;
   nickname: string;
@@ -57,7 +58,6 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
       message: '',
       loading: true,
       loadNextPage: false,
-      isLoggedIn: '',
       address: '',
       openEditProfile: false,
       nickname: '',
@@ -108,8 +108,10 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     const clientHeight = document.documentElement.clientHeight;
 
     if (scrollTop + clientHeight + 300 >= scrollHeight)
-      if (!this.state.loading && !this.state.loadNextPage && !this.state.isAll)
-        this.nextPage();
+      setTimeout(() => {
+        if (!this.state.loading && !this.state.loadNextPage && !this.state.isAll)
+          this.nextPage();
+      }, 200);
   }
 
   onPopState(event: any) {
@@ -117,11 +119,19 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
 
   async start() {
-    let id = window.location.pathname.substring(6);
-    // console.log("id:", id)
+    let id;
+    let my_profile = window.location.pathname;
+    console.log("my_profile:", my_profile)
+    if (my_profile == '/profile') {
+      id = await isLoggedIn();
+    }
+    else {
+      id = window.location.pathname.substring(6);
+    }
+    console.log("id:", id)
 
-    let address = await isLoggedIn();
-    this.setState({ isLoggedIn: address, address: id });
+    // let address = await isLoggedIn();
+    this.setState({ address: id });
 
     // this.getDateOfJoined(address);
     await this.getPosts(id);
@@ -140,17 +150,13 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     let position = Server.service.getPositionInProfileFromCache();
 
     if (!posts) {
-      posts = await getDataFromAO(AO_TWITTER, 'GetPosts', '0');
-      console.log("profile->posts:", posts)
+      posts = await getDataFromAO(AO_TWITTER, 'GetPosts', { offset: 0, address });
+      console.log("profile-> posts:", posts)
       if (posts.length < PAGE_SIZE)
         this.setState({ isAll: true })
-
-      // this.checkBookmarks(parsePosts(posts));
-      // return;
     }
 
     this.checkBookmarks(posts);
-    this.setState({ posts, loading: false });
 
     setTimeout(() => {
       window.scrollTo(0, position);
@@ -160,7 +166,11 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   async nextPage() {
     this.setState({ loadNextPage: true });
 
-    let posts = await getDataFromAO(AO_TWITTER, 'GetOwnerPosts',null);
+    let offset = this.state.posts.length.toString();
+    console.log("offset:", offset)
+
+    let posts = await getDataFromAO(AO_TWITTER, 'GetPosts', 
+    { offset, address: this.state.address });
 
     if (posts.length < PAGE_SIZE)
       this.setState({ isAll: true })
@@ -170,17 +180,16 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
 
   async checkBookmarks(posts: any) {
-
     //
-    let address = Server.service.getActiveAddress();
-    for (let i = 0; i < posts.length; i++) {
-      // let isLiked = await getDataFromAO(AO_TWITTER, 'GetLike', '0', posts[i].id, address);
-      let isLiked = await getDataFromAO(AO_TWITTER, 'GetLike', '0');
-      console.log("post isLiked:", isLiked)
-      if (isLiked.length > 0)
-        posts[i].isLiked = true;
-      // this.forceUpdate()
-    }
+    // let address = Server.service.getActiveAddress();
+    // for (let i = 0; i < posts.length; i++) {
+    //   // let isLiked = await getDataFromAO(AO_TWITTER, 'GetLike', '0', posts[i].id, address);
+    //   let isLiked = await getDataFromAO(AO_TWITTER, 'GetLike', '0');
+    //   console.log("post isLiked:", isLiked)
+    //   if (isLiked.length > 0)
+    //     posts[i].isLiked = true;
+    //   // this.forceUpdate()
+    // }
 
     let bookmarks = [];
     let val = localStorage.getItem('bookmarks');
@@ -234,7 +243,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
 
   async getDateOfJoined(address: string) {
-    let members = await getDataFromAO(AO_TWITTER, 'GetMembers',null);
+    let members = await getDataFromAO(AO_TWITTER, 'GetMembers', null);
     for (let i = 0; i < members.length; i++) {
       let data = JSON.parse(members[i]);
       if (data.address == address) {
@@ -307,26 +316,30 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
 
   async getFollows() {
-    let following = await getDataFromAO(AO_TWITTER, 'GetFollowing', this.state.address);
+    let following = await getDataFromAO(AO_TWITTER, 'GetFollowing', 
+    {follower: this.state.address, offset: 0});
     console.log("following:", following)
     this.setState({ following: following.length })
 
-    let followers = await getDataFromAO(AO_TWITTER, 'GetFollowers', this.state.address);
+    let followers = await getDataFromAO(AO_TWITTER, 'GetFollowers', 
+    {following: this.state.address, offset: 0});
     console.log("followers:", followers)
     this.setState({ followers: followers.length })
   }
 
   async isFollowing() {
-    // let isFollowing = await getDataFromAO(AO_TWITTER, 'GetFollowing', '0', Server.service.getActiveAddress(), this.state.address);
-    let isFollowing = await getDataFromAO(AO_TWITTER, 'GetFollowing', '0');
+    let isFollowing = await getDataFromAO(AO_TWITTER, 'GetFollowing', 
+    {follower: Server.service.getActiveAddress(), following: this.state.address, offset: 0}
+    );
     console.log("isFollowing:", isFollowing)
     if (isFollowing.length > 0)
       this.setState({ isFollowing: true, butDisable: false })
     else
       this.setState({ isFollowing: false, butDisable: false })
 
-    // let isFollower = await getDataFromAO(AO_TWITTER, 'GetFollowing', '0', this.state.address, Server.service.getActiveAddress());
-    let isFollower = await getDataFromAO(AO_TWITTER, 'GetFollowing', '0');
+    let isFollower = await getDataFromAO(AO_TWITTER, 'GetFollowing', 
+    {follower: this.state.address, following: Server.service.getActiveAddress(), offset: 0}
+    );
     console.log("isFollower:", isFollower)
 
     if (isFollowing.length > 0 && isFollower.length > 0)

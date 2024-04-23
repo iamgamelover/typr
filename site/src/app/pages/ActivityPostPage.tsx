@@ -7,7 +7,8 @@ import MessageModal from '../modals/MessageModal';
 import AlertModal from '../modals/AlertModal';
 import { BsFillArrowLeftCircleFill, BsReply } from 'react-icons/bs';
 import { subscribe } from '../util/event';
-import { checkContent, getDataFromAO, getWalletAddress, isLoggedIn, timeOfNow, messageToAO, uuid, isBookmarked } from '../util/util';
+import { checkContent, getDataFromAO, getWalletAddress, isLoggedIn, 
+  timeOfNow, messageToAO, uuid, isBookmarked } from '../util/util';
 import { AO_STORY, AO_TWITTER, TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
 import QuestionModal from '../modals/QuestionModal';
@@ -25,7 +26,6 @@ interface ActivityPostPageState {
   question: string;
   loading: boolean;
   loading_reply: boolean;
-  isLoggedIn: string;
   address: string;
   txid: string;
 }
@@ -47,7 +47,6 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
       question: '',
       loading: true,
       loading_reply: true,
-      isLoggedIn: '',
       address: '',
       txid: '',
     };
@@ -80,7 +79,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
   async start() {
     window.scrollTo(0, 0);
     let address = await isLoggedIn();
-    this.setState({ isLoggedIn: address, address });
+    this.setState({ address });
 
     let type = this.props.type;
     if (type == 'post') {
@@ -154,35 +153,32 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
   async getPostById(id: string) {
     let resp = await getDataFromAO(AO_TWITTER, 'GetPosts', { id });
     console.log("resp:", resp)
+    if (!resp) return;
+
     Server.service.addPostToCache(resp[0]);
     return resp[0];
   }
 
   async getReplies() {
-    let replies;
-    let type = this.props.type;
-    if (type == 'post')
-      replies = await getDataFromAO(AO_TWITTER, 'GetReplies', { post_id: this.postId, offset: 0 });
-    else
-      replies = await getDataFromAO(AO_STORY, 'GetReplies', '0');
-
+    let replies = await getDataFromAO(this.process, 'GetReplies', 
+    { post_id: this.postId, offset: 0 });
     console.log("replies:", replies)
 
     this.setState({
-      replies: replies ? replies : [],
+      replies: replies,
       loading_reply: false
     });
 
-    //
-    let address = Server.service.getActiveAddress();
-    for (let i = 0; i < replies.length; i++) {
-      // let isLiked = await getDataFromAO(AO_STORY, 'GetLike', '0', replies[i].id, address);
-      let isLiked = await getDataFromAO(AO_STORY, 'GetLike', '0');
-      console.log("reply isLiked:", isLiked)
-      if (isLiked.length > 0)
-        replies[i].isLiked = true;
-      this.forceUpdate()
-    }
+    // for story page
+    // let address = Server.service.getActiveAddress();
+    // for (let i = 0; i < replies.length; i++) {
+    //   // let isLiked = await getDataFromAO(AO_STORY, 'GetLike', '0', replies[i].id, address);
+    //   let isLiked = await getDataFromAO(AO_STORY, 'GetLike', '0');
+    //   console.log("reply isLiked:", isLiked)
+    //   if (isLiked.length > 0)
+    //     replies[i].isLiked = true;
+    //   this.forceUpdate()
+    // }
   }
 
   async onReply() {
@@ -194,16 +190,13 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
     let address = await getWalletAddress();
     if (!address) {
-      this.setState({ isLoggedIn: '', alert: 'You should connect to wallet first.' });
+      this.setState({ alert: 'You should connect to wallet first.' });
       return;
     }
 
     this.setState({ message: 'Replying...' });
 
     let post = this.quillRef.root.innerHTML;
-    let nickname = localStorage.getItem('nickname');
-    if (!nickname) nickname = 'anonymous';
-
     let data = {
       id: uuid(), post_id: this.postId, address, post,
       likes: 0, replies: 0, coins: 0, time: timeOfNow()
@@ -215,14 +208,12 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
       this.quillRef.setText('');
       this.state.post.replies += 1;
 
-      if (this.props.type == 'story')
-        this.state.replies.unshift(data);
-      else
-        this.state.replies.push(JSON.stringify(data));
-
+      // will works after cache the profile
+      // this.state.replies.unshift(data);
+      this.getReplies();
       this.setState({
         message: '',
-        replies: this.state.replies,
+        // replies: this.state.replies,
         post: this.state.post
       });
 
@@ -230,8 +221,8 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
       messageToAO(this.process, this.postId, 'UpdateReply');
 
       // update the txid of this message
-      let idInfo = { id: data.id, txid: response };
-      messageToAO(this.process, idInfo, 'SendTxid');
+      let txid = { id: data.id, txid: response };
+      messageToAO(this.process, txid, 'SendTxid');
     }
     else
       this.setState({ message: '', alert: TIP_IMG })
@@ -250,8 +241,8 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     for (let i = 0; i < replies.length; i++)
       divs.push(
         <ActivityPost
-          key={uuid()}
-          data={this.props.type == 'post' ? JSON.parse(replies[i]) : replies[i]}
+          key={i}
+          data={replies[i]}
           isReply={true}
         />
       )
@@ -281,7 +272,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
           <ActivityPost data={this.state.post} isPostPage={true} txid={this.state.txid} />
         }
 
-        {!this.state.loading && this.state.isLoggedIn && !this.state.loading_reply &&
+        {!this.state.loading && this.state.address && !this.state.loading_reply &&
           <div className="activity-post-page-reply-container">
             <SharedQuillEditor
               placeholder='Post your reply'
