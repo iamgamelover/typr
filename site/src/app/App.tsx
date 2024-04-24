@@ -11,6 +11,7 @@ import TokenPage from './pages/TokenPage';
 import StoryPage from './pages/StoryPage';
 import BookmarksPage from './pages/BookmarksPage';
 import ProfilePage from './pages/ProfilePage';
+import FollowPage from './pages/FollowPage';
 
 class App extends React.Component<{}, {}> {
   constructor(props = {}) {
@@ -36,6 +37,7 @@ class App extends React.Component<{}, {}> {
             <Route path="/bookmarks" element={<BookmarksPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/user/:id" element={<ProfilePage />} />
+            <Route path="/follow/:id" element={<FollowPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

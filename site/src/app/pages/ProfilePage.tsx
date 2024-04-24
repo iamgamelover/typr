@@ -6,7 +6,7 @@ import MessageModal from '../modals/MessageModal';
 import QuestionModal from '../modals/QuestionModal';
 import {
   getBannerImage, getDataFromAO, getDefaultProcess, getProfile, isBookmarked,
-  isLoggedIn, messageToAO, randomAvatar, timeOfNow
+  isLoggedIn, messageToAO, randomAvatar, shortStr, timeOfNow
 } from '../util/util';
 import { BsCalendarWeek, BsPencilFill } from 'react-icons/bs';
 import { createAvatar } from '@dicebear/core';
@@ -205,7 +205,6 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     // localStorage.setItem('your_posts', JSON.stringify(posts))
   }
 
-  // load profile from the process of user's
   async getProfile(address: string) {
     let profile = await getProfile(address);
     console.log("profile:", profile)
@@ -218,28 +217,6 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
         nickname: profile.nickname,
         bio: profile.bio,
       })
-
-    // let process = await getDefaultProcess(address);
-    // let response = await getDataFromAO(process, 'AOTwitter.getProfile');
-
-    // let profile = {
-    //   banner: this.state.banner,
-    //   avatar: this.state.avatar,
-    //   nickname: this.state.nickname,
-    //   bio: this.state.bio,
-    // };
-
-    // if (response) {
-    //   profile = JSON.parse(response[0]);
-    //   this.setState({
-    //     banner: profile.banner,
-    //     avatar: profile.avatar,
-    //     nickname: profile.nickname,
-    //     bio: profile.bio,
-    //   })
-    // }
-
-    // localStorage.setItem('profile', JSON.stringify(profile));
   }
 
   async getDateOfJoined(address: string) {
@@ -253,32 +230,11 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     }
   }
 
-  // createAvatar() {
-  //   let nickname = localStorage.getItem('nickname');
-  //   let random = localStorage.getItem('avatar');
-  //   const resp = createAvatar(micah, {
-  //     seed: nickname + random,
-  //   });
-
-  //   const avatar = resp.toDataUriSync();
-  //   this.setState({ nickname, avatar });
-  // }
-
   openEditProfile() {
     this.setState({ openEditProfile: true });
   }
 
   onCloseEditProfile() {
-    // let profile = JSON.parse(localStorage.getItem('profile'));
-    // if (profile) {
-    //   this.setState({
-    //     banner: profile.banner,
-    //     avatar: profile.avatar,
-    //     nickname: profile.nickname,
-    //     bio: profile.bio,
-    //   });
-    // }
-
     this.setState({ openEditProfile: false });
     this.getProfile(this.state.address);
   }
@@ -447,22 +403,11 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     return divs;
   }
 
-  openUserList(str: string) {
-
-  }
-
   render() {
     let joined = new Date(Number(this.state.joined) * 1000).toLocaleString();
-    // let bannerImage = getBannerImage('');
-    // let portraitImage = getPortraitImage(this.state.profile);
-
-    let id = this.state.address;
-    let shortId = id.substring(0, 6) + '...' + id.substring(id.length - 6);
 
     return (
       <div className='profile-page'>
-        {/* <Logo /> */}
-
         <div className='profile-page-header'>
           <img className="profile-page-banner" src={this.state.banner ? this.state.banner : '/banner-default.png'} />
           <img className="profile-page-portrait" src={this.state.avatar ? this.state.avatar : randomAvatar()} />
@@ -471,7 +416,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
         {this.renderActionButtons()}
 
         <div className="profile-page-name">{this.state.nickname}</div>
-        <div className="profile-page-id">{shortId}</div>
+        <div className="profile-page-id">{shortStr(this.state.address, 6)}</div>
         <div className="profile-page-desc">{this.state.bio}</div>
         <div className='profile-page-joined-container'>
           <BsCalendarWeek />
@@ -479,14 +424,15 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
         </div>
 
         <div className='profile-page-follow-container'>
-          <div className="profile-page-follow-link" onClick={() => this.openUserList('following')}>
+          <NavLink className="profile-page-follow-link" to={'/follow/' + this.state.address}>
             <div className='profile-page-follow-number'>{this.state.following}</div>
             <div className='profile-page-follow-text'>Following</div>
-          </div>
-          <div className="profile-page-follow-link" onClick={() => this.openUserList('followers')}>
+          </NavLink>
+
+          <NavLink className="profile-page-follow-link" to={'/follow/' + this.state.address}>
             <div className='profile-page-follow-number'>{this.state.followers}</div>
             <div className='profile-page-follow-text'>Followers</div>
-          </div>
+          </NavLink>
         </div>
 
         <div className='profile-page-filter-container'>

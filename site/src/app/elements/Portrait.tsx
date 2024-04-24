@@ -42,6 +42,10 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
     subscribe('wallet-events', () => {
       this.forceUpdate();
     });
+
+    subscribe('profile-updated', () => {
+      this.getProfile(this.state.address);
+    });
   }
 
   componentDidMount() {
@@ -105,7 +109,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
   // to keep one, on browser side or AOS side (in lua code)
   async register(address: string) {
     console.log('--> register')
-    let nickname = shortStr(address, 3);
+    let nickname = shortStr(address, 4);
     let data = { address, avatar: randomAvatar(), banner: '', nickname, bio: '', time: timeOfNow() };
     messageToAO(AO_TWITTER, data, 'Register');
   }
@@ -128,24 +132,36 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
   }
 
   async getProfile(address: string) {
-    let profile = await getProfile(address);
-    console.log("portrait -> profile:", profile)
-    if (profile.length > 0) {
-      this.setState({ address, avatar: profile[0].avatar, nickname: profile[0].nickname });
-      Server.service.addProfileToCache(profile[0]);
-      return true;
+    let profile = Server.service.getProfile(address);
+    console.log("cached profile:", profile)
+
+    if (!profile) { // no cache
+      profile = await getProfile(address);
+      console.log("portrait -> profile:", profile)
+
+      if (profile.length > 0) {
+        profile = profile[0];
+        Server.service.addProfileToCache(profile);
+        // return true;
+      }
+      else
+        return false;
     }
-    else
-      return false;
+
+    this.setState({ address, avatar: profile.avatar, nickname: profile.nickname });
+    return true;
   }
 
   render() {
     let address = this.state.address;
     let avatar = this.state.avatar;
-    let shortAddr = shortStr(address, 3);
+    let shortAddr = shortStr(address, 4);
+
     return (
       <div>
-        {address ? avatar &&
+        {/* {address ? avatar && */}
+        {address
+          ?
           <div
             className='site-page-portrait-container'
             data-tooltip-id="my-tooltip"

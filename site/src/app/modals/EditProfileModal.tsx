@@ -10,6 +10,7 @@ import Compressor from 'compressorjs';
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
 import { AO_TWITTER } from '../util/consts';
+import { publish } from '../util/event';
 
 interface EditProfileModalProps {
   open: boolean;
@@ -107,18 +108,19 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
   }
 
   async saveProfile() {
-    // let profile = JSON.parse(localStorage.getItem('profile'));
+    let profile = Server.service.getProfile(Server.service.getActiveAddress());
+    console.log("cached profile:", profile)
 
-    // let dirty = false;
-    // if (this.state.banner != profile.banner) dirty = true;
-    // if (this.state.avatar != profile.avatar) dirty = true;
-    // if (this.state.nickname != profile.nickname) dirty = true;
-    // if (this.state.bio != profile.bio) dirty = true;
+    let dirty = false;
+    if (this.state.banner != profile.banner) dirty = true;
+    if (this.state.avatar != profile.avatar) dirty = true;
+    if (this.state.nickname != profile.nickname) dirty = true;
+    if (this.state.bio != profile.bio) dirty = true;
 
-    // if (!dirty) {
-    //   this.props.onClose();
-    //   return;
-    // }
+    if (!dirty) {
+      this.props.onClose();
+      return;
+    }
 
     let errorMsg = '';
     if (this.state.nickname.length < 2)
@@ -140,20 +142,15 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
       bio: this.state.bio,
       time: timeOfNow()
     };
-    console.log("data:", data)
-
-    // let process = await getDefaultProcess(Server.service.getActiveAddress());
-    // if (!process) {
-    //   this.setState({ alert: 'You have not a process, try to disconnect and reconnect to ArConnect wallet. Then you would get a process right now.' })
-    //   return;
-    // }
+    // console.log("data:", data)
 
     let response = await messageToAO(AO_TWITTER, data, 'Register');
 
     if (response) {
-      // localStorage.setItem('profile', JSON.stringify(data));
+      Server.service.addProfileToCache(data);
       this.setState({ message: '' });
       this.props.onClose();
+      publish('profile-updated');
     }
     else {
       this.setState({ message: '', alert: 'Setting the profile failed.' });

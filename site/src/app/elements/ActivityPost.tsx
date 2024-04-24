@@ -158,7 +158,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   async onLike() {
     if (!Server.service.getIsLoggedIn()) {
-      this.setState({ alert:'Please connect to wallet.' });
+      this.setState({ alert: 'Please connect to wallet.' });
       return;
     }
 
@@ -167,7 +167,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     let id = this.props.data.id;
     let action = 'UpdateLike';
     if (this.props.isReply) action = 'UpdateLikeForReply';
-    
+
     await messageToAO(AO_STORY, id, action);
 
     // record the list of liked to ao
@@ -381,12 +381,12 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         <div className='home-msg-header'>
           <img
             className='home-msg-portrait'
-            data-tooltip-id="my-tooltip"
-              data-tooltip-content="Go to the profile page"
-              src={data.avatar ? data.avatar : randomAvatar()}
-              onClick={(e) => this.goProfilePage(e, data.address)}
-              // onMouseEnter={()=>this.openPopup()}
-              // onMouseLeave={(e)=>this.closePopup(e)}
+            // data-tooltip-id="my-tooltip"
+            // data-tooltip-content="Go to the profile page"
+            src={data.avatar ? data.avatar : randomAvatar()}
+            onClick={(e) => this.goProfilePage(e, data.address)}
+          // onMouseEnter={()=>this.openPopup()}
+          // onMouseLeave={(e)=>this.closePopup(e)}
           />
           <div className="home-msg-nickname">
             {data.nickname}

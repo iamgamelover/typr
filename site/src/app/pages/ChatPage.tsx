@@ -3,8 +3,8 @@ import './ChatPage.css';
 import { createDataItemSigner, message, dryrun } from "@permaweb/aoconnect";
 import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
-import { formatTimestamp, getWalletAddress, timeOfNow } from '../util/util';
-import { CHATROOM } from '../util/consts';
+import { formatTimestamp, getDataFromAO, getProfile, getWalletAddress, messageToAO, shortStr, timeOfNow } from '../util/util';
+import { AO_TWITTER, CHATROOM } from '../util/consts';
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
 
@@ -13,12 +13,17 @@ var msg_timer: any;
 
 interface ChatPageState {
   msg: string;
-  messages: string[];
+  messages: any;
   nickname: string;
   question: string;
   alert: string;
-  address: string;
   loading: boolean;
+  address: string;
+  friend: string;
+  my_avatar: string;
+  my_nickname: string;
+  friend_avatar: string;
+  friend_nickname: string;
 }
 
 class ChatPage extends React.Component<{}, ChatPageState> {
@@ -27,15 +32,19 @@ class ChatPage extends React.Component<{}, ChatPageState> {
     super(props);
     this.state = {
       msg: '',
-      messages: [],
+      messages: '',
       nickname: '',
       question: '',
       alert: '',
-      address: '',
       loading: true,
+      address: '',
+      friend: '',
+      my_avatar: '',
+      my_nickname: '',
+      friend_avatar: '',
+      friend_nickname: '',
     };
 
-    this.getMessages = this.getMessages.bind(this);
   }
 
   componentDidMount() {
@@ -47,47 +56,66 @@ class ChatPage extends React.Component<{}, ChatPageState> {
   }
 
   async start() {
+    let friend = window.location.pathname.substring(6);
+    console.log("friend:", friend)
+
     let address = await getWalletAddress();
-    this.setState({ address });
-    msg_timer = setInterval(this.getMessages, 2000);
+    console.log("me:", address)
+
+    this.setState({ address, friend });
+
+    if (friend) {
+      setTimeout(() => {
+        this.getProfiles();
+      }, 50);
+    }
+  }
+
+  async getProfiles() {
+    //
+    let my_profile = await getProfile(this.state.address);
+    console.log("my_profile:", my_profile)
+    my_profile = my_profile[0];
+    if (my_profile)
+      this.setState({
+        my_avatar: my_profile.avatar,
+        my_nickname: my_profile.nickname,
+      })
+
+    //
+    let friend_profile = await getProfile(this.state.friend);
+    console.log("friend_profile:", friend_profile)
+
+    if (friend_profile.length == 0) return;
+
+    friend_profile = friend_profile[0];
+    if (friend_profile)
+      this.setState({
+        friend_avatar: friend_profile.avatar,
+        friend_nickname: friend_profile.nickname,
+      })
+
+    setTimeout(() => {
+      this.getMessages();
+    }, 50);
+
+    msg_timer = setInterval(() => this.getMessages(), 2000);
 
     setTimeout(() => {
       this.scrollToBottom();
-    }, 5000);
+    }, 1000);
   }
 
   async getMessages() {
-    console.log("Chat Page -->")
-
-    const result = await dryrun({
-      process: CHATROOM,
-      tags: [{ name: 'Action', value: 'GetMessages' }],
-    });
-
-    if (result.Messages.length == 0) {
-      this.setState({ loading: false });
-      return;
-    }
-
-    let data = result.Messages[0].Data;
-    let messages = data.split("▲");
-    // console.log("messages:", messages)
-
-    if (messages.length == 1 && messages[0] == '') {
-      this.setState({ loading: false });
-      return;
-    }
+    console.log("DM messages -->")
+    let data = { friend: this.state.friend, address: this.state.address };
+    let messages = await getDataFromAO(AO_TWITTER, 'GetMessages', data);
+    console.log("messages:", messages)
 
     this.setState({ messages, loading: false });
-  }
-
-
-  createAvatar(nickname: string) {
-    const resp = createAvatar(micah, {
-      seed: nickname,
-    });
-
-    return resp.toDataUriSync();
+    setTimeout(() => {
+      this.scrollToBottom();
+    }, 1000);
   }
 
   renderMessages() {
@@ -97,39 +125,25 @@ class ChatPage extends React.Component<{}, ChatPageState> {
     let divs = [];
 
     for (let i = 0; i < this.state.messages.length; i++) {
-      let data = JSON.parse(this.state.messages[i]);
+      let data = this.state.messages[i];
       let owner = (data.address == this.state.address);
-      let address = data.address;
-      address = address.substring(0, 4) + '...' + address.substring(address.length - 4);
-
-      // temp...
-      let avatar = '/portrait-default.png';
-
-      // if (owner) {
-      //   let profile = JSON.parse(localStorage.getItem('profile'));
-      //   console.log("profile:", profile)
-      //   avatar = profile.avatar;
-      // }
-      // else {
-      //   avatar = this.createAvatar(data.nickname);
-      // }
 
       divs.push(
         <div key={i} className={`chat-msg-line ${owner ? 'my-line' : 'other-line'}`}>
-          {!owner && <img className='chat-msg-portrait' src={avatar} />}
+          {!owner && <img className='chat-msg-portrait' src={this.state.friend_avatar} />}
           <div>
             <div className={`chat-msg-header ${owner ? 'my-line' : 'other-line'}`}>
-              <div className="chat-msg-nickname">{data.nickname}</div>
-              <div className="chat-msg-address">{address}</div>
+              <div className="chat-msg-nickname">{owner ? this.state.my_nickname : this.state.friend_nickname}</div>
+              <div className="chat-msg-address">{shortStr(data.address, 3)}</div>
             </div>
             <div className={`chat-message ${owner ? 'my-message' : 'other-message'}`}>
-              {data.msg}
+              {data.message}
             </div>
             <div className={`chat-msg-time ${owner ? 'my-line' : 'other-line'}`}>
-              {data.time ? formatTimestamp(data.time, true) : 'old msg'}
+              {formatTimestamp(data.time, true)}
             </div>
           </div>
-          {owner && <img className='chat-msg-portrait' src={avatar} />}
+          {owner && <img className='chat-msg-portrait' src={this.state.my_avatar} />}
         </div>
       )
     }
@@ -138,9 +152,6 @@ class ChatPage extends React.Component<{}, ChatPageState> {
   }
 
   async sendMessage() {
-    let nickname = this.state.nickname;
-    if (!nickname) nickname = 'anonymous';
-
     let msg = this.state.msg.trim();
     if (!msg) {
       this.setState({ alert: 'Please input a message.' })
@@ -150,24 +161,15 @@ class ChatPage extends React.Component<{}, ChatPageState> {
       return;
     }
 
-    let data = { address: this.state.address, nickname, msg, time: timeOfNow() };
-    // console.log("Chat Page --> message:", JSON.stringify(data))
-
     this.setState({ msg: '' });
 
-    const messageId = await message({
-      process: CHATROOM,
-      signer: createDataItemSigner(window.arweaveWallet),
-      tags: [
-        { name: 'Action', value: 'SendMessage' },
-        { name: 'Data', value: JSON.stringify(data) }
-      ],
-    });
-    console.log("messageId:", messageId)
+    let data = { address: this.state.address, friend: this.state.friend, message: msg, time: timeOfNow() };
+    // console.log("data:", data)
+    await messageToAO(AO_TWITTER, data, 'SendMessage');
 
     setTimeout(() => {
       this.scrollToBottom();
-    }, 2000);
+    }, 1000);
   }
 
   handleKeyDown = (event: any) => {
@@ -189,7 +191,7 @@ class ChatPage extends React.Component<{}, ChatPageState> {
   render() {
     return (
       <div className="chat-page">
-        <div>AO Public Chatroom</div>
+        {/* <div>AO Public Chatroom</div> */}
         <div id='scrollableDiv' className="chat-chat-container">
           {this.renderMessages()}
         </div>

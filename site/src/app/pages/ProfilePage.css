@@ -16,10 +16,8 @@
 }
 
 @media (min-width: 600px) {
-  .profile-page-banner {
-    /* border-bottom-right-radius: 10px;
-    border-bottom-left-radius: 10px; */
-   }
+  /* .profile-page-banner {
+   } */
 }
 
 .profile-page-portrait {
@@ -118,7 +116,7 @@
 }
 
 .profile-page-navlink:visited {
-  /* color: #ffffffa0; */
+  color: #ffffffa0;
 }
 
 .profile-page-filter-container {
@@ -178,6 +176,7 @@
   column-gap: 5px;
   cursor: pointer;
   border-bottom: 1px solid transparent;
+  text-decoration: none;
 }
 
 .profile-page-follow-link:hover {
@@ -185,6 +184,7 @@
 }
 
 .profile-page-follow-number {
+  color: black;
   font-weight: 600;
 }
 
