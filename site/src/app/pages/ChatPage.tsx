@@ -3,10 +3,13 @@ import './ChatPage.css';
 import { createDataItemSigner, message, dryrun } from "@permaweb/aoconnect";
 import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
-import { formatTimestamp, getDataFromAO, getProfile, getWalletAddress, messageToAO, shortStr, timeOfNow } from '../util/util';
+import { formatTimestamp, getDataFromAO, getProfile, getWalletAddress, messageToAO, shortAddr, shortStr, timeOfNow } from '../util/util';
 import { AO_TWITTER, CHATROOM } from '../util/consts';
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
+import Loading from '../elements/Loading';
+import { Navigate } from 'react-router-dom';
+import { publish, subscribe } from '../util/event';
 
 declare var window: any;
 var msg_timer: any;
@@ -24,6 +27,8 @@ interface ChatPageState {
   my_nickname: string;
   friend_avatar: string;
   friend_nickname: string;
+  chatList: any;
+  navigate: string;
 }
 
 class ChatPage extends React.Component<{}, ChatPageState> {
@@ -43,8 +48,14 @@ class ChatPage extends React.Component<{}, ChatPageState> {
       my_nickname: '',
       friend_avatar: '',
       friend_nickname: '',
+      chatList: '',
+      navigate: '',
     };
 
+    subscribe('go-chat', () => {
+      this.setState({ navigate: '' });
+      this.start();
+    });
   }
 
   componentDidMount() {
@@ -66,12 +77,19 @@ class ChatPage extends React.Component<{}, ChatPageState> {
 
     if (friend) {
       setTimeout(() => {
-        this.getProfiles();
+        this.goDM();
+      }, 50);
+    }
+    else {
+      setTimeout(() => {
+        this.getChatList();
       }, 50);
     }
   }
 
-  async getProfiles() {
+  async goDM() {
+    this.getChatList();
+
     //
     let my_profile = await getProfile(this.state.address);
     console.log("my_profile:", my_profile)
@@ -99,6 +117,7 @@ class ChatPage extends React.Component<{}, ChatPageState> {
       this.getMessages();
     }, 50);
 
+    clearInterval(msg_timer);
     msg_timer = setInterval(() => this.getMessages(), 2000);
 
     setTimeout(() => {
@@ -106,11 +125,22 @@ class ChatPage extends React.Component<{}, ChatPageState> {
     }, 1000);
   }
 
+  async getChatList() {
+    if (this.state.chatList.length > 0) return;
+
+    let data = { address: this.state.address };
+    let chatList = await getDataFromAO(AO_TWITTER, 'GetMessages', data);
+    console.log("getChatList:", chatList)
+
+    this.setState({ chatList });
+    if (chatList.length > 0) this.goChat(chatList[0].participant);
+  }
+
   async getMessages() {
     console.log("DM messages -->")
     let data = { friend: this.state.friend, address: this.state.address };
     let messages = await getDataFromAO(AO_TWITTER, 'GetMessages', data);
-    console.log("messages:", messages)
+    // console.log("messages:", messages)
 
     this.setState({ messages, loading: false });
     setTimeout(() => {
@@ -118,9 +148,45 @@ class ChatPage extends React.Component<{}, ChatPageState> {
     }, 1000);
   }
 
+  goChat(id: string) {
+    this.setState({ navigate: '/chat/' + id });
+    setTimeout(() => {
+      publish('go-chat');
+    }, 50);
+  }
+
+  renderChatList() {
+    // if (this.state.loading)
+    //   return (<Loading />);
+
+    let divs = [];
+    let list = this.state.chatList;
+    for (let i = 0; i < list.length; i++) {
+      let data = list[i];
+      let selected = (this.state.friend == data.participant);
+
+      divs.push(
+        <div
+          key={i}
+          className={`chat-page-list ${selected && 'selected'}`}
+          onClick={() => this.goChat(data.participant)}
+        >
+          <img className='chat-page-list-portrait' src={data.avatar} />
+          <div>
+            <div className="chat-page-list-nickname">{shortStr(data.nickname, 15)}</div>
+            <div className="chat-page-list-addr">{shortAddr(data.participant, 4)}</div>
+          </div>
+        </div>
+      )
+    }
+
+    // return divs.length > 0 ? divs : <div>No chat yet.</div>
+    return divs;
+  }
+
   renderMessages() {
     if (this.state.loading)
-      return (<div>Loading...</div>);
+      return (<Loading />);
 
     let divs = [];
 
@@ -131,18 +197,27 @@ class ChatPage extends React.Component<{}, ChatPageState> {
       divs.push(
         <div key={i} className={`chat-msg-line ${owner ? 'my-line' : 'other-line'}`}>
           {!owner && <img className='chat-msg-portrait' src={this.state.friend_avatar} />}
+
           <div>
             <div className={`chat-msg-header ${owner ? 'my-line' : 'other-line'}`}>
-              <div className="chat-msg-nickname">{owner ? this.state.my_nickname : this.state.friend_nickname}</div>
-              <div className="chat-msg-address">{shortStr(data.address, 3)}</div>
+              <div className="chat-msg-nickname">{
+                owner
+                  ? shortStr(this.state.my_nickname, 15)
+                  : shortStr(this.state.friend_nickname, 15)}
+              </div>
+
+              <div className="chat-msg-address">{shortAddr(data.address, 3)}</div>
             </div>
+
             <div className={`chat-message ${owner ? 'my-message' : 'other-message'}`}>
               {data.message}
             </div>
+
             <div className={`chat-msg-time ${owner ? 'my-line' : 'other-line'}`}>
               {formatTimestamp(data.time, true)}
             </div>
           </div>
+
           {owner && <img className='chat-msg-portrait' src={this.state.my_avatar} />}
         </div>
       )
@@ -189,15 +264,23 @@ class ChatPage extends React.Component<{}, ChatPageState> {
   }
 
   render() {
+    if (this.state.navigate)
+      return <Navigate to={this.state.navigate} />;
+
     return (
       <div className="chat-page">
         {/* <div>AO Public Chatroom</div> */}
-        <div id='scrollableDiv' className="chat-chat-container">
+        <div className='chat-page-list-container'>
+          {this.renderChatList()}
+        </div>
+
+        {/* <div className='chat-page-chat-window'> */}
+        <div id='scrollableDiv' className="chat-page-messages-container">
           {this.renderMessages()}
         </div>
 
         {this.state.address &&
-          <div>
+          <div className='chat-page-send-container'>
             <input
               id='input_msg'
               className="chat-input-message"
@@ -209,6 +292,7 @@ class ChatPage extends React.Component<{}, ChatPageState> {
             <button className="chat-send-button" onClick={() => this.sendMessage()}>Send</button>
           </div>
         }
+        {/* </div> */}
 
         {/* <MessageModal message={this.state.message} /> */}
         <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />

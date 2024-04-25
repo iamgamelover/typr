@@ -597,14 +597,14 @@ export async function downloadFromArweave(txid: string) {
   return data;
 }
 
-export function storePostInLocal(post: any) {
-  let list = [];
-  let val = localStorage.getItem('your_posts');
-  if (val) list = JSON.parse(val);
-  list.unshift(post);
+// export function storePostInLocal(post: any) {
+//   let list = [];
+//   let val = localStorage.getItem('your_posts');
+//   if (val) list = JSON.parse(val);
+//   list.unshift(post);
 
-  localStorage.setItem('your_posts', JSON.stringify(list))
-}
+//   localStorage.setItem('your_posts', JSON.stringify(list))
+// }
 
 export async function getTokenBalance(process: string, address: string) {
   const result = await dryrun({
@@ -644,6 +644,13 @@ export async function getProfile(address: string) {
   return await getDataFromAO(AO_TWITTER, 'GetProfile', { address });
 }
 
-export function shortStr(str: string, num: number) {
+export function shortStr(str: string, max: number) {
+  if (str.length > max) {
+    return str.substring(0, max) + '...';
+  }
+  return str;
+}
+
+export function shortAddr(str: string, num: number) {
   return str.substring(0, num) + '...' + str.substring(str.length - num);
 }

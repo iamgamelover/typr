@@ -54,6 +54,7 @@ class StoryCard extends React.Component<StoryCardProps, StoryCardState> {
         </div>
         <div>
           <div className='story-card-header'>
+            <img className='story-card-avatar' src={data.avatar} />
             <div className='story-card-publisher'>{data.nickname}</div>
             {/* <div className='story-card-summary'>·</div> */}
             <div className='story-card-summary'>{formatTimestamp(data.time, true)}</div>

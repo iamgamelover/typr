@@ -33,6 +33,7 @@ export class AppConfig {
       text: 'Chatroom',
       icon: 'chatroom',
       to: '/chat',
+      new: true,
       loggedIn: false
     },
     {

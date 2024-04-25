@@ -5,7 +5,7 @@ import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
 import {
   checkContent, getDataFromAO, getWalletAddress, timeOfNow,
-  messageToAO, uuid, isBookmarked, storePostInLocal
+  messageToAO, uuid, isBookmarked
 } from '../util/util';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
@@ -13,6 +13,8 @@ import { AO_TWITTER, PAGE_SIZE, TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
 import { BsSend } from 'react-icons/bs';
 import Loading from '../elements/Loading';
+
+declare var window: any;
 
 interface HomePageState {
   posts: any;
@@ -57,6 +59,10 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     subscribe('wallet-events', () => {
       this.forceUpdate();
+    });
+
+    subscribe('new-post', () => {
+      this.getPosts(true);
     });
   }
 
@@ -144,9 +150,10 @@ class HomePage extends React.Component<{}, HomePageState> {
     
     if (!posts || new_post) {
       posts = await getDataFromAO(AO_TWITTER, 'GetPosts', { offset: 0 });
-      console.log("posts:", posts)
       if (posts.length < PAGE_SIZE)
         this.setState({ isAll: true })
+      else
+        this.setState({ isAll: false })
     }
 
     this.checkBookmarks(posts);
@@ -160,8 +167,6 @@ class HomePage extends React.Component<{}, HomePageState> {
     this.setState({ loadNextPage: true });
 
     let offset = this.state.posts.length.toString();
-    console.log("offset:", offset)
-
     let posts = await getDataFromAO(AO_TWITTER, 'GetPosts', { offset });
 
     if (posts.length < PAGE_SIZE)
@@ -179,6 +184,7 @@ class HomePage extends React.Component<{}, HomePageState> {
     for (let i = 0; i < posts.length; i++) {
       let resp = isBookmarked(bookmarks, posts[i].id);
       posts[i].isBookmarked = resp;
+      Server.service.addPostToCache(posts[i]);
     }
 
     Server.service.addPostsToCache(posts);
@@ -192,7 +198,7 @@ class HomePage extends React.Component<{}, HomePageState> {
     for (let i = 0; i < this.state.posts.length; i++) {
       divs.push(
         <ActivityPost
-          key={i}
+          key={uuid()}
           data={this.state.posts[i]}
         />
       )
@@ -230,7 +236,6 @@ class HomePage extends React.Component<{}, HomePageState> {
       // this.setState({ message: '', alert: 'Post successful.', posts: [], loading: true });
       this.setState({ message: ''});
       this.getPosts(true);
-      storePostInLocal(data);
 
       // store the txid of a post. 
       let txid = { id: data.id, txid: response };

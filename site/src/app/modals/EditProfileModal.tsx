@@ -9,7 +9,7 @@ import AlertModal from './AlertModal';
 import Compressor from 'compressorjs';
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
-import { AO_TWITTER } from '../util/consts';
+import { AO_STORY, AO_TWITTER } from '../util/consts';
 import { publish } from '../util/event';
 
 interface EditProfileModalProps {
@@ -109,7 +109,7 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
 
   async saveProfile() {
     let profile = Server.service.getProfile(Server.service.getActiveAddress());
-    console.log("cached profile:", profile)
+    // console.log("cached profile:", profile)
 
     let dirty = false;
     if (this.state.banner != profile.banner) dirty = true;
@@ -143,6 +143,9 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
       time: timeOfNow()
     };
     // console.log("data:", data)
+
+    // for testing...
+    messageToAO(AO_STORY, data, 'Register');
 
     let response = await messageToAO(AO_TWITTER, data, 'Register');
 

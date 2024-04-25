@@ -7,7 +7,7 @@ import { AOT_TEST, AO_TWITTER } from '../util/consts';
 import { Server } from '../../server/server';
 import PostModal from '../modals/PostModal';
 import Portrait from '../elements/Portrait';
-import { subscribe } from '../util/event';
+import { publish, subscribe } from '../util/event';
 
 interface SitePageState {
   members: number;
@@ -34,7 +34,6 @@ class SitePage extends React.Component<{}, SitePageState> {
 
     subscribe('wallet-events', () => {
       let address = Server.service.getIsLoggedIn();
-      console.log("wallet-events -> address:", address)
       this.setState({ address })
     });
   }
@@ -45,7 +44,7 @@ class SitePage extends React.Component<{}, SitePageState> {
 
   async start() {
     let address = await isLoggedIn();
-    console.log("site page -> address:", address)
+    // console.log("site page -> address:", address)
 
     Server.service.setIsLoggedIn(address);
     Server.service.setActiveAddress(address);
@@ -67,6 +66,7 @@ class SitePage extends React.Component<{}, SitePageState> {
 
   onClose() {
     this.setState({ open: false });
+    publish('new-post');
   }
 
   async getStatus() {

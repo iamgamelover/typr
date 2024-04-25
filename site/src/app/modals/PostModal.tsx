@@ -6,7 +6,10 @@ import './PostModal.css'
 import MessageModal from './MessageModal';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import { AO_STORY, AO_TWITTER, STORY_INCOME, TIP_IMG } from '../util/consts';
-import { checkContent, getWalletAddress, timeOfNow, uuid, messageToAO, storePostInLocal, numberWithCommas, transferToken, getDefaultProcess } from '../util/util';
+import {
+  checkContent, getWalletAddress, timeOfNow, uuid, messageToAO,
+  numberWithCommas, transferToken, getDefaultProcess
+} from '../util/util';
 import { MdOutlineToken } from 'react-icons/md';
 import { Server } from '../../server/server';
 import { AiOutlineFire } from 'react-icons/ai';
@@ -121,9 +124,6 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
     if (response) {
       this.setState({ message: '' });
       this.props.onClose(data);
-
-      if (!this.props.isStory)
-        storePostInLocal(data);
 
       // store the txid of a post. 
       let txid = { id: data.id, txid: response };

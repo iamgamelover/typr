@@ -1,7 +1,7 @@
 import React from 'react';
 import './FollowPage.css';
 import { AO_TWITTER, AO_STORY, PAGE_SIZE } from '../util/consts';
-import { getDataFromAO, getProfile, shortStr } from '../util/util';
+import { getDataFromAO, getProfile, shortAddr } from '../util/util';
 import Loading from '../elements/Loading';
 import { NavLink } from 'react-router-dom';
 import { Server } from '../../server/server';
@@ -207,7 +207,7 @@ class FollowPage extends React.Component<FollowPageProps, FollowPageState> {
             <div className="follow-page-nickname">
               {data[i].nickname}
             </div>
-            <div className="follow-page-addr">{shortStr(data[i].address, 4)}</div>
+            <div className="follow-page-addr">{shortAddr(data[i].address, 4)}</div>
             <div className="follow-page-bio">{data[i].bio}</div>
           </div>
 
@@ -253,7 +253,7 @@ class FollowPage extends React.Component<FollowPageProps, FollowPageState> {
             <img className='follow-page-portrait' src={data.avatar} />
             <div>
               <div className="follow-page-nickname">{data.nickname}</div>
-              <div className="follow-page-addr">{shortStr(data.address, 4)}</div>
+              <div className="follow-page-addr">{shortAddr(data.address, 4)}</div>
             </div>
           </div>
         }

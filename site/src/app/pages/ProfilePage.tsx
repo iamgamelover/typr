@@ -6,7 +6,7 @@ import MessageModal from '../modals/MessageModal';
 import QuestionModal from '../modals/QuestionModal';
 import {
   getBannerImage, getDataFromAO, getDefaultProcess, getProfile, isBookmarked,
-  isLoggedIn, messageToAO, randomAvatar, shortStr, timeOfNow
+  isLoggedIn, messageToAO, randomAvatar, shortAddr, timeOfNow
 } from '../util/util';
 import { BsCalendarWeek, BsPencilFill } from 'react-icons/bs';
 import { createAvatar } from '@dicebear/core';
@@ -143,10 +143,6 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
 
   async getPosts(address: string) {
     let posts;
-    // let val = localStorage.getItem('your_posts');
-    // if (val && val != '[]') posts = JSON.parse(val);
-    // let posts = Server.service.getPostsInProfileFromCache(address);
-
     let position = Server.service.getPositionInProfileFromCache();
 
     if (!posts) {
@@ -180,17 +176,6 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
 
   async checkBookmarks(posts: any) {
-    //
-    // let address = Server.service.getActiveAddress();
-    // for (let i = 0; i < posts.length; i++) {
-    //   // let isLiked = await getDataFromAO(AO_TWITTER, 'GetLike', '0', posts[i].id, address);
-    //   let isLiked = await getDataFromAO(AO_TWITTER, 'GetLike', '0');
-    //   console.log("post isLiked:", isLiked)
-    //   if (isLiked.length > 0)
-    //     posts[i].isLiked = true;
-    //   // this.forceUpdate()
-    // }
-
     let bookmarks = [];
     let val = localStorage.getItem('bookmarks');
     if (val) bookmarks = JSON.parse(val);
@@ -201,8 +186,6 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     }
 
     this.setState({ posts, loading: false, loadNextPage: false });
-    // Server.service.addPostsInProfileToCache(this.state.address, posts);
-    // localStorage.setItem('your_posts', JSON.stringify(posts))
   }
 
   async getProfile(address: string) {
@@ -416,7 +399,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
         {this.renderActionButtons()}
 
         <div className="profile-page-name">{this.state.nickname}</div>
-        <div className="profile-page-id">{shortStr(this.state.address, 6)}</div>
+        <div className="profile-page-id">{shortAddr(this.state.address, 6)}</div>
         <div className="profile-page-desc">{this.state.bio}</div>
         <div className='profile-page-joined-container'>
           <BsCalendarWeek />

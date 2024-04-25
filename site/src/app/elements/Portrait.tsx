@@ -1,10 +1,10 @@
 import React from 'react';
 import './Portrait.css';
 import { publish, subscribe } from '../util/event';
-import { AOT_TEST, AO_TWITTER, LUA } from '../util/consts';
+import { AOT_TEST, AO_STORY, AO_TWITTER, LUA } from '../util/consts';
 import {
-  connectWallet, evaluate, getDefaultProcess, getProfile, getTokenBalance,
-  getWalletAddress, isLoggedIn, messageToAO, randomAvatar, shortStr, spawnProcess, timeOfNow
+  connectWallet, evaluate, getDataFromAO, getDefaultProcess, getProfile, getTokenBalance,
+  getWalletAddress, isLoggedIn, messageToAO, randomAvatar, shortAddr, shortStr, spawnProcess, timeOfNow
 } from '../util/util';
 import { Server } from '../../server/server';
 import { Tooltip } from 'react-tooltip';
@@ -58,8 +58,18 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
 
   async start() {
     let address = await isLoggedIn();
-    console.log("portrait -> address:", address)
+    // console.log("portrait -> address:", address)
+    
     this.setState({ address })
+
+    // for testing...
+    let users = await getDataFromAO(AO_TWITTER, 'GetUsers', {address});
+    // console.log("portrait -> users:", users)
+    if (users.length == 0) {
+      this.disconnectWallet();
+      return;
+    }
+
     this.getProfile(address)
   }
 
@@ -104,14 +114,14 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
     }
   }
 
-  // Register one user
-  // This is a temp way, need to search varibale Members
-  // to keep one, on browser side or AOS side (in lua code)
   async register(address: string) {
     console.log('--> register')
-    let nickname = shortStr(address, 4);
+    let nickname = shortAddr(address, 4);
     let data = { address, avatar: randomAvatar(), banner: '', nickname, bio: '', time: timeOfNow() };
     messageToAO(AO_TWITTER, data, 'Register');
+    
+    // for testing...
+    messageToAO(AO_STORY, data, 'Register');
   }
 
   async disconnectWallet() {
@@ -133,11 +143,11 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
 
   async getProfile(address: string) {
     let profile = Server.service.getProfile(address);
-    console.log("cached profile:", profile)
+    // console.log("cached profile:", profile)
 
     if (!profile) { // no cache
       profile = await getProfile(address);
-      console.log("portrait -> profile:", profile)
+      // console.log("portrait -> profile:", profile)
 
       if (profile.length > 0) {
         profile = profile[0];
@@ -155,7 +165,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
   render() {
     let address = this.state.address;
     let avatar = this.state.avatar;
-    let shortAddr = shortStr(address, 4);
+    let shortAddress = shortAddr(address, 4);
 
     return (
       <div>
@@ -166,8 +176,8 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
             className='site-page-portrait-container'
             data-tooltip-id="my-tooltip"
             data-tooltip-content="Disconnect from wallet"
-            onClick={() => this.disconnectWallet()}
-          // onClick={() => this.setState({ question: 'Disconnect?' })}
+            // onClick={() => this.disconnectWallet()}
+          onClick={() => this.setState({ question: 'Disconnect?' })}
           >
             <img
               className='site-page-portrait'
@@ -175,9 +185,9 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
             />
             <div>
               <div className="site-page-nickname">
-                {this.state.nickname ? this.state.nickname : shortAddr}
+                {this.state.nickname ? shortStr(this.state.nickname, 15) : shortAddress}
               </div>
-              <div className="site-page-addr">{shortAddr}</div>
+              <div className="site-page-addr">{shortAddress}</div>
             </div>
           </div>
           :
@@ -187,7 +197,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
         }
 
         <Tooltip id="my-tooltip" />
-        {/* <QuestionModal message={this.state.question} onYes={this.onQuestionYes} onNo={this.onQuestionNo} /> */}
+        <QuestionModal message={this.state.question} onYes={this.onQuestionYes} onNo={this.onQuestionNo} />
       </div>
     );
   }

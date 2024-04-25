@@ -1,6 +1,6 @@
 import React from 'react';
 import { BsBookmark, BsBookmarkFill, BsChat, BsHeart, BsHeartFill } from 'react-icons/bs';
-import { convertUrls, getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO, numberWithCommas, randomAvatar, timeOfNow, transferToken, uuid } from '../util/util';
+import { convertUrls, getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO, numberWithCommas, randomAvatar, shortAddr, timeOfNow, transferToken, uuid } from '../util/util';
 import { formatTimestamp } from '../util/util';
 import './ActivityPost.css';
 import parse, { attributesToProps } from 'html-react-parser';
@@ -365,9 +365,9 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     let owner = (this.props.data.address == this.state.address);
 
     let data = this.props.data;
-    let address = data.address;
-    if (address)
-      address = address.substring(0, 4) + '...' + address.substring(address.length - 4);
+    // let address = data.address;
+    // if (address)
+    //   address = address.substring(0, 4) + '...' + address.substring(address.length - 4);
 
     if (this.state.navigate)
       return <Navigate to={this.state.navigate} />;
@@ -392,7 +392,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
             {data.nickname}
           </div>
 
-          <div className="home-msg-address">{address}</div>
+          <div className="home-msg-address">{shortAddr(data.address, 4)}</div>
           <div className='home-msg-time'>
             ·&nbsp;&nbsp;{formatTimestamp(data.time)}
           </div>
@@ -406,6 +406,16 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
               data-tooltip-content="Go to ao.link"
             />
           }
+
+          {/* {this.props.isReply &&
+            <img
+              className='activity-post-arweave-icon'
+              src='/ar.svg'
+              onClick={() => this.openLink(data.txid)}
+              data-tooltip-id="my-tooltip"
+              data-tooltip-content="Go to ao.link"
+            />
+          } */}
         </div>
 
         <div className='home-message'>

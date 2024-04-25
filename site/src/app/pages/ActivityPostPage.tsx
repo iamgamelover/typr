@@ -7,9 +7,11 @@ import MessageModal from '../modals/MessageModal';
 import AlertModal from '../modals/AlertModal';
 import { BsFillArrowLeftCircleFill, BsReply } from 'react-icons/bs';
 import { subscribe } from '../util/event';
-import { checkContent, getDataFromAO, getWalletAddress, isLoggedIn, 
-  timeOfNow, messageToAO, uuid, isBookmarked } from '../util/util';
-import { AO_STORY, AO_TWITTER, TIP_IMG } from '../util/consts';
+import {
+  checkContent, getDataFromAO, getWalletAddress, isLoggedIn,
+  timeOfNow, messageToAO, uuid, isBookmarked
+} from '../util/util';
+import { AO_STORY, AO_TWITTER, PAGE_SIZE, TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
 import QuestionModal from '../modals/QuestionModal';
 import Loading from '../elements/Loading';
@@ -28,6 +30,8 @@ interface ActivityPostPageState {
   loading_reply: boolean;
   address: string;
   txid: string;
+  loadNextPage: boolean;
+  isAll: boolean;
 }
 
 class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPostPageState> {
@@ -49,11 +53,14 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
       loading_reply: true,
       address: '',
       txid: '',
+      loadNextPage: false,
+      isAll: false,
     };
 
     this.onContentChange = this.onContentChange.bind(this);
     this.onQuestionYes = this.onQuestionYes.bind(this);
     this.onQuestionNo = this.onQuestionNo.bind(this);
+    this.atBottom = this.atBottom.bind(this);
 
     subscribe('wallet-events', () => {
       this.forceUpdate();
@@ -66,6 +73,23 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
   componentDidMount() {
     this.start();
+    window.addEventListener('scroll', this.atBottom);
+  }
+
+  componentWillUnmount(): void {
+    window.removeEventListener('scroll', this.atBottom);
+  }
+
+  atBottom() {
+    const scrollHeight = document.documentElement.scrollHeight;
+    const scrollTop = document.documentElement.scrollTop;
+    const clientHeight = document.documentElement.clientHeight;
+
+    if (scrollTop + clientHeight + 300 >= scrollHeight)
+      setTimeout(() => {
+        if (!this.state.loading && !this.state.loadNextPage && !this.state.isAll)
+          this.nextPage();
+      }, 200);
   }
 
   onQuestionYes() {
@@ -95,16 +119,15 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
   }
 
   async getStory() {
-    // let post = await getDataFromAO(AO_STORY, 'GetStories', '0', this.postId);
-    let post = await getDataFromAO(AO_STORY, 'GetStories', '0');
+    let post = await getDataFromAO(this.process, 'GetStories', { id: this.postId });
     console.log("story:", post)
     if (post.length == 0) {
       this.setState({ alert: 'Story not found.' });
       return;
     }
 
-    // let isLiked = await getDataFromAO(AO_STORY, 'GetLike', '0', this.postId, Server.service.getActiveAddress());
-    let isLiked = await getDataFromAO(AO_STORY, 'GetLike', '0');
+    let data = { id: this.postId, address: this.state.address }
+    let isLiked = await getDataFromAO(this.process, 'GetLike', data);
     console.log("isLiked:", isLiked)
     if (isLiked.length > 0) {
       post[0].isLiked = true;
@@ -113,11 +136,9 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     this.setState({ post: post[0], loading: false });
     this.getReplies();
 
-    // let txid = await getDataFromAO(AO_STORY, 'GetTxid', '0', this.postId);
-    let txid = await getDataFromAO(AO_STORY, 'GetTxid', '0');
+    let txid = await getDataFromAO(this.process, 'GetTxid', { id: this.postId });
     console.log("txid:", txid)
-    if (txid.length > 0)
-      this.setState({ txid: txid[0].txid });
+    this.setState({ txid: txid[0].txid });
   }
 
   async getPost() {
@@ -137,7 +158,6 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     this.getReplies();
 
     let txid = await getDataFromAO(AO_TWITTER, 'GetTxid', { id: this.postId });
-    console.log("txid:", txid)
     this.setState({ txid: txid[0].txid });
   }
 
@@ -152,22 +172,27 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
   async getPostById(id: string) {
     let resp = await getDataFromAO(AO_TWITTER, 'GetPosts', { id });
-    console.log("resp:", resp)
-    if (!resp) return;
+    if (resp.length == 0) return;
 
     Server.service.addPostToCache(resp[0]);
     return resp[0];
   }
 
   async getReplies() {
-    let replies = await getDataFromAO(this.process, 'GetReplies', 
-    { post_id: this.postId, offset: 0 });
-    console.log("replies:", replies)
+    let data = { post_id: this.postId, offset: 0 };
+    let replies = await getDataFromAO(this.process, 'GetReplies', data);
 
-    this.setState({
-      replies: replies,
-      loading_reply: false
-    });
+    this.setState({ replies, loading_reply: false });
+
+    // for testing
+    // for (let i = 0; i < replies.length; i++) {
+    //   let txid = await getDataFromAO(AO_TWITTER, 'GetTxid', { id: replies[i].id });
+    //   // this.setState({ txid: txid[0].txid });
+    //   replies[i].txid = txid[0].txid;
+    // }
+
+    // console.log("replies:", replies)
+    // this.setState({ replies });
 
     // for story page
     // let address = Server.service.getActiveAddress();
@@ -179,6 +204,22 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     //     replies[i].isLiked = true;
     //   this.forceUpdate()
     // }
+  }
+
+  async nextPage() {
+    this.setState({ loadNextPage: true });
+
+    let offset = this.state.replies.length.toString();
+    let data = { post_id: this.postId, offset };
+    let replies = await getDataFromAO(this.process, 'GetReplies', data);
+
+    if (replies.length < PAGE_SIZE)
+      this.setState({ isAll: true })
+    // else
+    //   this.setState({ isAll: false })
+
+    let total = this.state.replies.concat(replies);
+    this.setState({ replies: total, loadNextPage: false });
   }
 
   async onReply() {
@@ -214,7 +255,9 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
       this.setState({
         message: '',
         // replies: this.state.replies,
-        post: this.state.post
+        post: this.state.post,
+        isAll: false,
+        // loading_reply: true
       });
 
       // update the amount of replies
@@ -241,7 +284,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     for (let i = 0; i < replies.length; i++)
       divs.push(
         <ActivityPost
-          key={i}
+          key={uuid()}
           data={replies[i]}
           isReply={true}
         />
@@ -290,12 +333,19 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
         {!this.state.loading && !this.state.loading_reply &&
           <div className='activity-post-page-reply-header'>
-            {this.state.replies.length} Replies
+            {this.state.post.replies} Replies
           </div>
         }
 
         {!this.state.loading &&
           this.renderReplies()
+        }
+
+        {this.state.loadNextPage && <Loading />}
+        {this.state.isAll &&
+          <div style={{ marginTop: '20px', fontSize: '18px', color: 'gray' }}>
+            No more replies.
+          </div>
         }
 
         <MessageModal message={this.state.message} />

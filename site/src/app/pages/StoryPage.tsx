@@ -3,7 +3,7 @@ import './StoryPage.css';
 import StoryCard from '../elements/StoryCard';
 import { AiOutlineFire } from 'react-icons/ai';
 import PostModal from '../modals/PostModal';
-import { getDataFromAO } from '../util/util';
+import { getDataFromAO, uuid } from '../util/util';
 import { AO_STORY, PAGE_SIZE } from '../util/consts';
 import Loading from '../elements/Loading';
 import { Server } from '../../server/server';
@@ -76,7 +76,8 @@ class StoryPage extends React.Component<{}, StoryPageState> {
     this.setState({ open: false });
     if (data) {
       this.getStory();
-      this.setState({ posts: [], loading: true, isAll: false });
+      // this.setState({ posts: [], loading: true, isAll: false });
+      this.setState({ isAll: false });
     }
   }
 
@@ -85,7 +86,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
   // }
 
   async getStory() {
-    let posts = await getDataFromAO(AO_STORY, 'GetStories', '0');
+    let posts = await getDataFromAO(AO_STORY, 'GetStories', { offset: 0 });
     console.log("stories:", posts)
 
     if (posts.length < PAGE_SIZE)
@@ -101,7 +102,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
     let offset = this.state.posts.length.toString();
     console.log("offset:", offset)
 
-    let posts = await getDataFromAO(AO_STORY, 'GetStories', offset);
+    let posts = await getDataFromAO(AO_STORY, 'GetStories', { offset });
     console.log("stories:", posts)
     if (posts.length < PAGE_SIZE)
       this.setState({ isAll: true })
@@ -115,8 +116,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
 
   async getStats(posts: any) {
     for (let i = 0; i < posts.length; i++) {
-      // let stats = await getDataFromAO(AO_STORY, 'GetStats', '0', posts[i].id);
-      let stats = await getDataFromAO(AO_STORY, 'GetStats', '0');
+      let stats = await getDataFromAO(AO_STORY, 'GetStats', { post_id: posts[i].id });
       // console.log("stats:", stats)
       if (stats[0].total_coins) {
         posts[i].coins += stats[0].total_coins;
@@ -133,7 +133,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
     let divs = [];
     for (let i = 0; i < this.state.posts.length; i++) {
       divs.push(
-        <StoryCard key={i} data={this.state.posts[i]} />
+        <StoryCard key={uuid()} data={this.state.posts[i]} />
       )
     }
 
