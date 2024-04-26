@@ -58,17 +58,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
   async start() {
     let address = await isLoggedIn();
     // console.log("portrait -> address:", address)
-    
     this.setState({ address })
-
-    // for testing...
-    let users = await getDataFromAO(AO_TWITTER, 'GetUsers', {address});
-    // console.log("portrait -> users:", users)
-    if (users.length == 0) {
-      this.disconnectWallet();
-      return;
-    }
-
     this.getProfile(address)
   }
 

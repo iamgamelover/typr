@@ -5,14 +5,17 @@ import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
 import {
   checkContent, getDataFromAO, getWalletAddress, timeOfNow,
-  messageToAO, uuid, isBookmarked
+  messageToAO, uuid, isBookmarked,
+  randomAvatar,
+  shortAddr
 } from '../util/util';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
-import { AO_TWITTER, PAGE_SIZE, TIP_IMG } from '../util/consts';
+import { AO_STORY, AO_TWITTER, PAGE_SIZE, TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
 import { BsSend } from 'react-icons/bs';
 import Loading from '../elements/Loading';
+import { dryrun } from '@permaweb/aoconnect/browser';
 
 declare var window: any;
 
@@ -99,6 +102,49 @@ class HomePage extends React.Component<{}, HomePageState> {
   }
 
   async start() {
+
+    // return;
+
+    // TEMP
+    // let tempRepiles = await this.tempGetDataFromAO("Ekm_mCHSs9mawVqwqTi35qBaT-8DaORzYJ-c9Z3qMhY", 'GetReplies');
+    // console.log("tempRepiles:", tempRepiles)
+
+    // for (let i = 0; i < tempRepiles.length; i++) {
+    //   let reply = JSON.parse(tempRepiles[i])
+    //   console.log("reply:", reply)
+
+    //   let post_id = '';
+    //   try {
+    //     if (reply.postId)
+    //       post_id = reply.postId
+    //     else if (reply.post_id)
+    //       post_id = reply.post_id
+    //   } catch (error) {
+    //     continue
+    //   }
+
+    //   let data = {
+    //     id: reply.id, post_id: post_id, address: reply.address, post: reply.post,
+    //     likes: 0, replies: 0, coins: 0, time: Number(reply.time)
+    //   };
+    //   console.log("data:", data)
+
+    //   await messageToAO(AO_TWITTER, data, 'SendReply');
+    // }
+
+    // console.log("DONE!!")
+    // return;
+
+
+    let users = await getDataFromAO(AO_TWITTER, 'GetUsersCount');
+    console.log("users:", users[0].total_count)
+
+    let posts = await getDataFromAO(AO_TWITTER, 'GetPostsCount');
+    console.log("posts:", posts[0].total_count)
+
+    let replies = await getDataFromAO(AO_TWITTER, 'GetRepliesCount');
+    console.log("replies:", replies[0].total_count)
+
     await this.getPosts();
 
     // check the new post every 10 seconds.
@@ -147,9 +193,10 @@ class HomePage extends React.Component<{}, HomePageState> {
   async getPosts(new_post?: boolean) {
     let posts = Server.service.getPostsFromCache();
     let position = Server.service.getPositionFromCache();
-    
+
     if (!posts || new_post) {
       posts = await getDataFromAO(AO_TWITTER, 'GetPosts', { offset: 0 });
+      console.log("posts:", posts)
       if (posts.length < PAGE_SIZE)
         this.setState({ isAll: true })
       else
@@ -234,7 +281,7 @@ class HomePage extends React.Component<{}, HomePageState> {
     if (response) {
       this.quillRef.setText('');
       // this.setState({ message: '', alert: 'Post successful.', posts: [], loading: true });
-      this.setState({ message: ''});
+      this.setState({ message: '' });
       this.getPosts(true);
 
       // store the txid of a post. 
@@ -244,6 +291,66 @@ class HomePage extends React.Component<{}, HomePageState> {
     else
       this.setState({ message: '', alert: TIP_IMG });
   }
+
+  //=======
+  // TEMP...
+  async tempGetDataFromAO(
+    process: string,
+    action: string,
+    pageNo?: number,
+    pageSize?: string,
+    postId?: string,
+    address?: string,
+  ) {
+
+    let start = performance.now();
+    console.log('==> [tempGetDataFromAO]');
+
+    let valPN = '', valPS = '', valPID = '', valAddress = '';
+    if (pageNo) valPN = pageNo.toString();
+    if (pageSize) valPS = pageSize;
+    if (postId) valPID = postId;
+    if (address) valAddress = address;
+
+    let result;
+    try {
+      result = await dryrun({
+        process: process,
+        tags: [
+          { name: 'Action', value: action },
+          { name: 'pageNo', value: valPN },
+          { name: 'pageSize', value: valPS },
+          { name: 'postId', value: valPID },
+          { name: 'address', value: valAddress },
+        ],
+      });
+    } catch (error) {
+      console.log('tempGetDataFromAO --> ERR:', error)
+      return '';
+    }
+
+    // console.log('action', action);
+    // console.log('result', result);
+
+    try {
+      if (result.Messages.length == 0) return '';
+    } catch (error) {
+      return '';
+    }
+
+    let data = result.Messages[0].Data;
+    if (!data) return '';
+    let final = data.split("▲");
+
+    let end = performance.now();
+    console.log(`<== [tempGetDataFromAO] [${Math.round(end - start)} ms]`);
+
+    if (final.length == 1 && final[0] == '') return '';
+    return final;
+  }
+
+  //===============
+
 
   render() {
     return (
