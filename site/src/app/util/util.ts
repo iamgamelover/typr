@@ -257,9 +257,13 @@ export function getFirstLine(str: any) {
     let end = str.indexOf('</p>', start);
     if (end != -1)
       text = str.substring(start + 3, end);
+
+    let img = text.indexOf('<img');
+    if (img != -1)
+      text = text.substring(start, img);
   }
 
-  return text.substring(0, 100);
+  return shortStr(text, 100);
 }
 
 /**

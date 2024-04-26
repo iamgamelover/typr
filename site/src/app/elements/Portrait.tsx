@@ -26,7 +26,6 @@ interface PortraitState {
 
 class Portrait extends React.Component<PortraitProps, PortraitState> {
 
-
   constructor(props: PortraitProps) {
     super(props);
     this.state = {
@@ -176,8 +175,8 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
             className='site-page-portrait-container'
             data-tooltip-id="my-tooltip"
             data-tooltip-content="Disconnect from wallet"
-            // onClick={() => this.disconnectWallet()}
-          onClick={() => this.setState({ question: 'Disconnect?' })}
+            onClick={() => this.disconnectWallet()}
+          // onClick={() => this.setState({ question: 'Disconnect?' })}
           >
             <img
               className='site-page-portrait'

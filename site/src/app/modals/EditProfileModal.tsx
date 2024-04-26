@@ -140,7 +140,7 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
       banner: this.state.banner,
       nickname: this.state.nickname,
       bio: this.state.bio,
-      time: timeOfNow()
+      // time: timeOfNow()
     };
     // console.log("data:", data)
 

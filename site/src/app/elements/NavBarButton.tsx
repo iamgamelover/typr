@@ -57,9 +57,9 @@ class NavBarButton extends React.Component<NavBarButtonProps, NavBarButtonState>
   }
 
   onClickButton() {
-    // if (this.props.text == 'Profile') {
-    //   publish('profile');
-    // }
+    if (this.props.text == 'Profile') {
+      publish('click-profile-menu');
+    }
   }
 
   renderIcon() {

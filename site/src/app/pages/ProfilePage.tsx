@@ -3,22 +3,20 @@ import './ProfilePage.css';
 import AlertModal from '../modals/AlertModal';
 import EditProfileModal from '../modals/EditProfileModal';
 import MessageModal from '../modals/MessageModal';
-import QuestionModal from '../modals/QuestionModal';
 import {
-  getBannerImage, getDataFromAO, getDefaultProcess, getProfile, isBookmarked,
-  isLoggedIn, messageToAO, randomAvatar, shortAddr, timeOfNow
+  getDataFromAO, getProfile, isBookmarked,
+  isLoggedIn, messageToAO, randomAvatar, shortAddr, timeOfNow,
+  uuid
 } from '../util/util';
-import { BsCalendarWeek, BsPencilFill } from 'react-icons/bs';
-import { createAvatar } from '@dicebear/core';
-import { micah } from '@dicebear/collection';
+import { BsCalendarWeek } from 'react-icons/bs';
 import { AO_TWITTER, PAGE_SIZE } from '../util/consts';
 import { Server } from '../../server/server';
 import Loading from '../elements/Loading';
 import ActivityPost from '../elements/ActivityPost';
 import { subscribe } from '../util/event';
-// import Logo from '../elements/Logo';
 import { CiMail } from "react-icons/ci";
-import { NavLink } from 'react-router-dom';
+import { NavLink, Navigate } from 'react-router-dom';
+import DMModal from '../modals/DMModal';
 
 declare var window: any;
 
@@ -30,11 +28,11 @@ interface ProfilePageState {
   loadNextPage: boolean;
   address: string;
   openEditProfile: boolean;
+  openDM: boolean;
   nickname: string;
   banner: string;
   avatar: string;
   bio: string;
-  joined: string;
   posts: any;
   isAll: boolean;
   profile: any;
@@ -44,6 +42,7 @@ interface ProfilePageState {
   showUnfollow: boolean;
   butDisable: boolean;
   isFriend: boolean;
+  navigate: string;
 }
 
 class ProfilePage extends React.Component<{}, ProfilePageState> {
@@ -60,11 +59,11 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
       loadNextPage: false,
       address: '',
       openEditProfile: false,
+      openDM: false,
       nickname: '',
       banner: '/banner-default.png',
       avatar: '',
       bio: '',
-      joined: '',
       posts: '',
       isAll: false,
       profile: '',
@@ -74,19 +73,23 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
       showUnfollow: false,
       butDisable: true,
       isFriend: false,
+      navigate: '',
     };
 
     this.openEditProfile = this.openEditProfile.bind(this);
     this.onCloseEditProfile = this.onCloseEditProfile.bind(this);
+    this.openDM = this.openDM.bind(this);
+    this.onCloseDM = this.onCloseDM.bind(this);
     this.atBottom = this.atBottom.bind(this);
     this.onPopState = this.onPopState.bind(this);
     // this.onQuestionYes = this.onQuestionYes.bind(this);
     // this.onQuestionNo = this.onQuestionNo.bind(this);
 
-    // subscribe('profile', () => {
-    //   this.forceUpdate();
-    //   this.start();
-    // });
+    subscribe('click-profile-menu', () => {
+      setTimeout(() => {
+        this.start();
+      }, 50);
+    });
   }
 
   componentDidMount() {
@@ -121,19 +124,17 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   async start() {
     let id;
     let my_profile = window.location.pathname;
-    console.log("my_profile:", my_profile)
-    if (my_profile == '/profile') {
-      id = await isLoggedIn();
-    }
-    else {
-      id = window.location.pathname.substring(6);
-    }
-    console.log("id:", id)
+    // console.log("my_profile:", my_profile)
 
-    // let address = await isLoggedIn();
+    if (my_profile == '/profile')
+      id = await isLoggedIn();
+    else
+      id = window.location.pathname.substring(6);
+
+    // console.log("id:", id)
+
     this.setState({ address: id });
 
-    // this.getDateOfJoined(address);
     await this.getPosts(id);
     await this.getProfile(id);
     await this.isFollowing();
@@ -147,7 +148,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
 
     if (!posts) {
       posts = await getDataFromAO(AO_TWITTER, 'GetPosts', { offset: 0, address });
-      console.log("profile-> posts:", posts)
+      // console.log("profile-> posts:", posts)
       if (posts.length < PAGE_SIZE)
         this.setState({ isAll: true })
     }
@@ -163,10 +164,10 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     this.setState({ loadNextPage: true });
 
     let offset = this.state.posts.length.toString();
-    console.log("offset:", offset)
+    // console.log("offset:", offset)
 
-    let posts = await getDataFromAO(AO_TWITTER, 'GetPosts', 
-    { offset, address: this.state.address });
+    let posts = await getDataFromAO(AO_TWITTER, 'GetPosts',
+      { offset, address: this.state.address });
 
     if (posts.length < PAGE_SIZE)
       this.setState({ isAll: true })
@@ -190,7 +191,8 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
 
   async getProfile(address: string) {
     let profile = await getProfile(address);
-    console.log("profile:", profile)
+    // console.log("profile:", profile)
+
     profile = profile[0];
     if (profile)
       this.setState({
@@ -202,17 +204,6 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
       })
   }
 
-  async getDateOfJoined(address: string) {
-    let members = await getDataFromAO(AO_TWITTER, 'GetMembers', null);
-    for (let i = 0; i < members.length; i++) {
-      let data = JSON.parse(members[i]);
-      if (data.address == address) {
-        this.setState({ joined: data.time });
-        return;
-      }
-    }
-  }
-
   openEditProfile() {
     this.setState({ openEditProfile: true });
   }
@@ -222,7 +213,22 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     this.getProfile(this.state.address);
   }
 
+  openDM() {
+    this.setState({ openDM: true });
+  }
+
+  onCloseDM(sent: boolean) {
+    this.setState({ openDM: false });
+    if (sent)
+      this.setState({ navigate: '/chat/' + this.state.address });
+  }
+
   async follow() {
+    if (!Server.service.getIsLoggedIn()) {
+      this.setState({ alert: 'Please connect to wallet.' });
+      return;
+    }
+
     if (this.state.butDisable) return;
     this.setState({ butDisable: true })
 
@@ -255,31 +261,31 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
 
   async getFollows() {
-    let following = await getDataFromAO(AO_TWITTER, 'GetFollowing', 
-    {follower: this.state.address, offset: 0});
-    console.log("following:", following)
+    let following = await getDataFromAO(AO_TWITTER, 'GetFollowing',
+      { follower: this.state.address, offset: 0 });
+    // console.log("following:", following)
     this.setState({ following: following.length })
 
-    let followers = await getDataFromAO(AO_TWITTER, 'GetFollowers', 
-    {following: this.state.address, offset: 0});
-    console.log("followers:", followers)
+    let followers = await getDataFromAO(AO_TWITTER, 'GetFollowers',
+      { following: this.state.address, offset: 0 });
+    // console.log("followers:", followers)
     this.setState({ followers: followers.length })
   }
 
   async isFollowing() {
-    let isFollowing = await getDataFromAO(AO_TWITTER, 'GetFollowing', 
-    {follower: Server.service.getActiveAddress(), following: this.state.address, offset: 0}
+    let isFollowing = await getDataFromAO(AO_TWITTER, 'GetFollowing',
+      { follower: Server.service.getActiveAddress(), following: this.state.address, offset: 0 }
     );
-    console.log("isFollowing:", isFollowing)
+    // console.log("isFollowing:", isFollowing)
     if (isFollowing.length > 0)
       this.setState({ isFollowing: true, butDisable: false })
     else
       this.setState({ isFollowing: false, butDisable: false })
 
-    let isFollower = await getDataFromAO(AO_TWITTER, 'GetFollowing', 
-    {follower: this.state.address, following: Server.service.getActiveAddress(), offset: 0}
+    let isFollower = await getDataFromAO(AO_TWITTER, 'GetFollowing',
+      { follower: this.state.address, following: Server.service.getActiveAddress(), offset: 0 }
     );
-    console.log("isFollower:", isFollower)
+    // console.log("isFollower:", isFollower)
 
     if (isFollowing.length > 0 && isFollower.length > 0)
       this.setState({ isFriend: true });
@@ -295,6 +301,12 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     this.setState({ showUnfollow: false })
   }
 
+  // async sayHi() {
+  //   let data = { address: Server.service.getActiveAddress(), friend: this.state.address, message: 'Hi', time: timeOfNow() };
+  //   console.log("data:", data)
+  //   // await messageToAO(AO_TWITTER, data, 'SendMessage');
+  // }
+
   renderActionButtons() {
     if (this.state.loading)
       return (<div className="profile-page-button-container" style={{ height: '42px' }}></div>);
@@ -303,9 +315,12 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
       return (
         <div className="profile-page-button-container">
           {this.state.isFriend &&
-            <NavLink className="profile-page-action-button" to={'/chat/' + this.state.address}>
+            // <NavLink className="profile-page-action-button" to={'/chat/' + this.state.address}>
+            //   <CiMail />
+            // </NavLink>
+            <div className="profile-page-action-button" onClick={() => this.setState({ openDM: true })}>
               <CiMail />
-            </NavLink>
+            </div>
           }
 
           {this.state.isFollowing
@@ -378,7 +393,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     for (let i = 0; i < this.state.posts.length; i++)
       divs.push(
         <ActivityPost
-          key={i}
+          key={uuid()}
           data={this.state.posts[i]}
         />
       )
@@ -387,7 +402,10 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
 
   render() {
-    let joined = new Date(Number(this.state.joined) * 1000).toLocaleString();
+    if (this.state.navigate)
+      return <Navigate to={this.state.navigate} />;
+
+    let joined = new Date(this.state.profile.time * 1000).toLocaleString();
 
     return (
       <div className='profile-page'>
@@ -403,7 +421,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
         <div className="profile-page-desc">{this.state.bio}</div>
         <div className='profile-page-joined-container'>
           <BsCalendarWeek />
-          <div className='profile-page-joined'>Joined {joined}</div>
+          <div className='profile-page-joined'>Joined&nbsp;&nbsp;&nbsp;{joined}</div>
         </div>
 
         <div className='profile-page-follow-container'>
@@ -437,6 +455,10 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
           <div style={{ marginTop: '20px', fontSize: '18px', color: 'gray' }}>
             No more post.
           </div>
+        }
+
+        {this.state.address &&
+          <DMModal open={this.state.openDM} onClose={this.onCloseDM} friend={this.state.address} />
         }
 
         <MessageModal message={this.state.message} />

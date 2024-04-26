@@ -69,7 +69,7 @@ class FollowPage extends React.Component<FollowPageProps, FollowPageState> {
 
   async start() {
     let id = window.location.pathname.substring(8);
-    console.log("id:", id)
+    // console.log("id:", id)
     this.id = id;
 
     // let address = await isLoggedIn();
@@ -83,11 +83,11 @@ class FollowPage extends React.Component<FollowPageProps, FollowPageState> {
 
   async getFollows() {
     let following = await getDataFromAO(AO_TWITTER, 'GetFollowing', { follower: this.id, offset: 0 });
-    console.log("following:", following)
+    // console.log("following:", following)
     this.setState({ following })
 
     let followers = await getDataFromAO(AO_TWITTER, 'GetFollowers', { following: this.id, offset: 0 });
-    console.log("followers:", followers)
+    // console.log("followers:", followers)
     this.setState({ followers, loading: false })
 
     // if (following.length < PAGE_SIZE)

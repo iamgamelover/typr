@@ -171,9 +171,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     await messageToAO(AO_STORY, id, action);
 
     // record the list of liked to ao
-    let data = { id, address: this.props.data.address, time: timeOfNow() }
-    // console.log("data:", data)
-    let SendLike = await messageToAO(AO_STORY, data, 'SendLike');
+    let data = { id, address: this.state.address, time: timeOfNow() }
+    await messageToAO(AO_STORY, data, 'SendLike');
 
     // this.onTransfer()
 
@@ -249,7 +248,9 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   goProfilePage(e: any, id: string) {
     e.stopPropagation();
-    if (window.location.pathname.indexOf('/user/') == 0)
+    
+    let pathname = window.location.pathname;
+    if (pathname.indexOf('/user/') == 0 || pathname.indexOf('/profile') == 0)
       return;
 
     this.setState({ navigate: '/user/' + id });
@@ -385,6 +386,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
             // data-tooltip-content="Go to the profile page"
             src={data.avatar ? data.avatar : randomAvatar()}
             onClick={(e) => this.goProfilePage(e, data.address)}
+            title='Show Profile'
           // onMouseEnter={()=>this.openPopup()}
           // onMouseLeave={(e)=>this.closePopup(e)}
           />
@@ -418,7 +420,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           } */}
         </div>
 
-        <div className='home-message'>
+        <div className='activity-post-content'>
           {parse(this.state.content, this.parseOptions)}
         </div>
 

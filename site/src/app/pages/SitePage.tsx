@@ -109,7 +109,7 @@ class SitePage extends React.Component<{}, SitePageState> {
           {/* <img className='app-logo' src='/ao.png' /> */}
           {/* <div className='app-logo-text'>Twitter (beta)</div> */}
         </NavLink>
-
+        
         <div className='app-status-row'>
           <div className='app-status-data'><BsPeopleFill />{this.state.members}</div>
           <div className='app-status-data'><BsSendFill />{this.state.posts}</div>

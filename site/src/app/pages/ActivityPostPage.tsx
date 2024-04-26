@@ -128,7 +128,6 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
     let data = { id: this.postId, address: this.state.address }
     let isLiked = await getDataFromAO(this.process, 'GetLike', data);
-    console.log("isLiked:", isLiked)
     if (isLiked.length > 0) {
       post[0].isLiked = true;
     }
@@ -137,7 +136,6 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     this.getReplies();
 
     let txid = await getDataFromAO(this.process, 'GetTxid', { id: this.postId });
-    console.log("txid:", txid)
     this.setState({ txid: txid[0].txid });
   }
 
@@ -184,26 +182,17 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
     this.setState({ replies, loading_reply: false });
 
-    // for testing
-    // for (let i = 0; i < replies.length; i++) {
-    //   let txid = await getDataFromAO(AO_TWITTER, 'GetTxid', { id: replies[i].id });
-    //   // this.setState({ txid: txid[0].txid });
-    //   replies[i].txid = txid[0].txid;
-    // }
-
-    // console.log("replies:", replies)
-    // this.setState({ replies });
-
     // for story page
-    // let address = Server.service.getActiveAddress();
-    // for (let i = 0; i < replies.length; i++) {
-    //   // let isLiked = await getDataFromAO(AO_STORY, 'GetLike', '0', replies[i].id, address);
-    //   let isLiked = await getDataFromAO(AO_STORY, 'GetLike', '0');
-    //   console.log("reply isLiked:", isLiked)
-    //   if (isLiked.length > 0)
-    //     replies[i].isLiked = true;
-    //   this.forceUpdate()
-    // }
+    if (this.props.type == 'story') {
+      let address = Server.service.getActiveAddress();
+      for (let i = 0; i < replies.length; i++) {
+        let data = { id: replies[i].id, address };
+        let isLiked = await getDataFromAO(AO_STORY, 'GetLike', data);
+        if (isLiked.length > 0)
+          replies[i].isLiked = true;
+        this.forceUpdate();
+      }
+    }
   }
 
   async nextPage() {

@@ -1,12 +1,9 @@
 import React from 'react';
 import './ChatPage.css';
-import { createDataItemSigner, message, dryrun } from "@permaweb/aoconnect";
 import AlertModal from '../modals/AlertModal';
-import MessageModal from '../modals/MessageModal';
-import { formatTimestamp, getDataFromAO, getProfile, getWalletAddress, messageToAO, shortAddr, shortStr, timeOfNow } from '../util/util';
-import { AO_TWITTER, CHATROOM } from '../util/consts';
-import { createAvatar } from '@dicebear/core';
-import { micah } from '@dicebear/collection';
+import { formatTimestamp, getDataFromAO, getProfile, getWalletAddress, 
+  messageToAO, shortAddr, shortStr, timeOfNow } from '../util/util';
+import { AO_TWITTER } from '../util/consts';
 import Loading from '../elements/Loading';
 import { Navigate } from 'react-router-dom';
 import { publish, subscribe } from '../util/event';
@@ -67,6 +64,8 @@ class ChatPage extends React.Component<{}, ChatPageState> {
   }
 
   async start() {
+    clearInterval(msg_timer);
+    
     let friend = window.location.pathname.substring(6);
     console.log("friend:", friend)
 
@@ -92,7 +91,7 @@ class ChatPage extends React.Component<{}, ChatPageState> {
 
     //
     let my_profile = await getProfile(this.state.address);
-    console.log("my_profile:", my_profile)
+    // console.log("my_profile:", my_profile)
     my_profile = my_profile[0];
     if (my_profile)
       this.setState({
@@ -102,7 +101,7 @@ class ChatPage extends React.Component<{}, ChatPageState> {
 
     //
     let friend_profile = await getProfile(this.state.friend);
-    console.log("friend_profile:", friend_profile)
+    // console.log("friend_profile:", friend_profile)
 
     if (friend_profile.length == 0) return;
 
@@ -116,9 +115,12 @@ class ChatPage extends React.Component<{}, ChatPageState> {
     setTimeout(() => {
       this.getMessages();
     }, 50);
-
+    
     clearInterval(msg_timer);
-    msg_timer = setInterval(() => this.getMessages(), 2000);
+
+    setTimeout(() => {
+      msg_timer = setInterval(() => this.getMessages(), 2000);
+    }, 50);
 
     setTimeout(() => {
       this.scrollToBottom();
@@ -133,7 +135,11 @@ class ChatPage extends React.Component<{}, ChatPageState> {
     console.log("getChatList:", chatList)
 
     this.setState({ chatList });
-    if (chatList.length > 0) this.goChat(chatList[0].participant);
+    
+    if (chatList.length > 0)
+      this.goChat(chatList[0].participant);
+    else
+      this.setState({ loading: false });
   }
 
   async getMessages() {
@@ -239,7 +245,6 @@ class ChatPage extends React.Component<{}, ChatPageState> {
     this.setState({ msg: '' });
 
     let data = { address: this.state.address, friend: this.state.friend, message: msg, time: timeOfNow() };
-    // console.log("data:", data)
     await messageToAO(AO_TWITTER, data, 'SendMessage');
 
     setTimeout(() => {
@@ -279,7 +284,7 @@ class ChatPage extends React.Component<{}, ChatPageState> {
           {this.renderMessages()}
         </div>
 
-        {this.state.address &&
+        {this.state.address && this.state.friend &&
           <div className='chat-page-send-container'>
             <input
               id='input_msg'

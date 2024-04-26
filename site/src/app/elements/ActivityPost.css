@@ -113,3 +113,11 @@
   align-items: center;
   column-gap: 10px;
 }
+
+.activity-post-content {
+  padding-left: 55px;
+  padding-right: 15px;
+  margin-bottom: 10px;
+  color: rgb(78, 68, 68);
+  word-break: break-all;
+}

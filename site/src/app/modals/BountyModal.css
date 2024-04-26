@@ -38,6 +38,10 @@
   margin: 5px 0;
 }
 
+.bounty-modal-token-row.message {
+  margin-bottom: 10px;
+}
+
 .bounty-modal-token {
   display: flex;
   align-items: center;
@@ -55,7 +59,17 @@
   font-size: 20px;
 }
 
+.bounty-modal-input.message {
+  text-align: left;
+  font-size: unset;
+}
+
 .bounty-modal-token.bounty {
   border-radius: 5px;
   background-color: var(--fire-color);
+}
+
+.bounty-modal-token.message {
+  border-radius: 5px;
+  padding: 2px 20px;
 }

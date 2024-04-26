@@ -34,7 +34,7 @@ export class AppConfig {
       icon: 'chatroom',
       to: '/chat',
       new: true,
-      loggedIn: false
+      loggedIn: true
     },
     {
       text: 'Notifications',
