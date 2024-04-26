@@ -67,12 +67,6 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
   }
 
   async start() {
-    // let profile = JSON.parse(localStorage.getItem('profile'));
-    // let profile = await getDataFromAO(
-    //   MINI_SOCIAL, 'GetProfile', '0', '', Server.service.getActiveAddress()
-    // );
-    // console.log("profile:", profile)
-
     this.setState({
       banner: this.props.data.banner,
       avatar: this.props.data.avatar,
@@ -140,12 +134,11 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
       banner: this.state.banner,
       nickname: this.state.nickname,
       bio: this.state.bio,
-      // time: timeOfNow()
+      time: this.props.data.time
     };
     // console.log("data:", data)
 
-    // for testing...
-    messageToAO(AO_STORY, data, 'Register');
+    await messageToAO(AO_STORY, data, 'Register');
 
     let response = await messageToAO(AO_TWITTER, data, 'Register');
 
