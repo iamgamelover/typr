@@ -102,15 +102,6 @@ class HomePage extends React.Component<{}, HomePageState> {
   }
 
   async start() {
-    let users = await getDataFromAO(AO_TWITTER, 'GetUsersCount');
-    console.log("users:", users[0].total_count)
-
-    let posts = await getDataFromAO(AO_TWITTER, 'GetPostsCount');
-    console.log("posts:", posts[0].total_count)
-
-    let replies = await getDataFromAO(AO_TWITTER, 'GetRepliesCount');
-    console.log("replies:", replies[0].total_count)
-
     await this.getPosts();
 
     // check the new post every 10 seconds.
@@ -162,7 +153,6 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     if (!posts || new_post) {
       posts = await getDataFromAO(AO_TWITTER, 'GetPosts', { offset: 0 });
-      console.log("posts:", posts)
       if (posts.length < PAGE_SIZE)
         this.setState({ isAll: true })
       else

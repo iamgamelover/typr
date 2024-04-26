@@ -10,7 +10,7 @@ import Portrait from '../elements/Portrait';
 import { publish, subscribe } from '../util/event';
 
 interface SitePageState {
-  members: number;
+  users: number;
   posts: number;
   replies: number;
   open: boolean;
@@ -22,7 +22,7 @@ class SitePage extends React.Component<{}, SitePageState> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      members: 0,
+      users: 0,
       posts: 0,
       replies: 0,
       open: false,
@@ -70,35 +70,14 @@ class SitePage extends React.Component<{}, SitePageState> {
   }
 
   async getStatus() {
-    return
+    let users = await getDataFromAO(AO_TWITTER, 'GetUsersCount');
+    this.setState({ users: users[0].total_count });
+    
+    let posts = await getDataFromAO(AO_TWITTER, 'GetPostsCount');
+    this.setState({ posts: posts[0].total_count });
 
-    let posts = await getDataFromAO(AO_TWITTER, 'GetPosts');
-    // console.log("posts amount:", posts.length)
-    this.setState({ posts: posts.length });
-
-    // get the amount of addresses (No Duplicate) from all of posts.
-    let resp = this.removeDuplicate(posts);
-    // console.log("addr from posts --> amount:", resp.length)
-    this.setState({ members: resp.length });
-
-    let replies = await getDataFromAO(AO_TWITTER, 'GetReplies');
-    // console.log("replies amount:", replies.length)
-    this.setState({ replies: replies.length });
-  }
-
-  removeDuplicate(data: any) {
-    let result = [];
-    let ids = [] as any;
-    for (let i = 0; i < data.length; i++) {
-      let resp = JSON.parse(data[i]);
-      let id = resp.address;
-      if (!ids.includes(id)) {
-        ids.push(id);
-        result.push(resp);
-      }
-    }
-
-    return result;
+    let replies = await getDataFromAO(AO_TWITTER, 'GetRepliesCount');
+    this.setState({ replies: replies[0].total_count });
   }
 
   render() {
@@ -111,7 +90,7 @@ class SitePage extends React.Component<{}, SitePageState> {
         </NavLink>
         
         <div className='app-status-row'>
-          <div className='app-status-data'><BsPeopleFill />{this.state.members}</div>
+          <div className='app-status-data'><BsPeopleFill />{this.state.users}</div>
           <div className='app-status-data'><BsSendFill />{this.state.posts}</div>
           <div className='app-status-data'><BsReplyFill />{this.state.replies}</div>
         </div>
