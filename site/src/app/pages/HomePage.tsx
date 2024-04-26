@@ -102,40 +102,6 @@ class HomePage extends React.Component<{}, HomePageState> {
   }
 
   async start() {
-
-    // return;
-
-    // TEMP
-    // let tempRepiles = await this.tempGetDataFromAO("Ekm_mCHSs9mawVqwqTi35qBaT-8DaORzYJ-c9Z3qMhY", 'GetReplies');
-    // console.log("tempRepiles:", tempRepiles)
-
-    // for (let i = 0; i < tempRepiles.length; i++) {
-    //   let reply = JSON.parse(tempRepiles[i])
-    //   console.log("reply:", reply)
-
-    //   let post_id = '';
-    //   try {
-    //     if (reply.postId)
-    //       post_id = reply.postId
-    //     else if (reply.post_id)
-    //       post_id = reply.post_id
-    //   } catch (error) {
-    //     continue
-    //   }
-
-    //   let data = {
-    //     id: reply.id, post_id: post_id, address: reply.address, post: reply.post,
-    //     likes: 0, replies: 0, coins: 0, time: Number(reply.time)
-    //   };
-    //   console.log("data:", data)
-
-    //   await messageToAO(AO_TWITTER, data, 'SendReply');
-    // }
-
-    // console.log("DONE!!")
-    // return;
-
-
     let users = await getDataFromAO(AO_TWITTER, 'GetUsersCount');
     console.log("users:", users[0].total_count)
 
