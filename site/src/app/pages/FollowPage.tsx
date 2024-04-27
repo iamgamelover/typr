@@ -266,7 +266,7 @@ class FollowPage extends React.Component<FollowPageProps, FollowPageState> {
 
         {this.state.loadNextPage && <Loading />}
         {this.state.isAll &&
-          <div style={{ marginTop: '20px', fontSize: '18px', color: 'gray' }}>
+          <div style={{ marginTop: '20px', color: 'gray' }}>
             No more.
           </div>
         }

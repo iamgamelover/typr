@@ -362,7 +362,7 @@ class HomePage extends React.Component<{}, HomePageState> {
 
         {this.state.loadNextPage && <Loading />}
         {this.state.isAll &&
-          <div style={{ marginTop: '20px', fontSize: '18px', color: 'gray' }}>
+          <div style={{ marginTop: '20px', color: 'gray' }}>
             No more posts.
           </div>
         }
