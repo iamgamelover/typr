@@ -252,7 +252,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
       // update the amount of replies
       messageToAO(this.process, this.postId, 'UpdateReply');
 
-      // update the txid of this message
+      // store the txid of this message
       let txid = { id: data.id, txid: response };
       messageToAO(this.process, txid, 'SendTxid');
     }

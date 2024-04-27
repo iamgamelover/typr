@@ -273,18 +273,18 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
 
   async isFollowing() {
-    let isFollowing = await getDataFromAO(AO_TWITTER, 'GetFollowing',
-      { follower: Server.service.getActiveAddress(), following: this.state.address, offset: 0 }
-    );
+    let data = { follower: Server.service.getActiveAddress(), following: this.state.address, offset: 0 };
+    let isFollowing = await getDataFromAO(AO_TWITTER, 'GetFollowing', data);
     // console.log("isFollowing:", isFollowing)
+
     if (isFollowing.length > 0)
       this.setState({ isFollowing: true, butDisable: false })
     else
       this.setState({ isFollowing: false, butDisable: false })
 
-    let isFollower = await getDataFromAO(AO_TWITTER, 'GetFollowing',
-      { follower: this.state.address, following: Server.service.getActiveAddress(), offset: 0 }
-    );
+    //
+    data = { follower: this.state.address, following: Server.service.getActiveAddress(), offset: 0 };
+    let isFollower = await getDataFromAO(AO_TWITTER, 'GetFollowing', data);
     // console.log("isFollower:", isFollower)
 
     if (isFollowing.length > 0 && isFollower.length > 0)
