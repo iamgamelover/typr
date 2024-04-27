@@ -78,18 +78,19 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
     // your own process 
     let from = Server.service.getDefaultProcess();
-    console.log("from:", from)
+    // console.log("from:", from)
+
     // the user's process to tranfer a bounty
     let to = await getDefaultProcess(this.props.data.address);
-    console.log("to:", to)
+    // console.log("to:", to)
 
     let alert;
     let bal = Number(Server.service.getBalanceOfAOT());
     let qty = Math.abs(this.state.bounty).toString();
-    console.log("qty:", qty)
+    // console.log("qty:", qty)
 
     if (!to)
-      alert = 'He/She has not a default process to transfer bounty.';
+      alert = 'Has not a default process to transfer bounty.';
     if (qty == '0')
       alert = 'Bounty is zero.';
     if (Number(qty) > bal)

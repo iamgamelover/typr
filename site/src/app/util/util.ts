@@ -633,7 +633,7 @@ export async function transferToken(from: string, to: string, qty: string) {
     ],
   });
 
-  console.log("transferToken:", messageId)
+  console.log("transfer message id:", messageId)
   return messageId;
 }
 
