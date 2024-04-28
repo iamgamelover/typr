@@ -155,9 +155,10 @@ class ChatPage extends React.Component<{}, ChatPageState> {
   }
 
   goChat(id: string) {
-    this.setState({ navigate: '/chat/' + id });
+    this.setState({ navigate: '/chat/' + id, messages: [] });
     setTimeout(() => {
       publish('go-chat');
+      // this.setState({ loading: true });
     }, 50);
   }
 
