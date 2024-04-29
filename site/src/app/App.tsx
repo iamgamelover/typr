@@ -1,5 +1,5 @@
 import React from 'react';
-import {BrowserRouter, Route, Routes} from 'react-router-dom';
+import {BrowserRouter, HashRouter, Route, Routes} from 'react-router-dom';
 import SitePage from './pages/SitePage';
 import NotFoundPage from './pages/NotFoundPage';
 import './App.css';
@@ -23,7 +23,7 @@ class App extends React.Component<{}, {}> {
 
   render() {
     return (
-      <BrowserRouter>
+      <HashRouter>
         <Routes>
           <Route path='/' element={<SitePage />}>
             <Route index element={<HomePage />} />
@@ -41,7 +41,7 @@ class App extends React.Component<{}, {}> {
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     );
   }
 }

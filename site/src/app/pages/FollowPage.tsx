@@ -68,7 +68,9 @@ class FollowPage extends React.Component<FollowPageProps, FollowPageState> {
   }
 
   async start() {
-    let id = window.location.pathname.substring(8);
+    // let id = window.location.pathname.substring(8);
+    let path = window.location.hash.slice(1);
+    let id = path.substring(8);
     // console.log("id:", id)
     this.id = id;
 

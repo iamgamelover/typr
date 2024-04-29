@@ -66,7 +66,9 @@ class ChatPage extends React.Component<{}, ChatPageState> {
   async start() {
     clearInterval(msg_timer);
     
-    let friend = window.location.pathname.substring(6);
+    // let friend = window.location.pathname.substring(6);
+    let path = window.location.hash.slice(1);
+    let friend = path.substring(6);
     console.log("friend:", friend)
 
     let address = await getWalletAddress();

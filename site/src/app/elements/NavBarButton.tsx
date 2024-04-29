@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { publish } from '../util/event';
 import './NavBar.css';
 import { BsAward, BsBell, BsBookmark, BsChatText, BsController, BsHouse, BsPerson } from 'react-icons/bs';

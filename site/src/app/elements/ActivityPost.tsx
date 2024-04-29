@@ -248,7 +248,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   goProfilePage(e: any, id: string) {
     e.stopPropagation();
-    
+
     let pathname = window.location.pathname;
     if (pathname.indexOf('/user/') == 0 || pathname.indexOf('/profile') == 0)
       return;
@@ -257,8 +257,11 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   goPostPage(id: string) {
-    let pathname = window.location.pathname;
-    if (pathname.indexOf('/post/') == 0 || pathname.indexOf('/story/') == 0) return;
+    // let pathname = window.location.pathname;
+    let path = window.location.hash.slice(1);
+    if (path.indexOf('/post/') == 0 || path.indexOf('/story/') == 0)
+      return;
+    
     this.setState({ navigate: "/post/" + id });
   }
 

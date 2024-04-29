@@ -123,20 +123,27 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
 
   async start() {
     let id;
-    let my_profile = window.location.pathname;
+    // let my_profile = window.location.pathname;
+    let path = window.location.hash.slice(1);
     // console.log("my_profile:", my_profile)
 
-    if (my_profile == '/profile')
+    if (path == '/profile')
       id = await isLoggedIn();
     else
-      id = window.location.pathname.substring(6);
+      id = path.substring(6);
+    // id = window.location.pathname.substring(6);
 
     // console.log("id:", id)
 
     this.setState({ address: id });
 
+    let profile = await this.getProfile(id);
+    if (!profile) {
+      this.setState({ alert: 'Profile is not found.', loading: false });
+      return;
+    }
+
     await this.getPosts(id);
-    await this.getProfile(id);
     await this.isFollowing();
     await this.getFollows();
     // await this.tempGetFollowsTable();
@@ -191,7 +198,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
 
   async getProfile(address: string) {
     let profile = await getProfile(address);
-    // console.log("profile:", profile)
+    // console.log("profile page --> ", profile)
 
     profile = profile[0];
     if (profile)
@@ -202,6 +209,8 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
         nickname: profile.nickname,
         bio: profile.bio,
       })
+
+    return profile;
   }
 
   openEditProfile() {
