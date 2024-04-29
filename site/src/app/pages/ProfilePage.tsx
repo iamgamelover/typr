@@ -61,7 +61,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
       openEditProfile: false,
       openDM: false,
       nickname: '',
-      banner: '/banner-default.png',
+      banner: '',
       avatar: '',
       bio: '',
       posts: '',
@@ -419,7 +419,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     return (
       <div className='profile-page'>
         <div className='profile-page-header'>
-          <img className="profile-page-banner" src={this.state.banner ? this.state.banner : '/banner-default.png'} />
+          <img className="profile-page-banner" src={this.state.banner ? this.state.banner : './banner-default.png'} />
           <img className="profile-page-portrait" src={this.state.avatar ? this.state.avatar : randomAvatar()} />
         </div>
 

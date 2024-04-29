@@ -107,29 +107,8 @@ export function randomInteger(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function getAssetImage(asset: any): string {
-  let image = asset.image;
-  if (!image)
-    image = asset.id;
-  return '/assets/' + image + '.png';
-}
-
-export function getPortraitImage(profile: any): string {
-  let image = profile ? profile.portrait : null;
-  if (!image)
-    image = '/portrait-default.png';
-  return image;
-}
-
-export function getBannerImage(profile: any): string {
-  let image = profile ? profile.banner : null;
-  if (!image)
-    image = '/banner-default.png';
-  return image;
-}
-
 export function getMenuIcon(name: string): string {
-  return '/' + name + '.png';
+  return './' + name + '.png';
 }
 
 /**

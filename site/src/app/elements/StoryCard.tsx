@@ -1,13 +1,10 @@
 import React from 'react';
-import { Server } from '../../server/server';
 import { formatTimestamp, getFirstImage, getFirstLine } from '../util/util';
 import './StoryCard.css';
 import { NavLink } from 'react-router-dom';
-import { BsGlobe2, BsHeart, BsHeartFill, BsPersonFillLock, BsTrophy, BsTrophyFill } from 'react-icons/bs';
-import { HiOutlineChatBubbleLeftRight } from "react-icons/hi2";
+import { BsHeartFill, BsPersonFillLock } from 'react-icons/bs';
 import { FaCoins } from "react-icons/fa";
 import { IoMdChatbubbles } from "react-icons/io";
-import { AiOutlineFire } from 'react-icons/ai';
 
 interface StoryCardProps {
   data: any;
@@ -36,7 +33,7 @@ class StoryCard extends React.Component<StoryCardProps, StoryCardState> {
     let str = this.props.data.post;
 
     let image = getFirstImage(str);
-    if (!image) image = '/dream.jpg';
+    if (!image) image = './dream.jpg';
 
     let title = getFirstLine(str);
     if (!title) title = 'A Fine Stroy!';

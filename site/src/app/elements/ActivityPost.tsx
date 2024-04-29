@@ -1,14 +1,15 @@
 import React from 'react';
 import { BsBookmark, BsBookmarkFill, BsChat, BsHeart, BsHeartFill } from 'react-icons/bs';
-import { convertUrls, getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO, numberWithCommas, randomAvatar, shortAddr, timeOfNow, transferToken, uuid } from '../util/util';
+import {
+  convertUrls, getDefaultProcess, getWalletAddress, messageToAO,
+  numberWithCommas, randomAvatar, shortAddr, timeOfNow, transferToken
+} from '../util/util';
 import { formatTimestamp } from '../util/util';
 import './ActivityPost.css';
 import parse, { attributesToProps } from 'html-react-parser';
 import { Navigate } from 'react-router-dom';
 import ViewImageModal from '../modals/ViewImageModal';
 import AlertModal from '../modals/AlertModal';
-import { createAvatar } from '@dicebear/core';
-import { micah } from '@dicebear/collection';
 import { Service } from '../../server/service';
 import { Server } from '../../server/server';
 import { subscribe } from '../util/event';
@@ -16,7 +17,6 @@ import { Tooltip } from 'react-tooltip'
 import BountyModal from '../modals/BountyModal';
 import { FaCoins } from 'react-icons/fa';
 import { AO_STORY, STORY_INCOME } from '../util/consts';
-import QuestionModal from '../modals/QuestionModal';
 import MessageModal from '../modals/MessageModal';
 
 interface ActivityPostProps {
@@ -261,7 +261,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     let path = window.location.hash.slice(1);
     if (path.indexOf('/post/') == 0 || path.indexOf('/story/') == 0)
       return;
-    
+
     this.setState({ navigate: "/post/" + id });
   }
 
@@ -405,7 +405,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           {this.props.isPostPage && this.props.txid &&
             <img
               className='activity-post-arweave-icon'
-              src='/ar.svg'
+              src='./ar.svg'
               onClick={() => this.openLink(this.props.txid)}
               data-tooltip-id="my-tooltip"
               data-tooltip-content="Go to ao.link"
@@ -415,7 +415,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           {/* {this.props.isReply &&
             <img
               className='activity-post-arweave-icon'
-              src='/ar.svg'
+              src='./ar.svg'
               onClick={() => this.openLink(data.txid)}
               data-tooltip-id="my-tooltip"
               data-tooltip-content="Go to ao.link"

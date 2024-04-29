@@ -1,7 +1,7 @@
 import React from 'react';
-import { BsCamera, BsFillXCircleFill } from 'react-icons/bs';
+import { BsFillXCircleFill } from 'react-icons/bs';
 import { Server } from '../../server/server';
-import { getBannerImage, getDataFromAO, getDefaultProcess, getPortraitImage, messageToAO, randomAvatar, timeOfNow, uuid } from '../util/util';
+import { messageToAO, randomAvatar, uuid } from '../util/util';
 import './Modal.css'
 import './EditProfileModal.css'
 import MessageModal from './MessageModal';
@@ -215,8 +215,6 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
     if (!this.props.open)
       return (<div></div>);
 
-    // let bannerImage = getBannerImage({ banner: this.state.banner });
-
     return (
       <div className="modal open">
         <div className="modal-content edit-profile-modal-content">
@@ -229,7 +227,7 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
             <div className="edit-profile-banner-container">
               {/* <img className="edit-profile-banner" src={bannerImage} onClick={()=>this.selectImage(true)} /> */}
               <img className="edit-profile-banner" 
-              src={this.state.banner ? this.state.banner : '/banner-default.png'} />
+              src={this.state.banner ? this.state.banner : './banner-default.png'} />
               <img className="edit-profile-portrait" 
               src={this.state.avatar ? this.state.avatar : randomAvatar()} 
               onClick={() => this.selectImage(false)} />
