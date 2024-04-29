@@ -9,6 +9,7 @@
     "@types/node": "^20.11.1",
     "@types/react": "^18.0.9",
     "@types/react-dom": "^18.0.4",
+    "arweave": "^1.15.0",
     "compressorjs": "^1.2.1",
     "html-react-parser": "^3.0.4",
     "react": "^18.1.0",
@@ -22,7 +23,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build"
+    "build": "react-scripts build",
+    "deploy": "irys upload-dir ./build -h https://node2.irys.xyz --wallet ./wallet.json -t arweave --index-file index.html --no-confirmation"
   },
   "eslintConfig": {
     "extends": [
