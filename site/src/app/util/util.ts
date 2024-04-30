@@ -349,13 +349,13 @@ export function getTimestamp(exDays: number, hour: number) {
 export function checkContent(quillRef: any, wordCount: number) {
   let message = '';
   let mediaAmount = getMediaAmount(quillRef);
-  if (mediaAmount > 1)
-    return 'Contains up to 1 media file.';
+  if (mediaAmount > 3)
+    return 'Contains up to 3 media file.';
 
   if (wordCount == 0 && mediaAmount == 0)
     message = 'Post is empty.';
-  else if (wordCount > 500)
-    message = 'Content can be up to 500 characters long.';
+  else if (wordCount > 10000)
+    message = 'Content can be up to 10000 characters long.';
 
   return message;
 }
