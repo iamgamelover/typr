@@ -24,7 +24,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "GENERATE_SOURCEMAP=false react-scripts build",
     "deploy": "irys upload-dir ./build -h https://node1.irys.xyz --wallet ./wallet.json -t arweave --index-file index.html"
   },
   "eslintConfig": {
