@@ -3,7 +3,7 @@ import './StoryPage.css';
 import StoryCard from '../elements/StoryCard';
 import { AiOutlineFire } from 'react-icons/ai';
 import PostModal from '../modals/PostModal';
-import { getDataFromAO, uuid } from '../util/util';
+import { getDataFromAO, messageToAO, uuid } from '../util/util';
 import { AO_STORY, PAGE_SIZE } from '../util/consts';
 import Loading from '../elements/Loading';
 import { Server } from '../../server/server';
@@ -16,6 +16,7 @@ interface StoryPageState {
   loadNextPage: boolean;
   open: boolean;
   isAll: boolean;
+  category: string;
 }
 
 class StoryPage extends React.Component<{}, StoryPageState> {
@@ -29,13 +30,15 @@ class StoryPage extends React.Component<{}, StoryPageState> {
       loading: true,
       loadNextPage: false,
       open: false,
-      isAll: false
+      isAll: false,
+      category: 'all',
     };
 
 
     this.onOpen = this.onOpen.bind(this);
     this.onClose = this.onClose.bind(this);
     this.atBottom = this.atBottom.bind(this);
+    this.onCategoryChange = this.onCategoryChange.bind(this);
 
     // subscribe('wallet-events', () => {
     //   this.forceUpdate();
@@ -67,6 +70,17 @@ class StoryPage extends React.Component<{}, StoryPageState> {
     }
   }
 
+  onCategoryChange(e: any) {
+    // let data = { category: 'learn' };
+    // messageToAO(AO_STORY, data, 'GetStories');
+    
+    let category = e.currentTarget.value;
+    this.setState({ category, loading: true });
+    if (category == 'all')
+      category = null;
+    this.getStory(category);
+  };
+
   onOpen() {
     this.setState({ open: true });
   }
@@ -85,8 +99,9 @@ class StoryPage extends React.Component<{}, StoryPageState> {
   //   await this.getStory();
   // }
 
-  async getStory() {
-    let posts = await getDataFromAO(AO_STORY, 'GetStories', { offset: 0 });
+  async getStory(category?: string) {
+    let data = { category, offset: 0 };
+    let posts = await getDataFromAO(AO_STORY, 'GetStories', data);
     console.log("stories:", posts)
 
     if (posts.length < PAGE_SIZE)
@@ -197,12 +212,13 @@ class StoryPage extends React.Component<{}, StoryPageState> {
 
           <select
             className="story-page-category"
-          // value={this.state.category}
-          // onChange={this.onCategoryChange}
+            value={this.state.category}
+            onChange={this.onCategoryChange}
           >
+            <option value="all">All</option>
             <option value="travel">Travel</option>
-            <option value="travel">Learn</option>
-            <option value="normal">Fiction</option>
+            <option value="learn">Learn</option>
+            <option value="fiction">Fiction</option>
             <option value="music">Music</option>
             <option value="sports">Sports</option>
             <option value="movies">Movies</option>

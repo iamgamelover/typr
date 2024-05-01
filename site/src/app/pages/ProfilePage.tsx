@@ -123,7 +123,6 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
 
   async start() {
     let id;
-    // let my_profile = window.location.pathname;
     let path = window.location.hash.slice(1);
     // console.log("my_profile:", my_profile)
 
@@ -131,7 +130,6 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
       id = await isLoggedIn();
     else
       id = path.substring(6);
-    // id = window.location.pathname.substring(6);
 
     // console.log("id:", id)
 

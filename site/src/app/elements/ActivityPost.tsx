@@ -21,10 +21,9 @@ import MessageModal from '../modals/MessageModal';
 
 interface ActivityPostProps {
   data: any;
-  afterRepost?: Function;
-  beforeJump?: Function;
   isReply?: boolean;
   isPostPage?: boolean;
+  isStory?: boolean;
   txid?: string;
 }
 
@@ -248,16 +247,14 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   goProfilePage(e: any, id: string) {
     e.stopPropagation();
-
-    let pathname = window.location.pathname;
-    if (pathname.indexOf('/user/') == 0 || pathname.indexOf('/profile') == 0)
+    let path = window.location.hash.slice(1);
+    if (path.indexOf('/user/') == 0 || path.indexOf('/profile') == 0)
       return;
 
     this.setState({ navigate: '/user/' + id });
   }
 
   goPostPage(id: string) {
-    // let pathname = window.location.pathname;
     let path = window.location.hash.slice(1);
     if (path.indexOf('/post/') == 0 || path.indexOf('/story/') == 0)
       return;
@@ -271,7 +268,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   renderActionsRow(data: any) {
     let isStory = false;
-    if (window.location.pathname.indexOf('/story/') == 0)
+    let path = window.location.hash.slice(1);
+    if (path.indexOf('/story/') == 0)
       isStory = true;
 
     return (
@@ -435,6 +433,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           onBounty={this.onBounty}
           data={this.props.data}
           isReply={this.props.isReply}
+          isStory={this.props.isStory}
         />
 
         <Tooltip id="my-tooltip" />

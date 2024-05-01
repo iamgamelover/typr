@@ -108,14 +108,11 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     let type = this.props.type;
     let path = window.location.hash.slice(1);
     if (type == 'post') {
-      // this.postId = window.location.pathname.substring(6);
       this.postId = path.substring(6);
-      // console.log("postId:", this.postId)
       this.process = AO_TWITTER;
       this.getPost();
     }
     else if (type == 'story') {
-      // this.postId = window.location.pathname.substring(7);
       this.postId = path.substring(7);
       this.process = AO_STORY;
       this.getStory();
@@ -305,7 +302,12 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
         </div>
 
         {!this.state.loading &&
-          <ActivityPost data={this.state.post} isPostPage={true} txid={this.state.txid} />
+          <ActivityPost
+            data={this.state.post}
+            isPostPage={true}
+            isStory={this.props.type == 'story' && true}
+            txid={this.state.txid}
+          />
         }
 
         {!this.state.loading && this.state.address && !this.state.loading_reply &&

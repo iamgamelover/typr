@@ -15,7 +15,8 @@ interface BountyModalProps {
   onClose: Function;
   onBounty: Function;
   data: any;
-  isReply: boolean;
+  isReply?: boolean;
+  isStory?: boolean;
 }
 
 interface BountyModalState {
@@ -118,7 +119,7 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     let action = 'UpdateBounty';
     if (this.props.isReply) action = 'UpdateBountyForReply';
     
-    if (window.location.pathname.indexOf('/story/') == 0)
+    if (this.props.isStory)
       messageToAO(AO_STORY, data, action);
     else
       messageToAO(AO_TWITTER, data, action);

@@ -46,7 +46,7 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
       question: '',
       title: '',
       range: 'everyone',
-      category: 'Travel',
+      category: 'travel',
     }
 
     this.onContentChange = this.onContentChange.bind(this);
@@ -77,11 +77,6 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
   onCategoryChange(e: any) {
     this.setState({ category: e.currentTarget.value });
   };
-
-  // onCategoryChange(e: React.FormEvent<HTMLSelectElement>) {
-  //   const element = e.target as HTMLSelectElement;
-  //   this.setState({ category: element.value });
-  // }
 
   tipTransfer() {
     this.setState({ question: 'Publish a story will spend 100 AOT-Test token.' })
@@ -209,8 +204,8 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
                   onChange={this.onCategoryChange}
                 >
                   <option value="travel">Travel</option>
-                  <option value="travel">Learn</option>
-                  <option value="normal">Fiction</option>
+                  <option value="learn">Learn</option>
+                  <option value="fiction">Fiction</option>
                   <option value="music">Music</option>
                   <option value="sports">Sports</option>
                   <option value="movies">Movies</option>
