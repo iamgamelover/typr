@@ -4,11 +4,13 @@ import AlertModal from './AlertModal';
 import './Modal.css'
 import './BountyModal.css'
 import MessageModal from './MessageModal';
-import { getDefaultProcess, messageToAO, numberWithCommas, transferToken } from '../util/util';
+import { formatBalance, getDefaultProcess, getTokenBalance, messageToAO, numberWithCommas, timeOfNow, transferToken } from '../util/util';
 import { MdOutlineToken } from "react-icons/md";
 import { AiOutlineFire } from 'react-icons/ai';
 import { Server } from '../../server/server';
-import { AO_STORY, AO_TWITTER } from '../util/consts';
+import { AO_STORY, AO_TWITTER, TOKEN_NAME, TOKEN_PID, TRUNK } from '../util/consts';
+import Loading from '../elements/Loading';
+import { subscribe } from '../util/event';
 
 interface BountyModalProps {
   open: boolean;
@@ -23,9 +25,15 @@ interface BountyModalState {
   message: string;
   alert: string;
   bounty: number;
+  loading: boolean;
+  balOfCRED: number;
+  balOfAOT: number;
+  balOfTRUNK: number;
 }
 
 class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
+
+  tokenPicked = 0;
 
   constructor(props: BountyModalProps) {
     super(props);
@@ -33,15 +41,25 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     this.state = {
       message: '',
       alert: '',
-      bounty: 1
+      bounty: 1,
+      loading: false,
+      balOfCRED: 0,
+      balOfAOT: 0,
+      balOfTRUNK: 0,
     }
 
     this.onClose = this.onClose.bind(this);
     this.onChangeBounty = this.onChangeBounty.bind(this);
+
+    subscribe('get-bal-done', () => {
+      this.setState({ loading: false });
+    });
   }
 
   componentDidMount() {
     // this.start();
+    if (!Server.service.getBalanceOfTRUNK())
+      this.setState({ loading: true });
   }
 
   onChangeBounty(e: any) {
@@ -59,13 +77,53 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     this.setState({ bounty: qty });
   }
 
+  onFilter(index: number) {
+    if (this.tokenPicked === index) return;
+
+    this.tokenPicked = index;
+    this.renderTokens();
+    this.forceUpdate();
+  }
+
+  renderTokens() {
+    let tokens = ['AOT-Test', 'AOCRED-Test', 'TRUNK'];
+    let icons = ['./logo.png', './logo-ao.png', './logo-trunk.png'];
+
+    let bal_aot = Server.service.getBalanceOfAOT();
+    let bal_cred = Server.service.getBalanceOfCRED();
+    let bal_trunk = Server.service.getBalanceOfTRUNK();
+    let balances = [bal_aot, bal_cred, bal_trunk];
+
+    let divs = [];
+    for (let i = 0; i < tokens.length; i++) {
+      divs.push(
+        <div
+          key={i}
+          className={`bounty-modal-token-card ${this.tokenPicked == i ? 'picked' : ''}`}
+          onClick={() => this.onFilter(i)}
+        >
+          <img className={`bounty-modal-token-icon ${i !== 2 && 'cred'}`} src={icons[i]} />
+          <div>
+            {/* <div className='bounty-modal-token-name'>{tokens[i]}</div> */}
+            {this.state.loading
+              ? <Loading marginTop='10px' />
+              : <div className='bounty-modal-token-balance'>{numberWithCommas(balances[i])}</div>
+            }
+          </div>
+        </div>
+      )
+    }
+
+    return divs
+  }
+
   renderTokenLabel() {
     let divs = [];
     let qty = [2, 5, 10, 50, 100];
 
     for (let i = 0; i < qty.length; i++) {
       divs.push(
-        <div className='bounty-modal-token' onClick={() => this.fillQty(qty[i])}>
+        <div key={i} className='bounty-modal-token' onClick={() => this.fillQty(qty[i])}>
           <MdOutlineToken size={20} />{qty[i]}
         </div>
       )
@@ -75,25 +133,34 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
   }
 
   async onBounty() {
+    let bal_tokens = new Map([
+      [0, Server.service.getBalanceOfAOT()],
+      [1, Server.service.getBalanceOfCRED()],
+      [2, Server.service.getBalanceOfTRUNK()]
+    ]);
+
     this.setState({ message: 'Bounty...' });
 
     // your own process 
     let from = Server.service.getDefaultProcess();
-    // console.log("from:", from)
+    console.log("from:", from)
 
     // the user's process to tranfer a bounty
     let to = await getDefaultProcess(this.props.data.address);
-    // console.log("to:", to)
+    console.log("to:", to)
 
     let alert;
-    let bal = Number(Server.service.getBalanceOfAOT());
+    let bal = bal_tokens.get(this.tokenPicked);
+    console.log("bal:", bal)
     let qty = Math.abs(this.state.bounty).toString();
-    // console.log("qty:", qty)
+    console.log("qty:", qty)
 
     if (!to)
       alert = 'Has not a default process to transfer bounty.';
     if (qty == '0')
       alert = 'Bounty is zero.';
+    if (!Number.isInteger(Number(qty)))
+      alert = 'Must be an integer and > 1.';
     if (Number(qty) > bal)
       alert = 'Insufficient balance.';
 
@@ -102,7 +169,9 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
       return;
     }
 
-    await transferToken(from, to, qty);
+    let target = TOKEN_PID.get(this.tokenPicked);
+    console.log("target:", target)
+    await transferToken(from, to, qty, target);
 
     this.onClose();
     this.setState({ message: '' });
@@ -111,18 +180,47 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     let quantity = Number(this.props.data.coins) + Number(qty);
     this.props.onBounty(quantity.toString());
 
-    let bal_new = (bal - Number(qty)).toString();
-    Server.service.setBalanceOfAOT(bal_new);
+    let bal_new;
+    switch (this.tokenPicked) {
+      case 0:
+        bal_new = bal - Number(qty);
+        Server.service.setBalanceOfAOT(bal_new);
+        break;
+      case 1:
+        bal_new = bal - Number(qty) / 1000;
+        Server.service.setBalanceOfCRED(bal_new);
+        break;
+      case 2:
+        bal_new = bal - Number(qty) / 1000;
+        Server.service.setBalanceOfTRUNK(bal_new);
+        break;
+    }
 
     // update the bounty (coins)
-    let data = { id: this.props.data.id, coins: qty }
+    let data = { id: this.props.data.id, coins: qty };
     let action = 'UpdateBounty';
     if (this.props.isReply) action = 'UpdateBountyForReply';
-    
+
     if (this.props.isStory)
-      messageToAO(AO_STORY, data, action);
+      await messageToAO(AO_STORY, data, action);
     else
-      messageToAO(AO_TWITTER, data, action);
+      await messageToAO(AO_TWITTER, data, action);
+
+    // add the record of a bounty
+    let records = {
+      id: data.id,
+      address: Server.service.getActiveAddress(),
+      token_name: TOKEN_NAME.get(this.tokenPicked),
+      quantity: Number(qty),
+      time: timeOfNow()
+    };
+    // console.log("records:", records)
+    messageToAO(AO_TWITTER, records, 'Records-Bounty');
+
+    // for test
+    let bal_trunk = await getTokenBalance(TRUNK, from);
+    bal_trunk = formatBalance(bal_trunk, 3);
+    Server.service.setBalanceOfTRUNK(bal_trunk);
   }
 
   render() {
@@ -138,15 +236,21 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
           <div className='bounty-modal-header-row'>
             <div className="bounty-modal-header-title">Bounty</div>
-            <div className='bounty-modal-header-balance'>
+            {/* <div className='bounty-modal-header-balance'>
               <MdOutlineToken size={20} />
               {numberWithCommas(Number(Server.service.getBalanceOfAOT()))}
-            </div>
+            </div> */}
           </div>
 
           <div className='bounty-modal-header-line' />
           <div>If you like these words.</div>
           <div>Do a bounty to inspire more good words.</div>
+
+          <div className='bounty-modal-tokens-title'>Pick a token</div>
+          <div className='bounty-modal-header-line tokens' />
+          <div className='bounty-modal-token-row choose'>
+            {this.renderTokens()}
+          </div>
 
           <div className='bounty-modal-token-row'>
             {this.renderTokenLabel()}
@@ -162,9 +266,11 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
               onChange={this.onChangeBounty}
             />
 
-            <div className='bounty-modal-token bounty' onClick={() => this.onBounty()}>
-              <AiOutlineFire size={20} />Bounty
-            </div>
+            {!this.state.loading &&
+              <div className='bounty-modal-token bounty' onClick={() => this.onBounty()}>
+                <AiOutlineFire size={20} />Bounty
+              </div>
+            }
           </div>
         </div>
 

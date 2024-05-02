@@ -1,10 +1,15 @@
 import React from 'react';
 import './TokenPage.css';
-import { getTokenBalance, getDefaultProcess, getWalletAddress, numberWithCommas, transferToken } from '../util/util';
-import { CRED, AOT_TEST } from '../util/consts';
+import {
+  getTokenBalance, getDefaultProcess, getWalletAddress,
+  numberWithCommas, transferToken,
+  formatBalance
+} from '../util/util';
+import { CRED, AOT_TEST, TRUNK } from '../util/consts';
 import { dryrun } from "@permaweb/aoconnect/browser";
 import MessageModal from '../modals/MessageModal';
 import { Server } from '../../server/server';
+import Loading from '../elements/Loading';
 
 declare var window: any;
 
@@ -15,9 +20,10 @@ interface TokenPageState {
   loading: boolean;
   address: string;
   process: string;
+  hasAOT: boolean;
   balOfCRED: number;
   balOfAOT: number;
-  hasAOT: boolean;
+  balOfTRUNK: number;
 }
 
 class TokenPage extends React.Component<{}, TokenPageState> {
@@ -31,9 +37,10 @@ class TokenPage extends React.Component<{}, TokenPageState> {
       loading: true,
       address: '',
       process: '',
+      hasAOT: true,
       balOfCRED: 0,
       balOfAOT: 0,
-      hasAOT: true,
+      balOfTRUNK: 0,
     };
   }
 
@@ -47,12 +54,12 @@ class TokenPage extends React.Component<{}, TokenPageState> {
     this.setState({ address, process });
 
     let balOfCRED = await getTokenBalance(CRED, process);
-    if (balOfCRED.length > 3) {
-      const length = balOfCRED.length;
-      balOfCRED = balOfCRED.slice(0, length - 3) + '.' + balOfCRED.slice(length - 3);
-    }
+    balOfCRED = formatBalance(balOfCRED, 3);
 
-    this.setState({ balOfCRED });
+    let balOfTRUNK = await getTokenBalance(TRUNK, process);
+    balOfTRUNK = formatBalance(balOfTRUNK, 3);
+
+    this.setState({ balOfCRED, balOfTRUNK });
     this.displayAOT(process);
   }
 
@@ -89,60 +96,51 @@ class TokenPage extends React.Component<{}, TokenPageState> {
     this.setState({ message: '' });
   }
 
+  renderTokens() {
+    let tokens = ['AOCRED-Test', 'AOT-Test', 'TRUNK'];
+    let icons = ['./logo-ao.png', './logo.png', './logo-trunk.png'];
+    let bals = [this.state.balOfCRED, this.state.balOfAOT, this.state.balOfTRUNK];
+
+    let divs = [];
+    for (let i = 0; i < tokens.length; i++) {
+      divs.push(
+        <div key={i} className='token-page-card'>
+          <img className={`token-page-icon ${i !== 2 && 'cred'}`} src={icons[i]} />
+          <div>
+            <div className='token-page-title'>{tokens[i]}</div>
+            {this.state.loading
+              ? <Loading marginTop='5px' />
+              : <div className='token-page-text balance'>{numberWithCommas(bals[i])}</div>
+            }
+          </div>
+        </div>
+      )
+    }
+
+    return divs
+  }
+
   render() {
     let process = this.state.process;
     if (!process) process = 'Try to disconnect and reconnect to the wallet on the Home page.';
 
     return (
       <div className='token-page'>
-        <div className='token-page-card'>
+        <div className='token-page-card process'>
           <div className='token-page-title'>Your Process ID</div>
           {this.state.loading
-            ? <div style={{ marginTop: '15px', marginBottom: '2px' }} id="loading" />
+            ? <Loading marginTop='5px' />
             : <div className='token-page-text'>{process}</div>
           }
         </div>
 
-        <div className='token-page-card'>
-          <div className='token-page-title'>AOCRED-Test &nbsp;&nbsp;&nbsp; (AO testnet token)</div>
-          {this.state.loading
-            ? <div style={{ marginTop: '15px', marginBottom: '2px' }} id="loading" />
-            : <div className='token-page-text balance'>{this.state.balOfCRED}</div>
-          }
-        </div>
-
-        <div className='token-page-card'>
-          <div className='token-page-title'>AOT-Test &nbsp;&nbsp;&nbsp; (AO Twitter testnet token)</div>
-          {this.state.loading
-            ? <div style={{ marginTop: '15px', marginBottom: '2px' }} id="loading" />
-            : <div className='token-page-text balance'>{numberWithCommas(this.state.balOfAOT)}</div>
-          }
+        <div className='token-page-token-row'>
+          {this.renderTokens()}
         </div>
 
         {!this.state.hasAOT &&
           <div><button onClick={() => this.getAOT()}>Get 10,000 AOT-Test</button></div>
         }
-
-        {/* <div className='token-page-card'>
-          <div className='token-page-process-id'>Staking</div>
-          <div className='token-page-text balance'>1000.000</div>
-        </div> */}
-
-        {/* <div className='token-page-card'>
-          <div className='token-page-header'>
-            <div className='token-page-process-id'>Voting</div>
-            <div className='token-page-text-small'>which one feature should be put in.</div>
-          </div>
-          <div className='token-page-vote'>
-            (10) A profile page which updating avatar and nickname.
-          </div>
-          <div className='token-page-vote'>
-            (20) Like function: the clickable heart icon.
-          </div>
-          <div className='token-page-vote'>
-            (30) A Big Plan: The Token Economic System.
-          </div>
-        </div> */}
 
         <MessageModal message={this.state.message} />
       </div>

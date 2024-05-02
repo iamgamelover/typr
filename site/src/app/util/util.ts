@@ -596,18 +596,30 @@ export async function getTokenBalance(process: string, address: string) {
     tags: [
       { name: 'Action', value: 'Balance' },
       { name: 'Target', value: address },
+      { name: 'Recipient', value: address },
     ],
   });
 
   return result.Messages[0].Data;
 }
 
-export async function transferToken(from: string, to: string, qty: string) {
+export function formatBalance(str: string, len: number) {
+  let length = str.length;
+  if (length > len)
+    str = str.slice(0, length - len) + '.' + str.slice(length - len);
+  else
+    str = '0.' + str;
+
+  return str;
+}
+
+export async function transferToken(from: string, to: string, qty: string, target?: string) {
   const messageId = await message({
     process: from,
     signer: createDataItemSigner(window.arweaveWallet),
     tags: [
-      { name: 'Action', value: 'TransferAOT' },
+      { name: 'Target', value: target ? target : '' },
+      { name: 'Action', value: 'TransferToken' },
       { name: 'Recipient', value: to },
       { name: 'Quantity', value: qty },
     ],

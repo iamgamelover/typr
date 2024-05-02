@@ -9,9 +9,17 @@
 }
 
 .token-page-card {
-  padding: 6px 15px;
+  display: flex;
+  align-items: center;
+  column-gap: 15px;
+  padding: 8px 15px;
   border-radius: 15px;
   background-color: var(--section-color);
+}
+
+.token-page-card.process {
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .token-page-header {
@@ -27,8 +35,9 @@
   margin-top: 5px;
 }
 
-.balance {
-  font-size: 20px;
+.token-page-text.balance {
+  font-size: 19px;
+  margin-top: -1px;
 }
 
 .token-page-vote {
@@ -45,4 +54,19 @@
 
 .token-page-input {
   width: 300px;
+}
+
+.token-page-icon {
+  width: 50px;
+  height: 50px;
+}
+
+.token-page-icon.cred {
+  width: 45px;
+  height: unset;
+}
+
+.token-page-token-row {
+  display: flex;
+  column-gap: 15px;
 }

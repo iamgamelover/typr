@@ -2,8 +2,11 @@ import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import NavBar from '../elements/NavBar';
 import { BsPeopleFill, BsReplyFill, BsSend, BsSendFill } from 'react-icons/bs';
-import { getDataFromAO, getDefaultProcess, getTokenBalance, isLoggedIn } from '../util/util';
-import { AOT_TEST, AO_TWITTER } from '../util/consts';
+import {
+  formatBalance, getDataFromAO, getDefaultProcess,
+  getTokenBalance, isLoggedIn
+} from '../util/util';
+import { AOT_TEST, AO_TWITTER, CRED, TRUNK } from '../util/consts';
 import { Server } from '../../server/server';
 import PostModal from '../modals/PostModal';
 import Portrait from '../elements/Portrait';
@@ -56,8 +59,21 @@ class SitePage extends React.Component<{}, SitePageState> {
     this.getStatus();
     setInterval(() => this.getStatus(), 60000); // 1 min
 
+    let bal_cred = await getTokenBalance(CRED, process);
+    bal_cred = formatBalance(bal_cred, 3);
+    console.log("bal_cred:", bal_cred)
+    Server.service.setBalanceOfCRED(bal_cred);
+
     let bal_aot = await getTokenBalance(AOT_TEST, process);
+    console.log("bal_aot:", bal_aot)
     Server.service.setBalanceOfAOT(bal_aot);
+
+    let bal_trunk = await getTokenBalance(TRUNK, process);
+    bal_trunk = formatBalance(bal_trunk, 3);
+    console.log("bal_trunk:", bal_trunk)
+    Server.service.setBalanceOfTRUNK(bal_trunk);
+
+    publish('get-bal-done')
   }
 
   onOpen() {
@@ -72,7 +88,7 @@ class SitePage extends React.Component<{}, SitePageState> {
   async getStatus() {
     let users = await getDataFromAO(AO_TWITTER, 'GetUsersCount');
     this.setState({ users: users[0].total_count });
-    
+
     let posts = await getDataFromAO(AO_TWITTER, 'GetPostsCount');
     this.setState({ posts: posts[0].total_count });
 
@@ -88,7 +104,7 @@ class SitePage extends React.Component<{}, SitePageState> {
           {/* <img className='app-logo' src='/ao.png' /> */}
           {/* <div className='app-logo-text'>Twitter (beta)</div> */}
         </NavLink>
-        
+
         <div className='app-status-row'>
           <div className='app-status-data'><BsPeopleFill />{this.state.users}</div>
           <div className='app-status-data'><BsSendFill />{this.state.posts}</div>

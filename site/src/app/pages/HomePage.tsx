@@ -5,13 +5,10 @@ import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
 import {
   checkContent, getDataFromAO, getWalletAddress, timeOfNow,
-  messageToAO, uuid, isBookmarked,
-  randomAvatar,
-  shortAddr
-} from '../util/util';
+  messageToAO, uuid, isBookmarked} from '../util/util';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
-import { AO_STORY, AO_TWITTER, PAGE_SIZE, TIP_IMG } from '../util/consts';
+import { AO_TWITTER, PAGE_SIZE, TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
 import { BsSend } from 'react-icons/bs';
 import Loading from '../elements/Loading';

@@ -148,7 +148,7 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
     }
     //-------------------
 
-    let bal = Number(Server.service.getBalanceOfAOT());
+    let bal = Server.service.getBalanceOfAOT();
     console.log("bal:", bal)
     if (bal < 100) {
       this.setState({ alert: 'Insufficient balance.', message: '' });
@@ -159,7 +159,7 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
 
     this.setState({ message: '' });
 
-    let bal_new = (bal - 100).toString();
+    let bal_new = bal - 100;
     Server.service.setBalanceOfAOT(bal_new);
     return true;
   }

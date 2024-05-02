@@ -9,7 +9,9 @@ export class Service {
   protected isLoggedIn:string;
   protected activeAddress:string;
   protected defaultProcess:string;
-  protected balanceOfAOT:string;
+  protected balanceOfCRED:number;
+  protected balanceOfAOT:number;
+  protected balanceOfTRUNK:number;
 
   constructor() {
     this.profiles = [];
@@ -89,12 +91,28 @@ export class Service {
     return this.defaultProcess;
   }
   
-  public setBalanceOfAOT(process:string) {
-    this.balanceOfAOT = process;
+  public setBalanceOfAOT(bal:number) {
+    this.balanceOfAOT = bal;
   }
 
   public getBalanceOfAOT() {
     return this.balanceOfAOT;
+  }
+  
+  public setBalanceOfTRUNK(bal:number) {
+    this.balanceOfTRUNK = bal;
+  }
+
+  public getBalanceOfTRUNK() {
+    return this.balanceOfTRUNK;
+  }
+  
+  public setBalanceOfCRED(bal:number) {
+    this.balanceOfCRED = bal;
+  }
+
+  public getBalanceOfCRED() {
+    return this.balanceOfCRED;
   }
   
 }
