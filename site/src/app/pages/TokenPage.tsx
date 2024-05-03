@@ -3,9 +3,10 @@ import './TokenPage.css';
 import {
   getTokenBalance, getDefaultProcess, getWalletAddress,
   numberWithCommas, transferToken,
-  formatBalance
+  formatBalance,
+  evaluate
 } from '../util/util';
-import { CRED, AOT_TEST, TRUNK } from '../util/consts';
+import { CRED, AOT_TEST, TRUNK, LUA } from '../util/consts';
 import { dryrun } from "@permaweb/aoconnect/browser";
 import MessageModal from '../modals/MessageModal';
 import { Server } from '../../server/server';
@@ -54,10 +55,10 @@ class TokenPage extends React.Component<{}, TokenPageState> {
     this.setState({ address, process });
 
     let balOfCRED = await getTokenBalance(CRED, process);
-    balOfCRED = formatBalance(balOfCRED, 3);
+    // balOfCRED = formatBalance(balOfCRED, 3);
 
     let balOfTRUNK = await getTokenBalance(TRUNK, process);
-    balOfTRUNK = formatBalance(balOfTRUNK, 3);
+    // balOfTRUNK = formatBalance(balOfTRUNK, 3);
 
     this.setState({ balOfCRED, balOfTRUNK });
     this.displayAOT(process);
@@ -86,6 +87,12 @@ class TokenPage extends React.Component<{}, TokenPageState> {
 
     // console.log("getBalances:", result)
     return result.Messages[0].Data;
+  }
+
+  async loadCode() {
+    // load lua code into user's process
+    let messageId = await evaluate(this.state.process, LUA);
+    console.log("Load successfully -->", messageId)
   }
 
   async getAOT() {
@@ -133,6 +140,13 @@ class TokenPage extends React.Component<{}, TokenPageState> {
             : <div className='token-page-text'>{process}</div>
           }
         </div>
+
+        {!this.state.loading &&
+          <div><button onClick={() => this.loadCode()}>Load the new code</button></div>
+        }
+
+        <div className="token-page-balance-title">Balances</div>
+        <div className='token-page-balance-line' />
 
         <div className='token-page-token-row'>
           {this.renderTokens()}

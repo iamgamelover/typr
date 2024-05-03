@@ -60,17 +60,17 @@ class SitePage extends React.Component<{}, SitePageState> {
     setInterval(() => this.getStatus(), 60000); // 1 min
 
     let bal_cred = await getTokenBalance(CRED, process);
-    bal_cred = formatBalance(bal_cred, 3);
-    console.log("bal_cred:", bal_cred)
+    // bal_cred = formatBalance(bal_cred, 3);
+    // console.log("bal_cred:", bal_cred)
     Server.service.setBalanceOfCRED(bal_cred);
 
     let bal_aot = await getTokenBalance(AOT_TEST, process);
-    console.log("bal_aot:", bal_aot)
+    // console.log("bal_aot:", bal_aot)
     Server.service.setBalanceOfAOT(bal_aot);
 
     let bal_trunk = await getTokenBalance(TRUNK, process);
-    bal_trunk = formatBalance(bal_trunk, 3);
-    console.log("bal_trunk:", bal_trunk)
+    // bal_trunk = formatBalance(bal_trunk, 3);
+    // console.log("bal_trunk:", bal_trunk)
     Server.service.setBalanceOfTRUNK(bal_trunk);
 
     publish('get-bal-done')

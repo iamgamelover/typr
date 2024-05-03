@@ -180,18 +180,15 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     let quantity = Number(this.props.data.coins) + Number(qty);
     this.props.onBounty(quantity.toString());
 
-    let bal_new;
+    let bal_new = bal - Number(qty);
     switch (this.tokenPicked) {
       case 0:
-        bal_new = bal - Number(qty);
         Server.service.setBalanceOfAOT(bal_new);
         break;
       case 1:
-        bal_new = bal - Number(qty) / 1000;
         Server.service.setBalanceOfCRED(bal_new);
         break;
       case 2:
-        bal_new = bal - Number(qty) / 1000;
         Server.service.setBalanceOfTRUNK(bal_new);
         break;
     }
@@ -217,9 +214,10 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     // console.log("records:", records)
     messageToAO(AO_TWITTER, records, 'Records-Bounty');
 
-    // for test
+    // update the balance
     let bal_trunk = await getTokenBalance(TRUNK, from);
-    bal_trunk = formatBalance(bal_trunk, 3);
+    console.log("new bal_trunk:", bal_trunk)
+    // bal_trunk = formatBalance(bal_trunk, 3);
     Server.service.setBalanceOfTRUNK(bal_trunk);
   }
 
