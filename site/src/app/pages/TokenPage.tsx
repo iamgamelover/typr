@@ -22,6 +22,7 @@ interface TokenPageState {
   address: string;
   process: string;
   hasAOT: boolean;
+  isLoaded: boolean;
   balOfCRED: number;
   balOfAOT: number;
   balOfTRUNK: number;
@@ -39,6 +40,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
       address: '',
       process: '',
       hasAOT: true,
+      isLoaded: false,
       balOfCRED: 0,
       balOfAOT: 0,
       balOfTRUNK: 0,
@@ -90,9 +92,12 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   }
 
   async loadCode() {
+    this.setState({ message: 'Upload...' });
+
     // load lua code into user's process
     let messageId = await evaluate(this.state.process, LUA);
-    console.log("Load successfully -->", messageId)
+    console.log("Upload successfully -->", messageId)
+    this.setState({ isLoaded: true, message: '' });
   }
 
   async getAOT() {
@@ -142,7 +147,11 @@ class TokenPage extends React.Component<{}, TokenPageState> {
         </div>
 
         {!this.state.loading &&
-          <div><button onClick={() => this.loadCode()}>Load the new code</button></div>
+          <div><button onClick={() => this.loadCode()}>Upload the code</button></div>
+        }
+
+        {this.state.isLoaded &&
+          <div className='token-page-prompt'>Upload the code to your process successfully.</div>
         }
 
         <div className="token-page-balance-title">Balances</div>
