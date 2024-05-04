@@ -2,9 +2,7 @@ import React from 'react';
 import './TokenPage.css';
 import {
   getTokenBalance, getDefaultProcess, getWalletAddress,
-  numberWithCommas, transferToken,
-  formatBalance,
-  evaluate
+  numberWithCommas, transferToken, evaluate, spawnProcess
 } from '../util/util';
 import { CRED, AOT_TEST, TRUNK, LUA } from '../util/consts';
 import { dryrun } from "@permaweb/aoconnect/browser";
@@ -58,9 +56,11 @@ class TokenPage extends React.Component<{}, TokenPageState> {
 
     let balOfCRED = await getTokenBalance(CRED, process);
     // balOfCRED = formatBalance(balOfCRED, 3);
+    Server.service.setBalanceOfCRED(balOfCRED);
 
     let balOfTRUNK = await getTokenBalance(TRUNK, process);
     // balOfTRUNK = formatBalance(balOfTRUNK, 3);
+    Server.service.setBalanceOfTRUNK(balOfTRUNK);
 
     this.setState({ balOfCRED, balOfTRUNK });
     this.displayAOT(process);
@@ -89,6 +89,11 @@ class TokenPage extends React.Component<{}, TokenPageState> {
 
     // console.log("getBalances:", result)
     return result.Messages[0].Data;
+  }
+
+  async spawn() {
+    let new_process = await spawnProcess();
+    console.log("Spawn --> new_process:", new_process)
   }
 
   async loadCode() {
@@ -147,7 +152,11 @@ class TokenPage extends React.Component<{}, TokenPageState> {
         </div>
 
         {!this.state.loading &&
-          <div><button onClick={() => this.loadCode()}>Upload the code</button></div>
+          <div>
+            <button onClick={() => this.loadCode()}>Upload the code</button>
+            <button style={{ marginLeft: '20px', backgroundColor: 'green' }}
+              onClick={() => this.spawn()}>Spawn a new process</button>
+          </div>
         }
 
         {this.state.isLoaded &&

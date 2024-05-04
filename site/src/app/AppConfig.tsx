@@ -13,7 +13,7 @@ export class AppConfig {
       text: 'Story',
       icon: 'story',
       to: '/story',
-      beta: true,
+      beta: false,
       loggedIn: false
     },
     {
@@ -33,13 +33,13 @@ export class AppConfig {
       text: 'Chatroom',
       icon: 'chatroom',
       to: '/chat',
-      new: true,
       loggedIn: true
     },
     {
       text: 'Notifications',
       icon: 'notifications',
       to: '/notifications',
+      new: true,
       loggedIn: true
     },
     {

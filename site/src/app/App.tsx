@@ -12,6 +12,7 @@ import StoryPage from './pages/StoryPage';
 import BookmarksPage from './pages/BookmarksPage';
 import ProfilePage from './pages/ProfilePage';
 import FollowPage from './pages/FollowPage';
+import NotiPage from './pages/NotiPage';
 
 class App extends React.Component<{}, {}> {
   constructor(props = {}) {
@@ -38,6 +39,7 @@ class App extends React.Component<{}, {}> {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/user/:id" element={<ProfilePage />} />
             <Route path="/follow/:id" element={<FollowPage />} />
+            <Route path="/notifications" element={<NotiPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

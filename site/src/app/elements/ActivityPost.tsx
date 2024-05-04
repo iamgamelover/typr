@@ -364,12 +364,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   render() {
-    let owner = (this.props.data.address == this.state.address);
-
     let data = this.props.data;
-    // let address = data.address;
-    // if (address)
-    //   address = address.substring(0, 4) + '...' + address.substring(address.length - 4);
 
     if (this.state.navigate)
       return <Navigate to={this.state.navigate} />;
@@ -409,16 +404,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
               data-tooltip-content="Go to ao.link"
             />
           }
-
-          {/* {this.props.isReply &&
-            <img
-              className='activity-post-arweave-icon'
-              src='./ar.svg'
-              onClick={() => this.openLink(data.txid)}
-              data-tooltip-id="my-tooltip"
-              data-tooltip-content="Go to ao.link"
-            />
-          } */}
         </div>
 
         <div className='activity-post-content'>

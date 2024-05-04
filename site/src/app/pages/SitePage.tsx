@@ -4,7 +4,8 @@ import NavBar from '../elements/NavBar';
 import { BsPeopleFill, BsReplyFill, BsSend, BsSendFill } from 'react-icons/bs';
 import {
   formatBalance, getDataFromAO, getDefaultProcess,
-  getTokenBalance, isLoggedIn
+  getTokenBalance, isLoggedIn,
+  messageToAO
 } from '../util/util';
 import { AOT_TEST, AO_TWITTER, CRED, TRUNK } from '../util/consts';
 import { Server } from '../../server/server';
@@ -59,6 +60,9 @@ class SitePage extends React.Component<{}, SitePageState> {
     this.getStatus();
     setInterval(() => this.getStatus(), 60000); // 1 min
 
+    // getting notifications.
+    setInterval(() => this.getNotis(), 20000); // 20 seconds
+
     let bal_cred = await getTokenBalance(CRED, process);
     // bal_cred = formatBalance(bal_cred, 3);
     // console.log("bal_cred:", bal_cred)
@@ -94,6 +98,41 @@ class SitePage extends React.Component<{}, SitePageState> {
 
     let replies = await getDataFromAO(AO_TWITTER, 'GetRepliesCount');
     this.setState({ replies: replies[0].total_count });
+  }
+
+  async getNotis() {
+    let process = Server.service.getDefaultProcess();
+    let address = Server.service.getActiveAddress();
+    let postIDs = await getDataFromAO(AO_TWITTER, 'Get-PostIDs', { address });
+    // console.log("postIDs:", postIDs)
+
+    for (let i = 0; i < postIDs.length; i++) {
+      let post_id = postIDs[i].id;
+      let data = { post_id: post_id, offset: 0 };
+      let replies = await getDataFromAO(AO_TWITTER, 'GetReplies', data);
+      // console.log("replies:", replies)
+
+      for (let j = 0; j < replies.length; j++) {
+        let reply = replies[j];
+        if (reply.address == address) continue;
+
+        let data = {
+          reply_id: reply.id,
+          post_id: post_id,
+          noti_type: 'REPLY',
+          address: reply.address,
+          avatar: reply.avatar,
+          nickname: reply.nickname,
+          post: reply.post,
+          bounty: 0,
+          bounty_type: '',
+          time: reply.time,
+        };
+        // console.log("insert noti data --> ", data)
+
+        let response = await messageToAO(process, data, 'Record-Noti');
+      }
+    }
   }
 
   render() {
