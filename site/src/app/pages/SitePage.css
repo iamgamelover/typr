@@ -1,0 +1,22 @@
+.site-page-mobile-portrait {
+  display: none;
+  /* column-gap: 20px; */
+  justify-content: flex-end;
+  color: gray;
+  /* margin-top: 5px; */
+}
+
+.site-page-portrait-container {
+  display: flex;
+  align-items: center;
+  column-gap: 10px;
+  cursor: pointer;
+  padding: 10px 20px;
+  border-radius: 30px;
+}
+
+@media (max-width: 650px) {
+  .site-page-mobile-portrait {
+    display: flex;
+  }
+}

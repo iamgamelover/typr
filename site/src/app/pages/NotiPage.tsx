@@ -37,6 +37,8 @@ class NotiPage extends React.Component<{}, NotiPageState> {
   }
 
   componentDidMount() {
+    if (!Server.service.getIsLoggedIn()) return;
+    
     this.getNotis();
     window.addEventListener('scroll', this.atBottom);
   }
@@ -122,6 +124,9 @@ class NotiPage extends React.Component<{}, NotiPageState> {
   }
 
   render() {
+    if (!Server.service.getIsLoggedIn())
+      return (<div>Please login first.</div>)
+
     return (
       <div className='story-page'>
         <div className='story-page-header'>

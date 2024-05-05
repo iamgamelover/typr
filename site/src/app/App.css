@@ -46,7 +46,8 @@ input {
   padding: 0 10px;
 }
 
-.input:disabled, input[disabled] {
+.input:disabled,
+input[disabled] {
   border: 1px solid lightgray;
   cursor: not-allowed;
 }
@@ -61,7 +62,9 @@ textarea {
   padding: 5px 10px 5px 10px;
 }
 
-[data-lastpass-icon-root] { display: none !important; }
+[data-lastpass-icon-root] {
+  display: none !important;
+}
 
 button {
   font-size: inherit;
@@ -77,12 +80,14 @@ button {
   min-width: 80px;
 }
 
-.button:disabled, button[disabled] {
+.button:disabled,
+button[disabled] {
   background-color: gray;
   cursor: not-allowed;
 }
 
-.button:hover, button[hover] {
+.button:hover,
+button[hover] {
   background-color: var(--button-hover-color);
 }
 
@@ -94,7 +99,8 @@ select {
   padding: 0 10px;
 }
 
-.select:disabled, select[disabled] {
+.select:disabled,
+select[disabled] {
   background-color: var(--page-color);
   cursor: not-allowed;
 }
@@ -170,12 +176,28 @@ a {
   background-color: var(--page-color);
 }
 
+/* others style */
 .app-status-row {
   display: flex;
   column-gap: 20px;
   justify-content: flex-end;
   color: gray;
   margin-top: 5px;
+}
+
+@media (max-width: 650px) {
+  .app-navbar {
+    display: none;
+  }
+
+  .app-page {
+    margin-left: unset;
+    margin-top: unset;
+  }
+
+  .app-status-row{
+    display: none;
+  }
 }
 
 .app-status-data {
@@ -262,22 +284,6 @@ a {
   font-size: 19px;
 }
 
-@media (max-width: 850px) {
-  .app-content {
-    grid-template-columns: 70px 1fr;
-  }
-}
-
-@media (max-width: 710px) {
-  .app-content {
-    grid-template-columns: 0px 1fr;
-  }
-
-  .app-content {
-    overflow-y: visible;
-  }
-}
-
 /* ---- Quill editor config ----*/
 
 .ql-editor {
@@ -300,8 +306,8 @@ a {
   border-top-right-radius: 0.5em;
 }
 
-.ql-toolbar.ql-snow { 
-  border: none !important; 
+.ql-toolbar.ql-snow {
+  border: none !important;
   background-color: var(--section-header-color);
 }
 
@@ -353,7 +359,7 @@ a {
 }
 
 /* .ql-editor.ql-blank::before { */
-  /* color: #ffffff80 !important; */
+/* color: #ffffff80 !important; */
 /* } */
 
 .ql-toolbar .ql-picker-label:hover {
@@ -440,6 +446,7 @@ a {
   0% {
     background-position: 100% 50%;
   }
+
   100% {
     background-position: 0 50%;
   }

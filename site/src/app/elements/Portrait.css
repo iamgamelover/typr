@@ -1,5 +1,5 @@
 
-.site-page-portrait-container {
+.portrait-div-container {
   display: flex;
   align-items: center;
   column-gap: 10px;
@@ -9,7 +9,7 @@
   margin-top: 50px;
 }
 
-.site-page-portrait-container:hover {
+.portrait-div-container:hover {
   background-color: lightgray;
 }
 
@@ -31,7 +31,28 @@
 }
 
 .connect {
-  width: 100px;
+  width: 110px;
   margin-top: 50px;
   margin-left: 10px;
+}
+
+.connect.othent {
+  background-color: rgb(102, 102, 221);
+}
+
+.connect.othent:hover {
+  background-color: rgb(119, 119, 228);
+}
+
+.portrait-div-or {
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: -30px;
+}
+
+.portrait-label {
+  font-size: 13px;
+  color: rgb(237, 108, 108);
+  margin-left: 12px;
+  margin-top: 5px;
 }

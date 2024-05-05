@@ -9,7 +9,10 @@ import {
 import { Server } from '../../server/server';
 import { Tooltip } from 'react-tooltip';
 import QuestionModal from '../modals/QuestionModal';
-import { BsWallet2 } from 'react-icons/bs';
+import { BsToggleOn, BsWallet2 } from 'react-icons/bs';
+import * as Othent from "@othent/kms";
+import MessageModal from '../modals/MessageModal';
+import { RxSwitch } from "react-icons/rx";
 
 declare var window: any;
 
@@ -22,6 +25,7 @@ interface PortraitState {
   nickname: string;
   address: string;
   question: string;
+  message: string;
 }
 
 class Portrait extends React.Component<PortraitProps, PortraitState> {
@@ -33,6 +37,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
       nickname: '',
       address: '',
       question: '',
+      message: '',
     };
 
     this.onQuestionYes = this.onQuestionYes.bind(this);
@@ -43,7 +48,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
     });
 
     subscribe('profile-updated', () => {
-      this.getProfile(this.state.address);
+      this.isExisted(this.state.address);
     });
   }
 
@@ -59,67 +64,94 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
     let address = await isLoggedIn();
     // console.log("portrait -> address:", address)
     this.setState({ address })
-    this.getProfile(address)
+    this.isExisted(address)
   }
 
-  async connectWallet() {
-    let connected = await connectWallet();
-    if (connected) {
-      let address = await getWalletAddress();
-      console.log("connectWallet -> address:", address)
-      // this.setState({ isLoggedIn: 'true', address });
+  async connect2Othent() {
+    try {
+      this.setState({ message: 'Connecting...' });
+      window.arweaveWallet = Othent;
 
-      Server.service.setIsLoggedIn(address);
-      Server.service.setActiveAddress(address);
-      publish('wallet-events');
+      let res = await window.arweaveWallet.connect(
+        // request permissions
+        ["ACCESS_ADDRESS", "SIGN_TRANSACTION"]
+      );
 
-      this.setState({ address });
-
-      if (await this.getProfile(address) == false)
-        this.register(address);
-
-      // your own process 
-      let process = await getDefaultProcess(address);
-      console.log("Your process:", process)
-
-      // Spawn a new process
-      if (!process) {
-        process = await spawnProcess();
-        console.log("Spawn --> processId:", process)
-      }
-
-      setTimeout(async () => {
-        // load lua code into the process
-        let messageId = await evaluate(process, LUA);
-        console.log("evaluate -->", messageId)
-      }, 10000);
-
-      // for testing - will be removed
-      // this.setState({ temp_tip: true, process });
-
-      let bal_aot = await getTokenBalance(AOT_TEST, process);
-      console.log("bal_aot:", bal_aot)
-      Server.service.setBalanceOfAOT(bal_aot);
+      // console.log("res:", res)
+      this.afterConnected(res.walletAddress, res);
+    } catch (error) {
+      console.log(error)
+      this.setState({ message: '' });
     }
   }
 
-  async register(address: string) {
+  async connect2ArConnect() {
+    let connected = await connectWallet();
+    if (connected) {
+      let address = await getWalletAddress();
+      this.afterConnected(address);
+    }
+  }
+
+  async afterConnected(address: string, othent?: any) {
+    Server.service.setIsLoggedIn(address);
+    Server.service.setActiveAddress(address);
+    publish('wallet-events');
+
+    if (othent)
+      this.setState({ avatar: othent.picture, nickname: othent.name });
+
+    this.setState({ address, message: '' });
+
+    if (await this.isExisted(address) == false)
+      this.register(address, othent);
+
+    // your own process 
+    let process = await getDefaultProcess(address);
+    console.log("Your process:", process)
+
+    // Spawn a new process
+    if (!process) {
+      process = await spawnProcess();
+      console.log("Spawn --> processId:", process)
+    }
+
+    setTimeout(async () => {
+      // load lua code into the process
+      let messageId = await evaluate(process, LUA);
+      console.log("evaluate -->", messageId)
+    }, 10000);
+
+    let bal_aot = await getTokenBalance(AOT_TEST, process);
+    console.log("bal_aot:", bal_aot)
+    Server.service.setBalanceOfAOT(bal_aot);
+  }
+
+  async register(address: string, othent?: any) {
     console.log('--> register')
+
     let nickname = shortAddr(address, 4);
     let data = { address, avatar: randomAvatar(), banner: '', nickname, bio: '', time: timeOfNow() };
+
+    if (othent) {
+      data = { address, avatar: othent.picture, banner: '', nickname: othent.name, bio: '', time: timeOfNow() };
+    }
+
     messageToAO(AO_TWITTER, data, 'Register');
-    
-    // for testing...
     messageToAO(AO_STORY, data, 'Register');
   }
 
   async disconnectWallet() {
+    this.setState({ message: 'Disconnect...' });
+
     await window.arweaveWallet.disconnect();
-    this.setState({ address: '', question: '' });
 
     Server.service.setIsLoggedIn('');
     Server.service.setActiveAddress('');
+    localStorage.removeItem('id_token');
     publish('wallet-events');
+
+    this.setState({ address: '', question: '', message: '' });
   }
 
   onQuestionYes() {
@@ -130,7 +162,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
     this.setState({ question: '' });
   }
 
-  async getProfile(address: string) {
+  async isExisted(address: string) {
     let profile = Server.service.getProfile(address);
     // console.log("cached profile:", profile)
 
@@ -158,11 +190,10 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
 
     return (
       <div>
-        {/* {address ? avatar && */}
         {address
           ?
           <div
-            className='site-page-portrait-container'
+            className='portrait-div-container'
             data-tooltip-id="my-tooltip"
             data-tooltip-content="Disconnect from wallet"
             onClick={() => this.disconnectWallet()}
@@ -180,12 +211,20 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
             </div>
           </div>
           :
-          <div className="app-icon-button connect" onClick={() => this.connectWallet()}>
-            <BsWallet2 size={20} />Connect
+          <div>
+            <div className="app-icon-button connect" onClick={() => this.connect2ArConnect()}>
+              <BsWallet2 size={20} />ArConnect
+            </div>
+            <div className='portrait-div-or'>- OR -</div>
+            <div className="app-icon-button connect othent" onClick={() => this.connect2Othent()}>
+              <BsToggleOn size={25} />Othent
+            </div>
+            <div className='portrait-label'>Google or others</div>
           </div>
         }
 
         <Tooltip id="my-tooltip" />
+        <MessageModal message={this.state.message} />
         <QuestionModal message={this.state.question} onYes={this.onQuestionYes} onNo={this.onQuestionNo} />
       </div>
     );

@@ -5,13 +5,15 @@ import { BsPeopleFill, BsReplyFill, BsSend, BsSendFill } from 'react-icons/bs';
 import {
   formatBalance, getDataFromAO, getDefaultProcess,
   getTokenBalance, isLoggedIn,
-  messageToAO
+  messageToAO,
+  randomAvatar
 } from '../util/util';
 import { AOT_TEST, AO_TWITTER, CRED, TRUNK } from '../util/consts';
 import { Server } from '../../server/server';
 import PostModal from '../modals/PostModal';
 import Portrait from '../elements/Portrait';
 import { publish, subscribe } from '../util/event';
+import './SitePage.css';
 
 interface SitePageState {
   users: number;
@@ -140,14 +142,31 @@ class SitePage extends React.Component<{}, SitePageState> {
       <div className="app-container">
         <NavLink className='app-logo-line' to='/'>
           <img className='app-logo' src='./logo.png' />
-          {/* <img className='app-logo' src='/ao.png' /> */}
-          {/* <div className='app-logo-text'>Twitter (beta)</div> */}
         </NavLink>
 
         <div className='app-status-row'>
           <div className='app-status-data'><BsPeopleFill />{this.state.users}</div>
           <div className='app-status-data'><BsSendFill />{this.state.posts}</div>
           <div className='app-status-data'><BsReplyFill />{this.state.replies}</div>
+        </div>
+
+        {/* FOR MOBILE */}
+        <div className='site-page-mobile-portrait'>
+          <div
+            className='site-page-portrait-container'
+          // onClick={() => this.disconnectWallet()}
+          >
+            <img
+              className='site-page-portrait'
+              src={randomAvatar()}
+            />
+            <div>
+              <div className="site-page-nickname">
+                {'iamgamelover'}
+              </div>
+              <div className="site-page-addr">{'mxAI...Rew0'}</div>
+            </div>
+          </div>
         </div>
 
         <div className="app-content">
@@ -159,11 +178,6 @@ class SitePage extends React.Component<{}, SitePageState> {
                 <BsSend size={22} />Post
               </div>
             }
-
-            {/* <div className='app-portrait-container'>
-              <img className='testao-msg-portrait' src='/portrait-default.png' />
-              <div className="testao-msg-nicknam">name</div>
-            </div> */}
 
             <Portrait />
           </div>

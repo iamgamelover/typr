@@ -3,10 +3,15 @@
   flex-direction: column;
   max-width: var(--page-max-width);
   margin: auto;
-  /* padding: 20px; */
   padding-left: 30px;
   padding-bottom: 30px;
   row-gap: 20px;
+}
+
+@media (max-width: 650px) {
+  .home-page {
+    padding: 20px;
+  }
 }
 
 .home-chat-container {

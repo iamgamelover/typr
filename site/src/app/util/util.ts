@@ -3,6 +3,7 @@ import { AO_TWITTER, ARWEAVE_GATEWAY, MODULE, SCHEDULER } from "./consts";
 import { Server } from "../../server/server";
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
+import * as Othent from "@othent/kms";
 
 declare var window: any;
 
@@ -511,6 +512,9 @@ export async function getWalletAddress() {
 }
 
 export async function isLoggedIn() {
+  if (localStorage.getItem('id_token'))
+    window.arweaveWallet = Othent;
+
   let address = await getWalletAddress();
   if (address)
     return address;
