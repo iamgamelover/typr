@@ -28,3 +28,9 @@
   color: gray;
   margin-right: 200px;
 }
+
+@media (max-width: 650px) {
+  .modal-content {
+    max-width: 340px;
+  }
+}

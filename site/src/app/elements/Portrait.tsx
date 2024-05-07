@@ -13,6 +13,12 @@ import { BsToggleOn, BsWallet2 } from 'react-icons/bs';
 import * as Othent from "@othent/kms";
 import MessageModal from '../modals/MessageModal';
 
+import {
+  connect,
+  disconnect,
+  getActiveAddress,
+} from "@othent/kms";
+
 declare var window: any;
 
 interface PortraitProps {
@@ -68,8 +74,10 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
   async connect2Othent() {
     try {
       this.setState({ message: 'Connecting...' });
-      let res = await Othent.connect();
-      // console.log("res:", res)
+      let res = await connect();
+      // let res = await Othent.connect();
+      console.log("res:", res)
+
       window.arweaveWallet = Othent;
       this.afterConnected(res.walletAddress, res);
     } catch (error) {
