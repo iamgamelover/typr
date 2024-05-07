@@ -4,7 +4,6 @@
   align-items: center;
   max-width: var(--page-max-width);
   margin: auto;
-  /* padding: 20px; */
   padding-left: 30px;
   padding-bottom: 30px;
   row-gap: 30px;
@@ -24,4 +23,14 @@
 .game {
   color: black;
   background-color: var(--section-color);
+}
+
+@media (max-width: 650px) {
+  .games-page {
+    padding: 10px;
+  }
+
+  .games-intro-line {
+    width: unset;
+  }
 }

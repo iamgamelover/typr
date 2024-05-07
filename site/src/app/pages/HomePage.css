@@ -8,12 +8,6 @@
   row-gap: 20px;
 }
 
-@media (max-width: 650px) {
-  .home-page {
-    padding: 20px;
-  }
-}
-
 .home-chat-container {
   margin-top: 30px;
 }
@@ -140,4 +134,15 @@
   padding: 10px 20px;
   border-radius: 10px;
   background-color: rgb(114, 114, 234);
+}
+
+@media (max-width: 650px) {
+  .home-page {
+    padding: 10px;
+    margin-top: -15px;
+  }
+
+  .home-chat-container {
+    margin-top: 0px;
+  }
 }

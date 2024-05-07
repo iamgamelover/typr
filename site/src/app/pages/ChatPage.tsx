@@ -281,7 +281,6 @@ class ChatPage extends React.Component<{}, ChatPageState> {
           {this.renderChatList()}
         </div>
 
-        {/* <div className='chat-page-chat-window'> */}
         <div id='scrollableDiv' className="chat-page-messages-container">
           {this.renderMessages()}
         </div>
@@ -299,7 +298,6 @@ class ChatPage extends React.Component<{}, ChatPageState> {
             <button className="chat-send-button" onClick={() => this.sendMessage()}>Send</button>
           </div>
         }
-        {/* </div> */}
 
         {/* <MessageModal message={this.state.message} /> */}
         <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />

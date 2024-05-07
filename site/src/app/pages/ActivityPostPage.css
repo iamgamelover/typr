@@ -78,7 +78,7 @@
   margin-top: 12px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 650px) {
   .activity-post-page {
     padding: 10px;
   }

@@ -88,3 +88,18 @@
   color: rgb(229, 96, 96);
   margin-top: -15px;
 }
+
+@media (max-width: 650px) {
+  .token-page {
+    padding: 10px;
+  }
+
+  .token-page-token-row {
+    display: grid;
+    grid-gap: 15px;
+  }
+
+  .token-page-text {
+    word-break: break-all;
+  }
+}

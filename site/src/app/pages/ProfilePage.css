@@ -15,11 +15,6 @@
   width: 100%;
 }
 
-@media (min-width: 600px) {
-  /* .profile-page-banner {
-   } */
-}
-
 .profile-page-portrait {
   width: 100px;
   height: 100px;
@@ -190,4 +185,11 @@
 
 .profile-page-follow-text {
   color: gray;
+}
+
+@media (max-width: 650px) {
+  .profile-page {
+    padding: 10px;
+    padding-bottom: 60px;
+  }
 }

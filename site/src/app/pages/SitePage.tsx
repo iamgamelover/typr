@@ -1,19 +1,24 @@
 import React from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import NavBar from '../elements/NavBar';
-import { BsPeopleFill, BsReplyFill, BsSend, BsSendFill } from 'react-icons/bs';
 import {
-  formatBalance, getDataFromAO, getDefaultProcess,
+  BsAward, BsBell, BsBookmark, BsChatText, BsController, BsHouse,
+  BsPeopleFill, BsPerson, BsReplyFill, BsSend, BsSendFill
+} from 'react-icons/bs';
+import {
+  getDataFromAO, getDefaultProcess,
   getTokenBalance, isLoggedIn,
-  messageToAO,
-  randomAvatar
+  messageToAO
 } from '../util/util';
-import { AOT_TEST, AO_TWITTER, CRED, TRUNK } from '../util/consts';
+import { AOT_TEST, AO_TWITTER, CRED, ICON_SIZE, TRUNK } from '../util/consts';
 import { Server } from '../../server/server';
 import PostModal from '../modals/PostModal';
 import Portrait from '../elements/Portrait';
 import { publish, subscribe } from '../util/event';
 import './SitePage.css';
+import { AiOutlineFire } from 'react-icons/ai';
+import { RiQuillPenLine } from "react-icons/ri";
+import { CgMoreO } from "react-icons/cg";
 
 interface SitePageState {
   users: number;
@@ -21,6 +26,7 @@ interface SitePageState {
   replies: number;
   open: boolean;
   address: string;
+  openMenu: boolean;
 }
 
 class SitePage extends React.Component<{}, SitePageState> {
@@ -33,6 +39,7 @@ class SitePage extends React.Component<{}, SitePageState> {
       replies: 0,
       open: false,
       address: '',
+      openMenu: false,
     };
 
     this.onOpen = this.onOpen.bind(this);
@@ -63,7 +70,7 @@ class SitePage extends React.Component<{}, SitePageState> {
     setInterval(() => this.getStatus(), 60000); // 1 min
 
     // getting notifications.
-    setInterval(() => this.getNotis(), 20000); // 20 seconds
+    // setInterval(() => this.getNotis(), 20000); // 20 seconds
 
     let bal_cred = await getTokenBalance(CRED, process);
     // bal_cred = formatBalance(bal_cred, 3);
@@ -137,36 +144,91 @@ class SitePage extends React.Component<{}, SitePageState> {
     }
   }
 
+  renderToobar() {
+    return (
+      <div className='site-page-footer'>
+        <NavLink className='site-page-icon-button' to='/'>
+          <BsHouse size={ICON_SIZE} />
+        </NavLink>
+
+        <NavLink className='site-page-icon-button' to='/story'>
+          <AiOutlineFire size={ICON_SIZE} />
+        </NavLink>
+
+        <div className='site-page-icon-button' onClick={this.onOpen}>
+          <RiQuillPenLine size={35} />
+        </div>
+
+        <NavLink className='site-page-icon-button' to='/notifications'>
+          <BsBell size={ICON_SIZE} />
+        </NavLink>
+
+        <div
+          className='site-page-icon-button'
+          onClick={() => this.setState({ openMenu: true })}
+        >
+          <CgMoreO size={ICON_SIZE} />
+        </div>
+      </div>
+    )
+  }
+
+  renderPopupMenu() {
+    return (
+      <div
+        className='site-page-mobile-menu'
+        onClick={() => this.setState({ openMenu: false })}
+      >
+        <div className='site-page-menu-container'>
+          <NavLink className='site-page-menu-item' to='/games'>
+            <BsController size={23} />Games
+          </NavLink>
+
+          <NavLink className='site-page-menu-item' to='/token'>
+            <BsAward size={23} />TokenEco
+          </NavLink>
+
+          <NavLink className='site-page-menu-item' to='/chat'>
+            <BsChatText size={23} />Chatroom
+          </NavLink>
+
+          <NavLink className='site-page-menu-item' to='/bookmarks'>
+            <BsBookmark size={23} />Bookmarks
+          </NavLink>
+
+          <NavLink className='site-page-menu-item' to='/profile'>
+            <BsPerson size={23} />Profile
+          </NavLink>
+
+          {/* <div className='site-page-menu-item'>
+            <RxExit size={23} />Log out
+          </div> */}
+        </div>
+      </div>
+    )
+  }
+
   render() {
     return (
       <div className="app-container">
-        <NavLink className='app-logo-line' to='/'>
-          <img className='app-logo' src='./logo.png' />
-        </NavLink>
+        <div className='site-page-header-pc'>
+          <NavLink className='app-logo-line' to='/'>
+            <img className='app-logo' src='./logo.png' />
+          </NavLink>
 
-        <div className='app-status-row'>
-          <div className='app-status-data'><BsPeopleFill />{this.state.users}</div>
-          <div className='app-status-data'><BsSendFill />{this.state.posts}</div>
-          <div className='app-status-data'><BsReplyFill />{this.state.replies}</div>
+          <div className='app-status-row'>
+            <div className='app-status-data'><BsPeopleFill />{this.state.users}</div>
+            <div className='app-status-data'><BsSendFill />{this.state.posts}</div>
+            <div className='app-status-data'><BsReplyFill />{this.state.replies}</div>
+          </div>
         </div>
 
         {/* FOR MOBILE */}
-        <div className='site-page-mobile-portrait'>
-          <div
-            className='site-page-portrait-container'
-          // onClick={() => this.disconnectWallet()}
-          >
-            <img
-              className='site-page-portrait'
-              src={randomAvatar()}
-            />
-            <div>
-              <div className="site-page-nickname">
-                {'iamgamelover'}
-              </div>
-              <div className="site-page-addr">{'mxAI...Rew0'}</div>
-            </div>
-          </div>
+        <div className='site-page-header-mobile'>
+          <NavLink to='/'>
+            <img className='app-logo' src='./logo.png' />
+          </NavLink>
+          <Portrait />
         </div>
 
         <div className="app-content">
@@ -186,6 +248,12 @@ class SitePage extends React.Component<{}, SitePageState> {
             <Outlet />
           </div>
         </div>
+
+        {this.renderToobar()}
+
+        {this.state.openMenu &&
+          this.renderPopupMenu()
+        }
 
         <PostModal open={this.state.open} onClose={this.onClose} />
       </div>

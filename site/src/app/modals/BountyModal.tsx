@@ -171,6 +171,7 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
     let target = TOKEN_PID.get(this.tokenPicked);
     console.log("target:", target)
+    
     await transferToken(from, to, qty, target);
 
     this.onClose();

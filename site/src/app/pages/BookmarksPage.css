@@ -16,5 +16,12 @@
 }
 
 .bookmarks-page-header-title {
-  font-size: 20px;
+  font-size: 23px;
+}
+
+@media (max-width: 650px) {
+  .bookmarks-page {
+    padding: 10px;
+    padding-bottom: 60px;
+  }
 }

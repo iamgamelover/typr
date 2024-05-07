@@ -3,7 +3,7 @@ import './Portrait.css';
 import { publish, subscribe } from '../util/event';
 import { AOT_TEST, AO_STORY, AO_TWITTER, LUA } from '../util/consts';
 import {
-  connectWallet, evaluate, getDataFromAO, getDefaultProcess, getProfile, getTokenBalance,
+  connectWallet, evaluate, getDefaultProcess, getProfile, getTokenBalance,
   getWalletAddress, isLoggedIn, messageToAO, randomAvatar, shortAddr, shortStr, spawnProcess, timeOfNow
 } from '../util/util';
 import { Server } from '../../server/server';
@@ -12,7 +12,6 @@ import QuestionModal from '../modals/QuestionModal';
 import { BsToggleOn, BsWallet2 } from 'react-icons/bs';
 import * as Othent from "@othent/kms";
 import MessageModal from '../modals/MessageModal';
-import { RxSwitch } from "react-icons/rx";
 
 declare var window: any;
 
@@ -54,7 +53,6 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
 
   componentDidMount() {
     this.start();
-    // window.addEventListener('scroll', this.atBottom);
   }
 
   componentWillUnmount(): void {
@@ -62,7 +60,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
 
   async start() {
     let address = await isLoggedIn();
-    // console.log("portrait -> address:", address)
+    console.log("portrait -> address:", address)
     this.setState({ address })
     this.isExisted(address)
   }
@@ -70,14 +68,9 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
   async connect2Othent() {
     try {
       this.setState({ message: 'Connecting...' });
-      window.arweaveWallet = Othent;
-
-      let res = await window.arweaveWallet.connect(
-        // request permissions
-        ["ACCESS_ADDRESS", "SIGN_TRANSACTION"]
-      );
-
+      let res = await Othent.connect();
       // console.log("res:", res)
+      window.arweaveWallet = Othent;
       this.afterConnected(res.walletAddress, res);
     } catch (error) {
       console.log(error)
@@ -212,14 +205,22 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
           </div>
           :
           <div>
-            <div className="app-icon-button connect" onClick={() => this.connect2ArConnect()}>
-              <BsWallet2 size={20} />ArConnect
+            <div className='portrait-conn-pc'>
+              <div className="app-icon-button connect" onClick={() => this.connect2ArConnect()}>
+                <BsWallet2 size={20} />ArConnect
+              </div>
+              <div className='portrait-div-or'>- OR -</div>
+              <div className="app-icon-button connect othent" onClick={() => this.connect2Othent()}>
+                <BsToggleOn size={25} />Othent
+              </div>
+              <div className='portrait-label'>Google or others</div>
             </div>
-            <div className='portrait-div-or'>- OR -</div>
-            <div className="app-icon-button connect othent" onClick={() => this.connect2Othent()}>
-              <BsToggleOn size={25} />Othent
+
+            <div className='portrait-conn-mobile'>
+              <div className="app-icon-button connect othent" onClick={() => this.connect2Othent()}>
+                <BsToggleOn size={25} />Connect
+              </div>
             </div>
-            <div className='portrait-label'>Google or others</div>
           </div>
         }
 

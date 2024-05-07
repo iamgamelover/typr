@@ -1,6 +1,6 @@
 import React from 'react';
 import './NotiPage.css';
-import { getDataFromAO, getDefaultProcess, getWalletAddress, uuid } from '../util/util';
+import { getDataFromAO, getDefaultProcess, getWalletAddress, isLoggedIn, uuid } from '../util/util';
 import { PAGE_SIZE } from '../util/consts';
 import Loading from '../elements/Loading';
 import { Server } from '../../server/server';
@@ -37,7 +37,7 @@ class NotiPage extends React.Component<{}, NotiPageState> {
   }
 
   componentDidMount() {
-    if (!Server.service.getIsLoggedIn()) return;
+    // if (!Server.service.getIsLoggedIn()) return;
     
     this.getNotis();
     window.addEventListener('scroll', this.atBottom);
@@ -80,7 +80,7 @@ class NotiPage extends React.Component<{}, NotiPageState> {
   // }
 
   async getNotis() {
-    let address = await getWalletAddress();
+    let address = await isLoggedIn();
     let process = await getDefaultProcess(address);
 
     let notis = await getDataFromAO(process, 'Get-Notis', { offset: 0 });
@@ -128,8 +128,8 @@ class NotiPage extends React.Component<{}, NotiPageState> {
       return (<div>Please login first.</div>)
 
     return (
-      <div className='story-page'>
-        <div className='story-page-header'>
+      <div className='noti-page'>
+        <div className='noti-page-header'>
           <div className='noti-page-title'>Notifications</div>
         </div>
 
