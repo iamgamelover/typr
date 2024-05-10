@@ -46,9 +46,13 @@
 
 .bounty-modal-token-row.bounty {
   margin: 5px 0;
+  /* align-items: flex-end; */
 }
 
 .bounty-modal-token-row.choose {
+  display: grid;
+  grid-template-columns: 150px 150px;
+  grid-gap: 10px;
   margin-bottom: 5px;
 }
 
@@ -68,7 +72,7 @@
 }
 
 .bounty-modal-input {
-  width: 220px;
+  width: 150px;
   text-align: center;
   font-size: 20px;
 }
@@ -76,6 +80,15 @@
 .bounty-modal-input.message {
   text-align: left;
   font-size: unset;
+}
+
+
+.bounty-modal-label-unit {
+  width: 60px;
+  color: gray;
+  margin-top: 15px;
+  /* padding: 2px 5px; */
+  /* background-color: rgb(101, 101, 218); */
 }
 
 .bounty-modal-token.bounty {
@@ -126,4 +139,23 @@
 .bounty-modal-token-icon.cred {
   width: 25px;
   height: unset;
+}
+
+@media (max-width: 650px) {
+  .modal-content {
+    max-width: 85%;
+  }
+
+  .bounty-modal-content {
+    padding-left: 15px;
+  }
+
+  .bounty-modal-token {
+    column-gap: 5px;
+    padding: 2px 8px;
+  }
+
+  .bounty-modal-input {
+    width: 135px;
+  }
 }

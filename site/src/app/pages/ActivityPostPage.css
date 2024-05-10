@@ -81,5 +81,6 @@
 @media (max-width: 650px) {
   .activity-post-page {
     padding: 10px;
+    padding-bottom: 80px;
   }
 }

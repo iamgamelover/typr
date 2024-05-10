@@ -80,3 +80,9 @@
   font-size: 15px;
   color: lightgray;
 }
+
+@media (max-width: 650px) {
+  .story-card-publisher {
+    font-size: 15px;
+  }
+}

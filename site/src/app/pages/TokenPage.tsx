@@ -2,9 +2,10 @@ import React from 'react';
 import './TokenPage.css';
 import {
   getTokenBalance, getDefaultProcess, getWalletAddress,
-  numberWithCommas, transferToken, evaluate, spawnProcess
+  numberWithCommas, transferToken, evaluate, spawnProcess,
+  formatBalance
 } from '../util/util';
-import { CRED, AOT_TEST, TRUNK, LUA } from '../util/consts';
+import { CRED, AOT_TEST, TRUNK, LUA, WAR, AR_DEC } from '../util/consts';
 import { dryrun } from "@permaweb/aoconnect/browser";
 import MessageModal from '../modals/MessageModal';
 import { Server } from '../../server/server';
@@ -24,6 +25,7 @@ interface TokenPageState {
   balOfCRED: number;
   balOfAOT: number;
   balOfTRUNK: number;
+  balOfWAR: number;
 }
 
 class TokenPage extends React.Component<{}, TokenPageState> {
@@ -42,6 +44,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
       balOfCRED: 0,
       balOfAOT: 0,
       balOfTRUNK: 0,
+      balOfWAR: 0,
     };
   }
 
@@ -62,7 +65,13 @@ class TokenPage extends React.Component<{}, TokenPageState> {
     // balOfTRUNK = formatBalance(balOfTRUNK, 3);
     Server.service.setBalanceOfTRUNK(balOfTRUNK);
 
-    this.setState({ balOfCRED, balOfTRUNK });
+    let balOfWAR = await getTokenBalance(WAR, process);
+    // balOfWAR = formatBalance(balOfWAR, 12);
+    balOfWAR = balOfWAR / AR_DEC;
+    // console.log("balOfWAR:", balOfWAR)
+    Server.service.setBalanceOfWAR(balOfWAR);
+
+    this.setState({ balOfCRED, balOfTRUNK, balOfWAR });
     this.displayAOT(process);
   }
 
@@ -114,9 +123,9 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   }
 
   renderTokens() {
-    let tokens = ['AOCRED-Test', 'AOT-Test', 'TRUNK'];
-    let icons = ['./logo-ao.png', './logo.png', './logo-trunk.png'];
-    let bals = [this.state.balOfCRED, this.state.balOfAOT, this.state.balOfTRUNK];
+    let tokens = ['Wrapped AR', 'AOCRED-Test', 'AOT-Test', 'TRUNK'];
+    let icons = ['./logo-war.png', './logo-ao.png', './logo.png', './logo-trunk.png'];
+    let bals = [this.state.balOfWAR, this.state.balOfCRED, this.state.balOfAOT, this.state.balOfTRUNK];
 
     let divs = [];
     for (let i = 0; i < tokens.length; i++) {
@@ -127,7 +136,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
             <div className='token-page-title'>{tokens[i]}</div>
             {this.state.loading
               ? <Loading marginTop='5px' />
-              : <div className='token-page-text balance'>{numberWithCommas(bals[i])}</div>
+              : <div className='token-page-text balance'>{bals[i]}</div>
             }
           </div>
         </div>

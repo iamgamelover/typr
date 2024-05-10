@@ -66,7 +66,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
 
   async start() {
     let address = await isLoggedIn();
-    console.log("portrait -> address:", address)
+    // console.log("portrait -> address:", address)
     this.setState({ address })
     this.isExisted(address)
   }

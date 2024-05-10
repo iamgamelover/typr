@@ -145,4 +145,8 @@
   .home-chat-container {
     margin-top: 0px;
   }
+
+  .home-msg-nickname {
+    font-size: 15px;
+  }
 }

@@ -105,10 +105,12 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
     let profile = Server.service.getProfile(Server.service.getActiveAddress());
     // console.log("cached profile:", profile)
 
+    let nickname = this.state.nickname.trim();
+
     let dirty = false;
     if (this.state.banner != profile.banner) dirty = true;
     if (this.state.avatar != profile.avatar) dirty = true;
-    if (this.state.nickname != profile.nickname) dirty = true;
+    if (nickname != profile.nickname) dirty = true;
     if (this.state.bio != profile.bio) dirty = true;
 
     if (!dirty) {
@@ -117,10 +119,10 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
     }
 
     let errorMsg = '';
-    if (this.state.nickname.length < 2)
+    if (nickname.length < 2)
       errorMsg = 'Nickname must be at least 2 characters.';
-    if (this.state.nickname.length > 32)
-      errorMsg = 'Nickname can be up to 32 characters.';
+    if (nickname.length > 25)
+      errorMsg = 'Nickname can be up to 25 characters.';
     if (errorMsg != '') {
       this.setState({ alert: errorMsg });
       return;
@@ -132,8 +134,8 @@ class EditProfileModal extends React.Component<EditProfileModalProps, EditProfil
       address: Server.service.getActiveAddress(),
       avatar: this.state.avatar,
       banner: this.state.banner,
-      nickname: this.state.nickname,
-      bio: this.state.bio,
+      nickname: nickname,
+      bio: this.state.bio.trim(),
       time: this.props.data.time
     };
     // console.log("data:", data)

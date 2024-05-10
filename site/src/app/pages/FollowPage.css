@@ -47,3 +47,9 @@
 .follow-page-bio {
   font-size: 15px;
 }
+
+@media (max-width: 650px) {
+  .follow-page {
+    padding: 10px;
+  }
+}

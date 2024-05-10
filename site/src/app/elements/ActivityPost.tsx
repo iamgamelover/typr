@@ -386,7 +386,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           // onMouseEnter={()=>this.openPopup()}
           // onMouseLeave={(e)=>this.closePopup(e)}
           />
-          <div className="home-msg-nickname">
+          <div className="activity-post-nickname">
             {data.nickname}
           </div>
 

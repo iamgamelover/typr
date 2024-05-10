@@ -121,3 +121,15 @@
   color: rgb(78, 68, 68);
   overflow-wrap: break-word;
 }
+
+.activity-post-nickname {
+  font-weight: 600;
+  font-size: 17px;
+  margin-top: -1px;
+}
+
+@media (max-width: 650px) {
+  .activity-post-nickname {
+    font-size: 15px;
+  }
+}

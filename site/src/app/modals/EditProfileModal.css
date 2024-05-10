@@ -108,3 +108,13 @@
 .file-select {
   display: none;
 }
+
+@media (max-width: 650px) {
+  .modal-content {
+    max-width: 85%;
+  }
+
+  .edit-profile-modal-content {
+    max-width: 85%;
+  }
+}

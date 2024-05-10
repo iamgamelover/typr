@@ -128,6 +128,7 @@ export function urlToLink(str: string): any {
 }
 
 export function numberWithCommas(x: number): string {
+  if (x < 1) return x.toString();
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
@@ -614,7 +615,8 @@ export function formatBalance(str: string, len: number) {
   else
     str = '0.' + str;
 
-  return str;
+  return Number.parseFloat(str);
+  // return str;
 }
 
 export async function transferToken(from: string, to: string, qty: string, target?: string) {
@@ -653,4 +655,23 @@ export function shortStr(str: string, max: number) {
 
 export function shortAddr(str: string, num: number) {
   return str.substring(0, num) + '...' + str.substring(str.length - num);
+}
+
+export function trimDecimal(num: number, digits: number) {
+  const numStr = num.toString();
+  const dotIndex = numStr.indexOf('.');
+  if (dotIndex === -1) {
+    return numStr;
+  }
+
+  const intPart = numStr.slice(0, dotIndex);
+  let fractPart = numStr.slice(dotIndex + 1);
+
+  if (fractPart.length > digits) {
+    fractPart = fractPart.slice(0, digits);
+  } else {
+    fractPart = fractPart.padEnd(digits, '0');
+  }
+  
+  return `${intPart}.${fractPart}`;
 }

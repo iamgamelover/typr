@@ -6,11 +6,12 @@ import {
   BsPeopleFill, BsPerson, BsReplyFill, BsSend, BsSendFill
 } from 'react-icons/bs';
 import {
+  formatBalance,
   getDataFromAO, getDefaultProcess,
   getTokenBalance, isLoggedIn,
   messageToAO
 } from '../util/util';
-import { AOT_TEST, AO_TWITTER, CRED, ICON_SIZE, TRUNK } from '../util/consts';
+import { AOT_TEST, AO_TWITTER, AR_DEC, CRED, ICON_SIZE, TRUNK, WAR } from '../util/consts';
 import { Server } from '../../server/server';
 import PostModal from '../modals/PostModal';
 import Portrait from '../elements/Portrait';
@@ -70,7 +71,7 @@ class SitePage extends React.Component<{}, SitePageState> {
     setInterval(() => this.getStatus(), 60000); // 1 min
 
     // getting notifications.
-    // setInterval(() => this.getNotis(), 20000); // 20 seconds
+    setInterval(() => this.getNotis(), 20000); // 20 seconds
 
     let bal_cred = await getTokenBalance(CRED, process);
     // bal_cred = formatBalance(bal_cred, 3);
@@ -85,6 +86,12 @@ class SitePage extends React.Component<{}, SitePageState> {
     // bal_trunk = formatBalance(bal_trunk, 3);
     // console.log("bal_trunk:", bal_trunk)
     Server.service.setBalanceOfTRUNK(bal_trunk);
+
+    let bal_war = await getTokenBalance(WAR, process);
+    // bal_war = formatBalance(bal_war, 12);
+    // console.log("bal_war:", bal_war)
+    // console.log("bal_war:", bal_war / AR_DEC)
+    Server.service.setBalanceOfWAR(bal_war / AR_DEC);
 
     publish('get-bal-done')
   }

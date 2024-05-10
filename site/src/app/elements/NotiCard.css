@@ -133,3 +133,9 @@
   margin-top: 5px;
   background-color: rgb(101, 101, 218);
 }
+
+@media (max-width: 650px) {
+  .story-card-publisher {
+    font-size: 15px;
+  }
+}
