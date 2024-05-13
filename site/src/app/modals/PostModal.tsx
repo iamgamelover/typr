@@ -5,7 +5,7 @@ import './Modal.css'
 import './PostModal.css'
 import MessageModal from './MessageModal';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
-import { AO_STORY, AO_TWITTER, STORY_INCOME, TIP_IMG } from '../util/consts';
+import { AO_STORY, AO_TWITTER, STORY_INCOME, TIP_CONN, TIP_IMG } from '../util/consts';
 import {
   checkContent, getWalletAddress, timeOfNow, uuid, messageToAO,
   numberWithCommas, transferToken, getDefaultProcess
@@ -91,7 +91,7 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
 
     let address = await getWalletAddress();
     if (!address) {
-      this.setState({ alert: 'You should connect to wallet first.' });
+      this.setState({ alert: TIP_CONN });
       return;
     }
 

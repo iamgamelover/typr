@@ -124,7 +124,7 @@ class NotiPage extends React.Component<{}, NotiPageState> {
   }
 
   render() {
-    if (!Server.service.getIsLoggedIn())
+    if (!Server.service.isLoggedIn())
       return (<div>Please login first.</div>)
 
     return (

@@ -198,7 +198,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
       <div className='story-page'>
         <div className='story-page-header'>
           <div className='story-page-title'>Stories</div>
-          {Server.service.getIsLoggedIn() &&
+          {Server.service.isLoggedIn() &&
             <div className="app-icon-button fire-color" onClick={this.onOpen}>
               <AiOutlineFire size={20} />New Story
             </div>

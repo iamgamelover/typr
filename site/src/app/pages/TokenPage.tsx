@@ -5,7 +5,7 @@ import {
   numberWithCommas, transferToken, evaluate, spawnProcess,
   formatBalance
 } from '../util/util';
-import { CRED, AOT_TEST, TRUNK, LUA, WAR, AR_DEC } from '../util/consts';
+import { CRED, AOT_TEST, TRUNK, LUA, WAR, AR_DEC, TIP_CONN } from '../util/consts';
 import { dryrun } from "@permaweb/aoconnect/browser";
 import MessageModal from '../modals/MessageModal';
 import { Server } from '../../server/server';
@@ -55,8 +55,14 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   async start() {
     let address = await getWalletAddress();
     let process = await getDefaultProcess(address);
+    console.log("process:", process)
     this.setState({ address, process });
 
+    if (!process) {
+      this.setState({ loading: false });
+      return;
+    }
+    
     let balOfCRED = await getTokenBalance(CRED, process);
     // balOfCRED = formatBalance(balOfCRED, 3);
     Server.service.setBalanceOfCRED(balOfCRED);
@@ -101,8 +107,13 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   }
 
   async spawn() {
+    this.setState({ message: 'Spawn...' });
+
     let new_process = await spawnProcess();
     console.log("Spawn --> new_process:", new_process)
+
+    this.setState({ message: '', loading: true });
+    this.start();
   }
 
   async loadCode() {
@@ -147,8 +158,10 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   }
 
   render() {
+    let isLoggedIn = Server.service.isLoggedIn();
     let process = this.state.process;
-    if (!process) process = 'Try to disconnect and reconnect to the wallet on the Home page.';
+    if (!process) process = 'No process yet, tap on the spawn button.';
+    if (!isLoggedIn) process = TIP_CONN;
 
     return (
       <div className='token-page'>
@@ -160,11 +173,11 @@ class TokenPage extends React.Component<{}, TokenPageState> {
           }
         </div>
 
-        {!this.state.loading &&
+        {!this.state.loading && isLoggedIn &&
           <div>
             <button onClick={() => this.loadCode()}>Upload the code</button>
-            <button style={{ marginLeft: '20px', backgroundColor: 'green' }}
-              onClick={() => this.spawn()}>Spawn a new process</button>
+            <button className='token-page-button-spawn'
+              onClick={() => this.spawn()}>Spawn a process</button>
           </div>
         }
 

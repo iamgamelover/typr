@@ -8,7 +8,7 @@ import {
   messageToAO, uuid, isBookmarked} from '../util/util';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
-import { AO_TWITTER, PAGE_SIZE, TIP_IMG } from '../util/consts';
+import { AO_TWITTER, PAGE_SIZE, TIP_CONN, TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
 import { BsSend } from 'react-icons/bs';
 import Loading from '../elements/Loading';
@@ -216,7 +216,7 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     let address = await getWalletAddress();
     if (!address) {
-      this.setState({ alert: 'You should connect to wallet first.' });
+      this.setState({ alert: TIP_CONN });
       return;
     }
 
@@ -308,7 +308,7 @@ class HomePage extends React.Component<{}, HomePageState> {
   render() {
     return (
       <div className="home-page">
-        {Server.service.getIsLoggedIn() &&
+        {Server.service.isLoggedIn() &&
           <div className="home-input-container">
             <SharedQuillEditor
               placeholder='What is happening?!'

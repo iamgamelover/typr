@@ -90,9 +90,19 @@
   margin-top: -15px;
 }
 
+.token-page-button-spawn {
+  margin-left: 20px;
+  background-color: green;
+}
+
 @media (max-width: 650px) {
   .token-page {
     padding: 10px;
+    padding-bottom: 100px;
+  }
+
+  .token-page-button-spawn {
+    margin-left: 15px;
   }
 
   .token-page-token-row {

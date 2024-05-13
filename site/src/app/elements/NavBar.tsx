@@ -34,7 +34,7 @@ class NavBar extends React.Component {
 
     for (let i = 0; i < menu.length; i++) {
       if (menu[i].loggedIn) {
-        if (Server.service.getIsLoggedIn())
+        if (Server.service.isLoggedIn())
           buttons.push(this.renderButton(menu[i]));
       }
       else

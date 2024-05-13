@@ -47,7 +47,7 @@ class SitePage extends React.Component<{}, SitePageState> {
     this.onClose = this.onClose.bind(this);
 
     subscribe('wallet-events', () => {
-      let address = Server.service.getIsLoggedIn();
+      let address = Server.service.isLoggedIn();
       this.setState({ address })
     });
   }

@@ -231,7 +231,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   }
 
   async follow() {
-    if (!Server.service.getIsLoggedIn()) {
+    if (!Server.service.isLoggedIn()) {
       this.setState({ alert: 'Please connect to wallet.' });
       return;
     }

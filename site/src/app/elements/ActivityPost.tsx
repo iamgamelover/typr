@@ -137,7 +137,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     e.stopPropagation();
 
     let alert;
-    if (!Server.service.getIsLoggedIn())
+    if (!Server.service.isLoggedIn())
       alert = 'Please connect to wallet.';
     if (this.props.data.address == Server.service.getActiveAddress())
       alert = "You can't bounty to yourself.";
@@ -156,7 +156,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   async onLike() {
-    if (!Server.service.getIsLoggedIn()) {
+    if (!Server.service.isLoggedIn()) {
       this.setState({ alert: 'Please connect to wallet.' });
       return;
     }
@@ -334,7 +334,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           </div>
         }
 
-        {Server.service.getIsLoggedIn() && !this.props.isReply && !isStory &&
+        {Server.service.isLoggedIn() && !this.props.isReply && !isStory &&
           <div className='activity-post-action'>
             <div className='activity-post-action-icon'>
               {data.isBookmarked || this.state.isBookmarked

@@ -11,7 +11,7 @@ import {
   checkContent, getDataFromAO, getWalletAddress, isLoggedIn,
   timeOfNow, messageToAO, uuid, isBookmarked
 } from '../util/util';
-import { AO_STORY, AO_TWITTER, PAGE_SIZE, TIP_IMG } from '../util/consts';
+import { AO_STORY, AO_TWITTER, PAGE_SIZE, TIP_CONN, TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
 import QuestionModal from '../modals/QuestionModal';
 import Loading from '../elements/Loading';
@@ -221,7 +221,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
     let address = await getWalletAddress();
     if (!address) {
-      this.setState({ alert: 'You should connect to wallet first.' });
+      this.setState({ alert: TIP_CONN });
       return;
     }
 

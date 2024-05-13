@@ -6,7 +6,7 @@ export class Service {
   protected position:number;
   protected positionInProfile:number;
 
-  protected isLoggedIn:string;
+  protected addrLogIn:string;
   protected activeAddress:string;
   protected defaultProcess:string;
   protected balanceOfCRED:number;
@@ -68,12 +68,12 @@ export class Service {
     return this.postsInProfile[id];
   }
   
-  public setIsLoggedIn(isLoggedIn:string) {
-    this.isLoggedIn = isLoggedIn;
+  public setIsLoggedIn(address:string) {
+    this.addrLogIn = address;
   }
 
-  public getIsLoggedIn() {
-    return this.isLoggedIn;
+  public isLoggedIn() {
+    return this.addrLogIn;
   }
   
   public setActiveAddress(activeAddress:string) {
