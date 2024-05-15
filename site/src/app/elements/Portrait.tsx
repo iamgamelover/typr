@@ -76,7 +76,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
       this.setState({ message: 'Connecting...' });
       let res = await connect();
       // let res = await Othent.connect();
-      console.log("res:", res)
+      // console.log("res:", res)
 
       window.arweaveWallet = Othent;
       this.afterConnected(res.walletAddress, res);

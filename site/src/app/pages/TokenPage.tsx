@@ -55,14 +55,13 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   async start() {
     let address = await getWalletAddress();
     let process = await getDefaultProcess(address);
-    console.log("process:", process)
     this.setState({ address, process });
 
     if (!process) {
       this.setState({ loading: false });
       return;
     }
-    
+
     let balOfCRED = await getTokenBalance(CRED, process);
     // balOfCRED = formatBalance(balOfCRED, 3);
     Server.service.setBalanceOfCRED(balOfCRED);
@@ -176,8 +175,15 @@ class TokenPage extends React.Component<{}, TokenPageState> {
         {!this.state.loading && isLoggedIn &&
           <div>
             <button onClick={() => this.loadCode()}>Upload the code</button>
-            <button className='token-page-button-spawn'
-              onClick={() => this.spawn()}>Spawn a process</button>
+
+            {!this.state.process &&
+              <button
+                className='token-page-button-spawn'
+                onClick={() => this.spawn()}
+              >
+                Spawn a process
+              </button>
+            }
           </div>
         }
 
