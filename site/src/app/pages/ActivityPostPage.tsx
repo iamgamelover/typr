@@ -85,7 +85,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     const scrollTop = document.documentElement.scrollTop;
     const clientHeight = document.documentElement.clientHeight;
 
-    if (scrollTop + clientHeight + 300 >= scrollHeight)
+    if (scrollTop + clientHeight >= scrollHeight)
       setTimeout(() => {
         if (!this.state.loading && !this.state.loadNextPage && !this.state.isAll)
           this.nextPage();
@@ -241,7 +241,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
       // will works after cache the profile
       // this.state.replies.unshift(data);
-      this.getReplies();
+      await this.getReplies();
       this.setState({
         message: '',
         // replies: this.state.replies,
