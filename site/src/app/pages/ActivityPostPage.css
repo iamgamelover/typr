@@ -1,5 +1,4 @@
 .activity-post-page {
-  /* padding: 20px; */
   padding-left: 30px;
   padding-bottom: 30px;
   max-width: var(--page-max-width);
@@ -52,19 +51,14 @@
   border-top-right-radius: 10px;
   border-top-left-radius: 10px;
   background-color: var(--section-header-color);
-  /* font-size: 0.8em; */
-  /* color: #ffffff40; */
   padding-left: 15px;
   margin-top: 10px;
   height: 34px;
 }
 
 .activity-post-page-reply-container { 
-  /* border: 1px solid #ffffff40; */
   border-radius: 10px;
-  /* padding: 10px; */
   margin-top: 20px;
-  /* margin-bottom: 0px; */
 }
 
 .activity-post-page-reply-header {

@@ -5,7 +5,7 @@ import {
   numberWithCommas, transferToken, evaluate, spawnProcess,
   formatBalance
 } from '../util/util';
-import { CRED, AOT_TEST, TRUNK, LUA, WAR, AR_DEC, TIP_CONN } from '../util/consts';
+import { CRED, AOT_TEST, TRUNK, LUA, WAR, AR_DEC, TIP_CONN, ORBT } from '../util/consts';
 import { dryrun } from "@permaweb/aoconnect/browser";
 import MessageModal from '../modals/MessageModal';
 import { Server } from '../../server/server';
@@ -26,6 +26,7 @@ interface TokenPageState {
   balOfAOT: number;
   balOfTRUNK: number;
   balOfWAR: number;
+  balOf0rbit: number;
 }
 
 class TokenPage extends React.Component<{}, TokenPageState> {
@@ -45,6 +46,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
       balOfAOT: 0,
       balOfTRUNK: 0,
       balOfWAR: 0,
+      balOf0rbit: 0,
     };
   }
 
@@ -71,12 +73,16 @@ class TokenPage extends React.Component<{}, TokenPageState> {
     Server.service.setBalanceOfTRUNK(balOfTRUNK);
 
     let balOfWAR = await getTokenBalance(WAR, process);
-    // balOfWAR = formatBalance(balOfWAR, 12);
     balOfWAR = balOfWAR / AR_DEC;
     // console.log("balOfWAR:", balOfWAR)
     Server.service.setBalanceOfWAR(balOfWAR);
 
-    this.setState({ balOfCRED, balOfTRUNK, balOfWAR });
+    let balOf0rbit = await getTokenBalance(ORBT, process);
+    balOf0rbit = balOf0rbit / AR_DEC;
+    // console.log("balOf0rbit:", balOf0rbit)
+    Server.service.setBalanceOf0rbit(balOf0rbit);
+
+    this.setState({ balOfCRED, balOfTRUNK, balOfWAR, balOf0rbit });
     this.displayAOT(process);
   }
 
@@ -133,15 +139,15 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   }
 
   renderTokens() {
-    let tokens = ['Wrapped AR', 'AOCRED-Test', 'AOT-Test', 'TRUNK'];
-    let icons = ['./logo-war.png', './logo-ao.png', './logo.png', './logo-trunk.png'];
-    let bals = [this.state.balOfWAR, this.state.balOfCRED, this.state.balOfAOT, this.state.balOfTRUNK];
+    let tokens = ['Wrapped AR', 'AOCRED-Test', 'AOT-Test', 'TRUNK', '0rbit'];
+    let icons = ['./logo-war.png', './logo-ao.png', './logo.png', './logo-trunk.png', './logo-0rbit.jpg'];
+    let bals = [this.state.balOfWAR, this.state.balOfCRED, this.state.balOfAOT, this.state.balOfTRUNK, this.state.balOf0rbit];
 
     let divs = [];
     for (let i = 0; i < tokens.length; i++) {
       divs.push(
         <div key={i} className='token-page-card'>
-          <img className={`token-page-icon ${i !== 2 && 'cred'}`} src={icons[i]} />
+          <img className={`token-page-icon ${i !== 2 && 'cred'} ${i == 4 && 'circle'}`} src={icons[i]} />
           <div>
             <div className='token-page-title'>{tokens[i]}</div>
             {this.state.loading

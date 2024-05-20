@@ -13,6 +13,7 @@ export class Service {
   protected balanceOfAOT:number;
   protected balanceOfTRUNK:number;
   protected balanceOfWAR:number;
+  protected balanceOf0rbit:number;
 
   constructor() {
     this.profiles = [];
@@ -122,6 +123,14 @@ export class Service {
 
   public getBalanceOfWAR() {
     return this.balanceOfWAR;
+  }
+  
+  public setBalanceOf0rbit(bal:number) {
+    this.balanceOf0rbit = bal;
+  }
+
+  public getBalanceOf0rbit() {
+    return this.balanceOf0rbit;
   }
   
 }

@@ -11,7 +11,7 @@ import {
   getTokenBalance, isLoggedIn,
   messageToAO
 } from '../util/util';
-import { AOT_TEST, AO_TWITTER, AR_DEC, CRED, ICON_SIZE, TRUNK, WAR } from '../util/consts';
+import { AOT_TEST, AO_TWITTER, AR_DEC, CRED, ICON_SIZE, ORBT, TRUNK, WAR } from '../util/consts';
 import { Server } from '../../server/server';
 import PostModal from '../modals/PostModal';
 import Portrait from '../elements/Portrait';
@@ -88,10 +88,12 @@ class SitePage extends React.Component<{}, SitePageState> {
     Server.service.setBalanceOfTRUNK(bal_trunk);
 
     let bal_war = await getTokenBalance(WAR, process);
-    // bal_war = formatBalance(bal_war, 12);
     // console.log("bal_war:", bal_war)
-    // console.log("bal_war:", bal_war / AR_DEC)
     Server.service.setBalanceOfWAR(bal_war / AR_DEC);
+
+    let bal_0rbit = await getTokenBalance(ORBT, process);
+    // console.log("bal_0rbit:", bal_0rbit)
+    Server.service.setBalanceOf0rbit(bal_0rbit / AR_DEC);
 
     publish('get-bal-done')
   }
@@ -251,7 +253,7 @@ class SitePage extends React.Component<{}, SitePageState> {
             <Portrait />
           </div>
 
-          <div id="id-app-page" className="app-page">
+          <div className="app-page">
             <Outlet />
           </div>
         </div>

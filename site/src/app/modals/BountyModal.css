@@ -136,6 +136,10 @@
   height: 25px;
 }
 
+.bounty-modal-token-icon.circle {
+  border-radius: 50%;
+}
+
 .bounty-modal-token-icon.cred {
   width: 25px;
   height: unset;

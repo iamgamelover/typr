@@ -92,19 +92,21 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
   }
 
   renderTokens() {
-    let tokens = ['Wrapped AR', 'TRUNK', 'AOCRED-Test', 'AOT-Test'];
-    let icons = ['./logo-war.png', './logo-trunk.png', './logo-ao.png', './logo.png'];
+    let tokens = ['Wrapped AR', 'TRUNK', 'AOCRED-Test', 'AOT-Test', '0rbit'];
+    let icons = ['./logo-war.png', './logo-trunk.png', './logo-ao.png', './logo.png', './logo-0rbit.jpg'];
 
     let bal_war = Server.service.getBalanceOfWAR();
     let bal_trunk = Server.service.getBalanceOfTRUNK();
     let bal_cred = Server.service.getBalanceOfCRED();
     let bal_aot = Server.service.getBalanceOfAOT();
+    let bal_0rbit = Server.service.getBalanceOf0rbit();
 
-    // bal_war = Number(bal_war.toFixed(6));
-    if (!this.state.loading)
+    if (!this.state.loading) {
       bal_war = Number(trimDecimal(bal_war, 5));
+      bal_0rbit = Number(trimDecimal(bal_0rbit, 5));
+    }
 
-    let balances = [bal_war, bal_trunk, bal_cred, bal_aot];
+    let balances = [bal_war, bal_trunk, bal_cred, bal_aot, bal_0rbit];
 
     let divs = [];
     for (let i = 0; i < tokens.length; i++) {
@@ -114,7 +116,7 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
           className={`bounty-modal-token-card ${this.tokenPicked == i ? 'picked' : ''}`}
           onClick={() => this.onFilter(i)}
         >
-          <img className={`bounty-modal-token-icon ${(i == 2 || i == 3) && 'cred'}`} src={icons[i]} />
+          <img className={`bounty-modal-token-icon ${(i == 2 || i == 3) && 'cred'} ${i == 4 && 'circle'}`} src={icons[i]} />
           <div>
             {/* <div className='bounty-modal-token-name'>{tokens[i]}</div> */}
             {this.state.loading
@@ -149,7 +151,8 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
       [0, Server.service.getBalanceOfWAR()],
       [1, Server.service.getBalanceOfTRUNK()],
       [2, Server.service.getBalanceOfCRED()],
-      [3, Server.service.getBalanceOfAOT()]
+      [3, Server.service.getBalanceOfAOT()],
+      [4, Server.service.getBalanceOf0rbit()]
     ]);
 
     this.setState({ message: 'Bounty...' });
@@ -165,8 +168,10 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     let alert;
     let bal = bal_tokens.get(this.tokenPicked);
 
-    if (this.tokenPicked == 0) // Wrapped AR
+    // Wrapped AR or 0rbit
+    if (this.tokenPicked == 0 || this.tokenPicked == 4) {
       bal = bal * AR_DEC;
+    }
     console.log("bal:", bal)
 
     let qty = Math.abs(this.state.bounty).toString();
@@ -202,7 +207,6 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     switch (this.tokenPicked) {
       case 0:
         bal_new = bal_new / AR_DEC;
-        console.log("bal_new:", bal_new)
         Server.service.setBalanceOfWAR(bal_new);
         break;
       case 1:
@@ -213,6 +217,11 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
         break;
       case 3:
         Server.service.setBalanceOfAOT(bal_new);
+        break;
+      case 4:
+        bal_new = bal_new / AR_DEC;
+        console.log("bal_new:", bal_new)
+        Server.service.setBalanceOf0rbit(bal_new);
         break;
     }
 
@@ -236,12 +245,6 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     };
     // console.log("records:", records)
     messageToAO(AO_TWITTER, records, 'Records-Bounty');
-
-    // update the balance
-    // let bal_trunk = await getTokenBalance(TRUNK, from);
-    // console.log("new bal_trunk:", bal_trunk)
-    // bal_trunk = formatBalance(bal_trunk, 3);
-    // Server.service.setBalanceOfTRUNK(bal_trunk);
   }
 
   render() {

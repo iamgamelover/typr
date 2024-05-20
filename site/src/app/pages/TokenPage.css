@@ -61,6 +61,10 @@
   height: 50px;
 }
 
+.token-page-icon.circle {
+  border-radius: 50%;
+}
+
 .token-page-icon.cred {
   width: 45px;
   height: unset;
