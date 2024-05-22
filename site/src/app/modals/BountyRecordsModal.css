@@ -1,0 +1,54 @@
+.br-modal {
+  display: flex;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.br-modal-icon {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+}
+
+.br-modal-user {
+  display: flex;
+  width: 200px;
+  column-gap: 10px;
+  align-items: center;
+  text-decoration: none;
+  color: black;
+  margin-right: 5px;
+}
+
+.br-modal-user:hover {
+  background-color: rgb(241, 232, 232);
+  border-radius: 10px;
+}
+
+.br-modal-token {
+  display: flex;
+  width: 140px;
+  column-gap: 10px;
+  align-items: center;
+}
+
+.br-modal-address {
+  font-size: 11px;
+  color: gray;
+  margin-top: -5px;
+}
+
+.br-modal-quantity {
+  font-size: 16px;
+  margin-top: -6px;
+}
+
+@media (max-width: 650px) {
+  .br-modal-user {
+    width: 190px;
+  }
+
+  .br-modal-token {
+    width: 120px;
+  }
+}

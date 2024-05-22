@@ -1,7 +1,7 @@
 import React from 'react';
 import { BsBookmark, BsBookmarkFill, BsChat, BsHeart, BsHeartFill } from 'react-icons/bs';
 import {
-  convertUrls, getDefaultProcess, getWalletAddress, messageToAO,
+  convertUrls, getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO,
   numberWithCommas, randomAvatar, shortAddr, timeOfNow, transferToken
 } from '../util/util';
 import { formatTimestamp } from '../util/util';
@@ -16,8 +16,9 @@ import { subscribe } from '../util/event';
 import { Tooltip } from 'react-tooltip'
 import BountyModal from '../modals/BountyModal';
 import { FaCoins } from 'react-icons/fa';
-import { AO_STORY, STORY_INCOME } from '../util/consts';
+import { AO_STORY, AO_TWITTER, STORY_INCOME } from '../util/consts';
 import MessageModal from '../modals/MessageModal';
+import BountyRecordsModal from '../modals/BountyRecordsModal';
 
 interface ActivityPostProps {
   data: any;
@@ -30,6 +31,8 @@ interface ActivityPostProps {
 interface ActivityPostState {
   openImage: boolean;
   openBounty: boolean;
+  openBountyRecords: boolean;
+  bountyRecords: any;
   navigate: string;
   content: string;
   message: string;
@@ -61,6 +64,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     this.state = {
       openImage: false,
       openBounty: false,
+      openBountyRecords: false,
+      bountyRecords: '',
       navigate: '',
       content: '',
       message: '',
@@ -133,14 +138,22 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     this.setState({ openImage: true })
   }
 
-  openBounty(e: any) {
+  async openBounty(e: any) {
     e.stopPropagation();
 
     let alert;
     if (!Server.service.isLoggedIn())
       alert = 'Please connect to wallet.';
-    if (this.props.data.address == Server.service.getActiveAddress())
-      alert = "You can't bounty to yourself.";
+
+    // Yourself
+    if (this.props.data.address == Server.service.getActiveAddress()) {
+      // alert = "You can't bounty to yourself.";
+      this.setState({ message: 'Loading...' });
+      let bountyRecords = await getDataFromAO(AO_TWITTER, 'Get-Records-Bounty', { id: this.props.data.id });
+      console.log("bountyRecords:", bountyRecords)
+      this.setState({ message: '', openBountyRecords: true, bountyRecords });
+      return;
+    }
 
     if (alert) {
       this.setState({ alert });
@@ -263,7 +276,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   onClose() {
-    this.setState({ openImage: false, openBounty: false });
+    this.setState({ openImage: false, openBounty: false, openBountyRecords: false });
   }
 
   renderActionsRow(data: any) {
@@ -420,6 +433,14 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           isReply={this.props.isReply}
           isStory={this.props.isStory}
         />
+
+        {this.state.openBountyRecords &&
+          <BountyRecordsModal
+            open={this.state.openBountyRecords}
+            onClose={this.onClose}
+            data={this.state.bountyRecords}
+          />
+        }
 
         <Tooltip id="my-tooltip" />
         <MessageModal message={this.state.message} />
