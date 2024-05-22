@@ -150,7 +150,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       // alert = "You can't bounty to yourself.";
       this.setState({ message: 'Loading...' });
       let bountyRecords = await getDataFromAO(AO_TWITTER, 'Get-Records-Bounty', { id: this.props.data.id });
-      console.log("bountyRecords:", bountyRecords)
+      // console.log("bountyRecords:", bountyRecords)
       this.setState({ message: '', openBountyRecords: true, bountyRecords });
       return;
     }

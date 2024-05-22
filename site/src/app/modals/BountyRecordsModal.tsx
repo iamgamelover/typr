@@ -27,6 +27,10 @@ class BountyRecordsModal extends React.Component<BountyRecordsModalProps, {}> {
   renderRecords() {
     let divs = [];
     let data = this.props.data;
+
+    if (data.length == 0)
+      return <div>No record.</div>
+      
     for (let i = 0; i < data.length; i++) {
       divs.push(
         <div key={i} className='br-modal'>
