@@ -156,6 +156,7 @@ class HomePage extends React.Component<{}, HomePageState> {
         this.setState({ isAll: false })
     }
 
+    console.log("posts:", posts)
     this.checkBookmarks(posts);
 
     setTimeout(() => {
