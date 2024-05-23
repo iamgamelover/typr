@@ -139,15 +139,15 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   }
 
   renderTokens() {
-    let tokens = ['Wrapped AR', 'AOCRED-Test', 'AOT-Test', 'TRUNK', '0rbit'];
-    let icons = ['./logo-war.png', './logo-ao.png', './logo.png', './logo-trunk.png', './logo-0rbit.jpg'];
-    let bals = [this.state.balOfWAR, this.state.balOfCRED, this.state.balOfAOT, this.state.balOfTRUNK, this.state.balOf0rbit];
+    let tokens = ['AOT-Test', 'Wrapped AR', 'AOCRED-Test', 'TRUNK', '0rbit'];
+    let icons = ['./logo.png', './logo-war.png', './logo-ao.png', './logo-trunk.png', './logo-0rbit.jpg'];
+    let bals = [this.state.balOfAOT, this.state.balOfWAR, this.state.balOfCRED, this.state.balOfTRUNK, this.state.balOf0rbit];
 
     let divs = [];
     for (let i = 0; i < tokens.length; i++) {
       divs.push(
         <div key={i} className='token-page-card'>
-          <img className={`token-page-icon ${i !== 2 && 'cred'} ${i == 4 && 'circle'}`} src={icons[i]} />
+          <img className={`token-page-icon ${i !== 3 && 'cred'} ${i == 4 && 'circle'}`} src={icons[i]} />
           <div>
             <div className='token-page-title'>{tokens[i]}</div>
             {this.state.loading

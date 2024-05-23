@@ -24,8 +24,8 @@ export const MODULE = "GYrbbe0VbHim_7Hi6zrOpHQXrSQz07XNtwCnfbFo2I0"
 export const SCHEDULER = "_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA"
 export const ARWEAVE_GATEWAY = "https://arweave.net/";
 
-export const TOKEN_PID = new Map([[0, WAR], [1, TRUNK], [2, CRED], [3, AOT_TEST], [4, ORBT]]);
-export const TOKEN_NAME = new Map([[0, 'wAR'], [1, 'TRUNK'], [2, 'CRED'], [3, 'AOT_TEST'], [4, '0RBT']]);
+export const TOKEN_PID = new Map([[0, AOT_TEST], [1, WAR], [2, TRUNK], [3, CRED], [4, ORBT]]);
+export const TOKEN_NAME = new Map([[0, 'AOT_TEST'], [1, 'wAR'], [2, 'TRUNK'], [3, 'CRED'], [4, '0RBT']]);
 export const TOKEN_ICON = new Map([
   ['wAR', './logo-war.png'],
   ['WAR', './logo-war.png'],
