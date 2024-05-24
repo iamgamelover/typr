@@ -156,7 +156,7 @@ class HomePage extends React.Component<{}, HomePageState> {
         this.setState({ isAll: false })
     }
 
-    console.log("posts:", posts)
+    // console.log("posts:", posts)
     this.checkBookmarks(posts);
 
     setTimeout(() => {
@@ -197,6 +197,10 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     let divs = [];
     for (let i = 0; i < this.state.posts.length; i++) {
+
+      // temp fix
+      if (this.state.posts[i].id == "6dbc9298-d3ab-4048-a1bb-7fb208737987") continue;
+
       divs.push(
         <ActivityPost
           key={uuid()}
