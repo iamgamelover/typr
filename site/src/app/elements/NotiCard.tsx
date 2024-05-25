@@ -1,5 +1,5 @@
 import React from 'react';
-import { convertUrls, shortAddr } from '../util/util';
+import { convertUrlsToLinks, shortAddr } from '../util/util';
 import { formatTimestamp } from '../util/util';
 import './NotiCard.css';
 import parse, { attributesToProps } from 'html-react-parser';
@@ -84,7 +84,7 @@ class NotiCard extends React.Component<NotiCardProps, NotiCardState> {
   async getPostContent() {
     let content = this.props.data.post;
     // content = convertHashTag(content);
-    content = convertUrls(content);
+    content = convertUrlsToLinks(content);
     this.setState({ content });
   }
 

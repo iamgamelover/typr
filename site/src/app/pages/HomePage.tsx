@@ -197,10 +197,6 @@ class HomePage extends React.Component<{}, HomePageState> {
 
     let divs = [];
     for (let i = 0; i < this.state.posts.length; i++) {
-
-      // temp fix
-      if (this.state.posts[i].id == "6dbc9298-d3ab-4048-a1bb-7fb208737987") continue;
-
       divs.push(
         <ActivityPost
           key={uuid()}
@@ -249,66 +245,6 @@ class HomePage extends React.Component<{}, HomePageState> {
     else
       this.setState({ message: '', alert: TIP_IMG });
   }
-
-  //=======
-  // TEMP...
-  async tempGetDataFromAO(
-    process: string,
-    action: string,
-    pageNo?: number,
-    pageSize?: string,
-    postId?: string,
-    address?: string,
-  ) {
-
-    let start = performance.now();
-    console.log('==> [tempGetDataFromAO]');
-
-    let valPN = '', valPS = '', valPID = '', valAddress = '';
-    if (pageNo) valPN = pageNo.toString();
-    if (pageSize) valPS = pageSize;
-    if (postId) valPID = postId;
-    if (address) valAddress = address;
-
-    let result;
-    try {
-      result = await dryrun({
-        process: process,
-        tags: [
-          { name: 'Action', value: action },
-          { name: 'pageNo', value: valPN },
-          { name: 'pageSize', value: valPS },
-          { name: 'postId', value: valPID },
-          { name: 'address', value: valAddress },
-        ],
-      });
-    } catch (error) {
-      console.log('tempGetDataFromAO --> ERR:', error)
-      return '';
-    }
-
-    // console.log('action', action);
-    // console.log('result', result);
-
-    try {
-      if (result.Messages.length == 0) return '';
-    } catch (error) {
-      return '';
-    }
-
-    let data = result.Messages[0].Data;
-    if (!data) return '';
-    let final = data.split("▲");
-
-    let end = performance.now();
-    console.log(`<== [tempGetDataFromAO] [${Math.round(end - start)} ms]`);
-
-    if (final.length == 1 && final[0] == '') return '';
-    return final;
-  }
-
-  //===============
-
 
   render() {
     return (

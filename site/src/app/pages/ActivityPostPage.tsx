@@ -153,6 +153,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
       this.checkBookmark(post);
     }
 
+    // console.log("post:", post)
     this.setState({ post, loading: false });
     this.getReplies();
 
@@ -228,6 +229,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     this.setState({ message: 'Replying...' });
 
     let post = this.quillRef.root.innerHTML;
+    
     let data = {
       id: uuid(), post_id: this.postId, address, post,
       likes: 0, replies: 0, coins: 0, time: timeOfNow()

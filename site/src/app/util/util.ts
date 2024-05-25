@@ -180,10 +180,19 @@ export function convertHashTag(str: string): any {
 
 /**
  * Convert the URLs that are not within a tag to link.
- * @param str original string
+ * @param text original string
  * @returns 
  */
-export function convertUrls(str: string): string {
+export function convertUrlsToLinks(text: string) {
+  const urlRegex = /(\b(https?:\/\/|www\.)[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+
+  return text.replace(urlRegex, function(url) {
+    const href = url.startsWith('http') ? url : `http://${url}`;
+    return `<a href="${href}" target="_blank">${url}</a>`;
+  });
+}
+
+export function convertUrlsOLD(str: string): string {
   // match all of URLs
   const urlRegex = /(f|ht){1}(tp|tps):\/\/([\w-]+\S)+[\w-]+([\w-?%#&=]*)?(\/[\w- ./?%#&=]*)?/g;
 

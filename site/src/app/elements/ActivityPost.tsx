@@ -1,7 +1,7 @@
 import React from 'react';
 import { BsBookmark, BsBookmarkFill, BsChat, BsHeart, BsHeartFill } from 'react-icons/bs';
 import {
-  convertUrls, getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO,
+  convertUrlsToLinks, getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO,
   numberWithCommas, randomAvatar, shortAddr, timeOfNow, transferToken
 } from '../util/util';
 import { formatTimestamp } from '../util/util';
@@ -128,7 +128,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   async getPostContent() {
     let content = this.props.data.post;
     // content = convertHashTag(content);
-    content = convertUrls(content);
+    content = convertUrlsToLinks(content);
     this.setState({ content });
   }
 
