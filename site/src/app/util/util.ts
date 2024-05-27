@@ -186,10 +186,24 @@ export function convertHashTag(str: string): any {
 export function convertUrlsToLinks(text: string) {
   const urlRegex = /(\b(https?:\/\/|www\.)[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
 
-  return text.replace(urlRegex, function(url) {
-    const href = url.startsWith('http') ? url : `http://${url}`;
-    return `<a href="${href}" target="_blank">${url}</a>`;
+  // match all of <a> tag content
+  const hrefRegex = /<a\s+[^>]*?href\s*=\s*(['"])(.*?)\1/g;
+  const hrefs = text.match(hrefRegex);
+
+  // repalce all of URLs while ignoring URLs that are already within an <a>, <img> or <audio> tag.
+  const convertedText = text.replace(urlRegex, (url) => {
+    if (hrefs && hrefs.includes(`<a href="${url}"`))
+      return url;
+    else
+      return `<a href=${url} target="_blank" id="url-${url}">${url}</a>`;
   });
+
+  return convertedText;
+
+  // return text.replace(urlRegex, function(url) {
+  //   const href = url.startsWith('http') ? url : `http://${url}`;
+  //   return `<a href="${href}" target="_blank">${url}</a>`;
+  // });
 }
 
 export function convertUrlsOLD(str: string): string {
