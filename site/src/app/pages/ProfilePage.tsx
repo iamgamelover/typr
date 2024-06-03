@@ -144,7 +144,6 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     await this.getPosts(id);
     await this.isFollowing();
     await this.getFollows();
-    // await this.tempGetFollowsTable();
   }
 
   async getPosts(address: string) {
@@ -397,13 +396,18 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
     if (this.state.loading) return (<Loading />);
 
     let divs = [];
+    let address = Server.service.getActiveAddress();
+
     for (let i = 0; i < this.state.posts.length; i++) {
-      divs.push(
-        <ActivityPost
-          key={uuid()}
-          data={this.state.posts[i]}
-        />
-      )
+      let data = this.state.posts[i];
+      if (data.range === 'everyone' || data.address === address) {
+        divs.push(
+          <ActivityPost
+            key={uuid()}
+            data={data}
+          />
+        )
+      }
     }
 
     return divs;

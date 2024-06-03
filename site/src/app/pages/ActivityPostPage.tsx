@@ -153,12 +153,18 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
       this.checkBookmark(post);
     }
 
-    // console.log("post:", post)
-    this.setState({ post, loading: false });
-    this.getReplies();
+    // console.log("post page:", post)
+    let address = Server.service.getActiveAddress();
 
-    let txid = await getDataFromAO(AO_TWITTER, 'GetTxid', { id: this.postId });
-    this.setState({ txid: txid[0].txid });
+    if (post.range === 'everyone' || post.address === address) {
+      this.setState({ post, loading: false });
+      this.getReplies();
+      let txid = await getDataFromAO(AO_TWITTER, 'GetTxid', { id: this.postId });
+      this.setState({ txid: txid[0].txid });
+    }
+    else {
+      this.setState({ alert: 'This is a private post.' });
+    }
   }
 
   checkBookmark(post: any) {

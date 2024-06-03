@@ -217,7 +217,7 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
                   onChange={this.onRangeChange}
                 >
                   <option value="everyone">Everyone</option>
-                  <option value="following">Following</option>
+                  {/* <option value="following">Following</option> */}
                   <option value="private">Private</option>
                 </select>
               }

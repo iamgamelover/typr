@@ -26,7 +26,6 @@ interface HomePageState {
   range: string;
   process: string;
   newPosts: number;
-  temp_tip: boolean;
   isAll: boolean;
 }
 
@@ -48,7 +47,6 @@ class HomePage extends React.Component<{}, HomePageState> {
       range: 'everyone',
       process: '',
       newPosts: 0,
-      temp_tip: false,
       isAll: false,
     };
 
@@ -196,16 +194,21 @@ class HomePage extends React.Component<{}, HomePageState> {
     if (this.state.loading) return (<Loading />);
 
     let divs = [];
+    let address = Server.service.getActiveAddress();
+
     for (let i = 0; i < this.state.posts.length; i++) {
-      divs.push(
-        <ActivityPost
-          key={uuid()}
-          data={this.state.posts[i]}
-        />
-      )
+      let data = this.state.posts[i];
+      if (data.range === 'everyone' || data.address === address) {
+        divs.push(
+          <ActivityPost
+            key={uuid()}
+            data={data}
+          />
+        )
+      }
     }
 
-    return divs
+    return divs;
   }
 
   async onPost() {
@@ -264,7 +267,7 @@ class HomePage extends React.Component<{}, HomePageState> {
                 onChange={this.onRangeChange}
               >
                 <option value="everyone">Everyone</option>
-                <option value="following">Following</option>
+                {/* <option value="following">Following</option> */}
                 <option value="private">Private</option>
               </select>
 
@@ -283,18 +286,6 @@ class HomePage extends React.Component<{}, HomePageState> {
         {this.state.newPosts > 0 &&
           <div className='home-page-tip-new-posts' onClick={() => this.showNewPosts()}>
             {this.state.newPosts}&nbsp;&nbsp;New Posts
-          </div>
-        }
-
-        {/* For testing - Will be removed */}
-        {this.state.temp_tip &&
-          <div className='home-page-temp-tip'>
-            <div style={{ color: 'yellow' }}>MAKE SURE TO GET YOUR PROCESS:</div>
-            <div>Your process id is:</div>
-            <div style={{ color: 'yellow' }}>{this.state.process}</div>
-            <div>Try to run "aos PROCESS_ID_ABOVE --wallet PATH_WALLET_KEY.json".</div>
-            <div>And see the handlers via "Handlers.list" in a termianl.</div>
-            <button style={{ width: '150px' }} onClick={() => this.setState({ temp_tip: false })}>Close</button>
           </div>
         }
 

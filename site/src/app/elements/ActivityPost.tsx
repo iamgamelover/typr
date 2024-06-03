@@ -19,6 +19,7 @@ import { FaCoins } from 'react-icons/fa';
 import { AO_STORY, AO_TWITTER, STORY_INCOME } from '../util/consts';
 import MessageModal from '../modals/MessageModal';
 import BountyRecordsModal from '../modals/BountyRecordsModal';
+import { HiOutlineLockClosed } from "react-icons/hi2";
 
 interface ActivityPostProps {
   data: any;
@@ -407,6 +408,10 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           <div className='home-msg-time'>
             ·&nbsp;&nbsp;{formatTimestamp(data.time)}
           </div>
+
+          {data.range === 'private' &&
+            <div><HiOutlineLockClosed /></div>
+          }
 
           {this.props.isPostPage && this.props.txid &&
             <img
