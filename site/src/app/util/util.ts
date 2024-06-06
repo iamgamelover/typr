@@ -654,7 +654,7 @@ export async function transferToken(from: string, to: string, qty: string, targe
     ],
   });
 
-  console.log("transfer message id:", messageId)
+  // console.log("transfer message id:", messageId)
   return messageId;
 }
 

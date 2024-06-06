@@ -102,8 +102,15 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     let bal_0rbit = Server.service.getBalanceOf0rbit();
 
     if (!this.state.loading) {
-      bal_war = Number(trimDecimal(bal_war, 5));
-      bal_0rbit = Number(trimDecimal(bal_0rbit, 5));
+      if (bal_war)
+        bal_war = Number(trimDecimal(bal_war, 5));
+      else
+        bal_war = 0;
+
+      if (bal_0rbit)
+        bal_0rbit = Number(trimDecimal(bal_0rbit, 5));
+      else
+        bal_0rbit = 0;
     }
 
     let balances = [bal_aot, bal_war, bal_trunk, bal_cred, bal_0rbit];
@@ -159,14 +166,15 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
     // your own process 
     let from = Server.service.getDefaultProcess();
-    console.log("from:", from)
+    // console.log("from:", from)
 
     // the user's process to tranfer a bounty
     let to = await getDefaultProcess(this.props.data.address);
-    console.log("to:", to)
+    // console.log("to:", to)
 
     let alert;
     let bal = bal_tokens.get(this.tokenPicked);
+    if (!bal) bal = 0;
 
     // Wrapped AR or 0rbit
     if (this.tokenPicked == 1 || this.tokenPicked == 4) {
@@ -175,7 +183,7 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     // console.log("bal:", bal)
 
     let qty = Math.abs(this.state.bounty).toString();
-    console.log("qty:", qty)
+    // console.log("qty:", qty)
 
     if (!to)
       alert = 'Has not a default process to transfer bounty.';
@@ -192,7 +200,7 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     }
 
     let target = TOKEN_PID.get(this.tokenPicked);
-    console.log("target:", target)
+    // console.log("target:", target)
 
     await transferToken(from, to, qty, target);
 
