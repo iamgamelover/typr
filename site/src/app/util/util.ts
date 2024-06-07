@@ -185,6 +185,7 @@ export function convertHashTag(str: string): any {
  */
 export function convertUrlsToLinks(text: string) {
   const urlRegex = /(\b(https?:\/\/|www\.)[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+  const imageRegex = /\.(jpeg|jpg|gif|png|svg)$/i;
 
   // match all of <a> tag content
   const hrefRegex = /<a\s+[^>]*?href\s*=\s*(['"])(.*?)\1/g;
@@ -194,6 +195,8 @@ export function convertUrlsToLinks(text: string) {
   const convertedText = text.replace(urlRegex, (url) => {
     if (hrefs && hrefs.includes(`<a href="${url}"`))
       return url;
+    else if (imageRegex.test(url))
+      return `<img src="${url}" alt="${url}" class="ql-editor-image"/>`;
     else
       return `<a href=${url} target="_blank" id="url-${url}">${url}</a>`;
   });
