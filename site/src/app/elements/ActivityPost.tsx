@@ -20,6 +20,7 @@ import { AO_STORY, AO_TWITTER, STORY_INCOME } from '../util/consts';
 import MessageModal from '../modals/MessageModal';
 import BountyRecordsModal from '../modals/BountyRecordsModal';
 import { HiOutlineLockClosed } from "react-icons/hi2";
+import ExternalEmbed from './externalEmbed';
 
 interface ActivityPostProps {
   data: any;
@@ -56,6 +57,10 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       if (domNode.attribs && domNode.name === 'img') {
         const props = attributesToProps(domNode.attribs);
         return <img className='ql-editor-image' onClick={(e) => this.tapImage(e, props.src)} {...props} />;
+      } else if (domNode.name === 'span' && domNode.attribs) {
+        if (domNode.attribs.class === 'youtube-url') {
+          return <ExternalEmbed src={domNode.attribs['data-src']} />;
+        }
       }
     }
   };

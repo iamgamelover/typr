@@ -1,5 +1,5 @@
 import { createDataItemSigner, dryrun, message, spawn } from "@permaweb/aoconnect/browser";
-import { AO_TWITTER, ARWEAVE_GATEWAY, MODULE, SCHEDULER } from "./consts";
+import { AO_TWITTER, ARWEAVE_GATEWAY, MODULE, SCHEDULER, regexPatterns } from "./consts";
 import { Server } from "../../server/server";
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
@@ -184,16 +184,19 @@ export function convertHashTag(str: string): any {
  * @returns 
  */
 export function convertUrlsToLinks(text: string) {
-  const urlRegex = /(\b(https?:\/\/|www\.)[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+  const { urlRegex, imageRegex, hrefRegex, youtubeRegex } = regexPatterns;
 
   // match all of <a> tag content
-  const hrefRegex = /<a\s+[^>]*?href\s*=\s*(['"])(.*?)\1/g;
   const hrefs = text.match(hrefRegex);
 
   // repalce all of URLs while ignoring URLs that are already within an <a>, <img> or <audio> tag.
   const convertedText = text.replace(urlRegex, (url) => {
     if (hrefs && hrefs.includes(`<a href="${url}"`))
       return url;
+    else if (youtubeRegex.test(url))
+      return `<span class="youtube-url" data-src="${url}"></span>`;
+    else if (imageRegex.test(url))
+      return `<img src="${url}" alt="${url}" class="ql-editor-image"/>`;
     else
       return `<a href=${url} target="_blank" id="url-${url}">${url}</a>`;
   });

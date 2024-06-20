@@ -10,6 +10,7 @@ import { Service } from '../../server/service';
 import { subscribe } from '../util/event';
 import { Tooltip } from 'react-tooltip'
 import MessageModal from '../modals/MessageModal';
+import ExternalEmbed from './externalEmbed';
 
 interface NotiCardProps {
   data: any;
@@ -36,6 +37,10 @@ class NotiCard extends React.Component<NotiCardProps, NotiCardState> {
       if (domNode.attribs && domNode.name === 'img') {
         const props = attributesToProps(domNode.attribs);
         return <img className='ql-editor-image' onClick={(e) => this.tapImage(e, props.src)} {...props} />;
+      } else if (domNode.name === 'span' && domNode.attribs) {
+        if (domNode.attribs.class === 'youtube-url') {
+          return <ExternalEmbed src={domNode.attribs['data-src']} />;
+        }
       }
     }
   };
