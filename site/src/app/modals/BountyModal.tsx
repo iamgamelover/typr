@@ -26,9 +26,6 @@ interface BountyModalState {
   alert: string;
   bounty: number;
   loading: boolean;
-  balOfCRED: number;
-  balOfAOT: number;
-  balOfTRUNK: number;
   unit: string;
 }
 
@@ -44,9 +41,6 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
       alert: '',
       bounty: 1,
       loading: false,
-      balOfCRED: 0,
-      balOfAOT: 0,
-      balOfTRUNK: 0,
       unit: 'unit'
     }
 
@@ -59,7 +53,6 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
   }
 
   componentDidMount() {
-    // this.start();
     if (!Server.service.getBalanceOfTRUNK())
       this.setState({ loading: true });
   }
@@ -67,9 +60,6 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
   onChangeBounty(e: any) {
     this.setState({ bounty: e.currentTarget.value });
   }
-
-  // async start() {
-  // }
 
   onClose() {
     this.props.onClose();
@@ -92,14 +82,15 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
   }
 
   renderTokens() {
-    let tokens = ['AOT-Test', 'Wrapped AR', 'TRUNK', 'AOCRED-Test', '0rbit'];
-    let icons = ['./logo.png', './logo-war.png', './logo-trunk.png', './logo-ao.png', './logo-0rbit.jpg'];
+    let tokens = ['AOT-Test', 'Wrapped AR', 'TRUNK', 'AOCRED-Test', '0rbit', 'USDA-TST'];
+    let icons = ['./logo.png', './logo-war.png', './logo-trunk.png', './logo-ao.png', './logo-0rbit.jpg', './logo-usda.png'];
 
     let bal_war = Server.service.getBalanceOfWAR();
     let bal_trunk = Server.service.getBalanceOfTRUNK();
     let bal_cred = Server.service.getBalanceOfCRED();
     let bal_aot = Server.service.getBalanceOfAOT();
     let bal_0rbit = Server.service.getBalanceOf0rbit();
+    let bal_usda = Server.service.getBalanceOfUSDA();
 
     if (!this.state.loading) {
       if (bal_war)
@@ -111,9 +102,14 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
         bal_0rbit = Number(trimDecimal(bal_0rbit, 5));
       else
         bal_0rbit = 0;
+
+      if (bal_usda)
+        bal_usda = Number(trimDecimal(bal_usda, 5));
+      else
+        bal_usda = 0;
     }
 
-    let balances = [bal_aot, bal_war, bal_trunk, bal_cred, bal_0rbit];
+    let balances = [bal_aot, bal_war, bal_trunk, bal_cred, bal_0rbit, bal_usda];
 
     let divs = [];
     for (let i = 0; i < tokens.length; i++) {
@@ -159,7 +155,8 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
       [1, Server.service.getBalanceOfWAR()],
       [2, Server.service.getBalanceOfTRUNK()],
       [3, Server.service.getBalanceOfCRED()],
-      [4, Server.service.getBalanceOf0rbit()]
+      [4, Server.service.getBalanceOf0rbit()],
+      [5, Server.service.getBalanceOfUSDA()]
     ]);
 
     this.setState({ message: 'Bounty...' });
@@ -176,8 +173,8 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     let bal = bal_tokens.get(this.tokenPicked);
     if (!bal) bal = 0;
 
-    // Wrapped AR or 0rbit
-    if (this.tokenPicked == 1 || this.tokenPicked == 4) {
+    // Wrapped AR or 0rbit or USDA
+    if (this.tokenPicked == 1 || this.tokenPicked == 4 || this.tokenPicked == 5) {
       bal = bal * AR_DEC;
     }
     // console.log("bal:", bal)
@@ -229,6 +226,10 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
       case 4:
         bal_new = bal_new / AR_DEC;
         Server.service.setBalanceOf0rbit(bal_new);
+        break;
+      case 5:
+        bal_new = bal_new / AR_DEC;
+        Server.service.setBalanceOfUSDA(bal_new);
         break;
     }
 

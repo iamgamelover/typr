@@ -11,7 +11,7 @@ import {
   getTokenBalance, isLoggedIn,
   messageToAO
 } from '../util/util';
-import { AOT_TEST, AO_TWITTER, AR_DEC, CRED, ICON_SIZE, ORBT, TRUNK, WAR } from '../util/consts';
+import { AOT_TEST, AO_TWITTER, AR_DEC, CRED, ICON_SIZE, ORBT, TRUNK, USDA, WAR } from '../util/consts';
 import { Server } from '../../server/server';
 import PostModal from '../modals/PostModal';
 import Portrait from '../elements/Portrait';
@@ -95,7 +95,11 @@ class SitePage extends React.Component<{}, SitePageState> {
     // console.log("bal_0rbit:", bal_0rbit)
     Server.service.setBalanceOf0rbit(bal_0rbit / AR_DEC);
 
-    publish('get-bal-done')
+    let bal_usda = await getTokenBalance(USDA, process);
+    // console.log("bal_usda:", bal_usda)
+    Server.service.setBalanceOfUSDA(bal_usda / AR_DEC);
+
+    publish('get-bal-done');
   }
 
   onOpen() {

@@ -16,6 +16,7 @@ export const CRED = "Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc";
 export const TRUNK = "OT9qTE2467gcozb2g8R6D6N3nQS94ENcaAIJfUzHCww";
 export const WAR = "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10";
 export const ORBT = "BUhZLMwQ6yZHguLtJYA5lLUa9LQzLXMXRfaq9FVcPJc";
+export const USDA = "GcFxqTQnKHcr304qnOcq00ZqbaYGDn4Wbb0DHAM-wvU";
 export const AOT_TEST = "UabERwDSwechOsHg9M1N6qTk2O7EXPf63qABDTAj_Vs";
 export const CHATROOM = "F__i_YGIUOGw43zyqLY9dEKNNEhB_uTqzL9tOTWJ-KA";
 export const TIP_IMG = "Sending the message is encountering a problem. Is there a picture in the post? Size just up to 200 kb for now.";
@@ -31,8 +32,8 @@ export const MODULE = "GYrbbe0VbHim_7Hi6zrOpHQXrSQz07XNtwCnfbFo2I0"
 export const SCHEDULER = "_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA"
 export const ARWEAVE_GATEWAY = "https://arweave.net/";
 
-export const TOKEN_PID = new Map([[0, AOT_TEST], [1, WAR], [2, TRUNK], [3, CRED], [4, ORBT]]);
-export const TOKEN_NAME = new Map([[0, 'AOT_TEST'], [1, 'wAR'], [2, 'TRUNK'], [3, 'CRED'], [4, '0RBT']]);
+export const TOKEN_PID = new Map([[0, AOT_TEST], [1, WAR], [2, TRUNK], [3, CRED], [4, ORBT], [5, USDA]]);
+export const TOKEN_NAME = new Map([[0, 'AOT_TEST'], [1, 'wAR'], [2, 'TRUNK'], [3, 'CRED'], [4, '0RBT'], [5, 'USDA-TST']]);
 export const TOKEN_ICON = new Map([
   ['wAR', './logo-war.png'],
   ['WAR', './logo-war.png'],
@@ -41,6 +42,7 @@ export const TOKEN_ICON = new Map([
   ['AOT_TEST', './logo.png'],
   ['TYPR', './logo.png'],
   ['0RBT', './logo-0rbit.jpg'],
+  ['USDA-TST', './logo-usda.png'],
 ]);
 
 export const LUA =

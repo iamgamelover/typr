@@ -5,7 +5,7 @@ import {
   numberWithCommas, transferToken, evaluate, spawnProcess,
   formatBalance
 } from '../util/util';
-import { CRED, AOT_TEST, TRUNK, LUA, WAR, AR_DEC, TIP_CONN, ORBT } from '../util/consts';
+import { CRED, AOT_TEST, TRUNK, LUA, WAR, AR_DEC, TIP_CONN, ORBT, USDA } from '../util/consts';
 import { dryrun } from "@permaweb/aoconnect/browser";
 import MessageModal from '../modals/MessageModal';
 import { Server } from '../../server/server';
@@ -27,6 +27,7 @@ interface TokenPageState {
   balOfTRUNK: number;
   balOfWAR: number;
   balOf0rbit: number;
+  balOfUSDA: number;
 }
 
 class TokenPage extends React.Component<{}, TokenPageState> {
@@ -47,6 +48,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
       balOfTRUNK: 0,
       balOfWAR: 0,
       balOf0rbit: 0,
+      balOfUSDA: 0,
     };
   }
 
@@ -82,7 +84,12 @@ class TokenPage extends React.Component<{}, TokenPageState> {
     // console.log("balOf0rbit:", balOf0rbit)
     Server.service.setBalanceOf0rbit(balOf0rbit);
 
-    this.setState({ balOfCRED, balOfTRUNK, balOfWAR, balOf0rbit });
+    let balOfUSDA = await getTokenBalance(USDA, process);
+    balOfUSDA = balOfUSDA / AR_DEC;
+    // console.log("balOfUSDA:", balOfUSDA)
+    Server.service.setBalanceOfUSDA(balOfUSDA);
+
+    this.setState({ balOfCRED, balOfTRUNK, balOfWAR, balOf0rbit, balOfUSDA });
     this.displayAOT(process);
   }
 
@@ -139,9 +146,9 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   }
 
   renderTokens() {
-    let tokens = ['AOT-Test', 'Wrapped AR', 'AOCRED-Test', 'TRUNK', '0rbit'];
-    let icons = ['./logo.png', './logo-war.png', './logo-ao.png', './logo-trunk.png', './logo-0rbit.jpg'];
-    let bals = [this.state.balOfAOT, this.state.balOfWAR, this.state.balOfCRED, this.state.balOfTRUNK, this.state.balOf0rbit];
+    let tokens = ['AOT-Test', 'Wrapped AR', 'AOCRED-Test', 'TRUNK', '0rbit', 'USDA-TST'];
+    let icons = ['./logo.png', './logo-war.png', './logo-ao.png', './logo-trunk.png', './logo-0rbit.jpg', './logo-usda.png'];
+    let bals = [this.state.balOfAOT, this.state.balOfWAR, this.state.balOfCRED, this.state.balOfTRUNK, this.state.balOf0rbit, this.state.balOfUSDA];
 
     let divs = [];
     for (let i = 0; i < tokens.length; i++) {

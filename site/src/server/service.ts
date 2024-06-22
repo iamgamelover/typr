@@ -14,6 +14,7 @@ export class Service {
   protected balanceOfTRUNK:number;
   protected balanceOfWAR:number;
   protected balanceOf0rbit:number;
+  protected balanceOfUSDA:number;
 
   constructor() {
     this.profiles = [];
@@ -131,6 +132,14 @@ export class Service {
 
   public getBalanceOf0rbit() {
     return this.balanceOf0rbit;
+  }
+  
+  public setBalanceOfUSDA(bal:number) {
+    this.balanceOfUSDA = bal;
+  }
+
+  public getBalanceOfUSDA() {
+    return this.balanceOfUSDA;
   }
   
 }
