@@ -4,6 +4,13 @@ import { Server } from "../../server/server";
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
 import * as Othent from "@othent/kms";
+import { ArweaveSigner } from "arseeding-arbundles/src/signing";
+import { createData } from "arseeding-arbundles";
+// import { Web3Provider } from 'arseeding-arbundles/node_modules/@ethersproject/providers'
+import { InjectedEthereumSigner } from 'arseeding-arbundles/src/signing';
+import { JWKInterface } from "arseeding-arbundles/src/interface-jwk";
+import { CreateWalletReturnProps } from "arweavekit/dist/types/wallet";
+import { createWallet } from "arweavekit/wallet";
 
 declare var window: any;
 
@@ -417,11 +424,14 @@ export function timeOfNow() {
 }
 
 export async function spawnProcess() {
+  const signer = await getSigner();
+
   try {
     const processId = await spawn({
       module: MODULE,
       scheduler: SCHEDULER,
-      signer: createDataItemSigner(window.arweaveWallet),
+      // signer: createDataItemSigner(window.arweaveWallet),
+      signer: signer,
       tags: [{ name: 'Name', value: 'personal-life-app' }]
     });
 
@@ -439,10 +449,13 @@ export async function spawnProcess() {
  * @returns 
  */
 export async function evaluate(process: string, data: string) {
+  const signer = await getSigner();
+
   try {
     const messageId = await message({
       process,
-      signer: createDataItemSigner(window.arweaveWallet),
+      // signer: createDataItemSigner(window.arweaveWallet),
+      signer: signer,
       tags: [{ name: 'Action', value: 'Eval' }],
       data
     });
@@ -455,10 +468,13 @@ export async function evaluate(process: string, data: string) {
 }
 
 export async function messageToAO(process: string, data: any, action: string) {
+  const signer = await getSigner();
+
   try {
     const messageId = await message({
       process: process,
-      signer: createDataItemSigner(window.arweaveWallet),
+      // signer: createDataItemSigner(window.arweaveWallet),
+      signer: signer,
       tags: [{ name: 'Action', value: action }],
       data: JSON.stringify(data)
     });
@@ -512,7 +528,7 @@ export function isBookmarked(bookmarks: any, id: string) {
   return false;
 }
 
-export async function connectWallet() {
+export async function connectArConnectWallet() {
   try {
     // connect to the ArConnect browser extension
     await window.arweaveWallet.connect(
@@ -532,7 +548,7 @@ export async function getWalletAddress() {
   try {
     address = await window.arweaveWallet.getActiveAddress();
   } catch (error) {
-    return '';
+    return localStorage.getItem('owner');
   }
 
   return address;
@@ -646,9 +662,12 @@ export function formatBalance(str: string, len: number) {
 }
 
 export async function transferToken(from: string, to: string, qty: string, target?: string) {
+  const signer = await getSigner();
+
   const messageId = await message({
     process: from,
-    signer: createDataItemSigner(window.arweaveWallet),
+    // signer: createDataItemSigner(window.arweaveWallet),
+    signer: signer,
     tags: [
       { name: 'Target', value: target ? target : '' },
       { name: 'Action', value: 'TransferToken' },
@@ -700,4 +719,103 @@ export function trimDecimal(num: number, digits: number) {
   }
   
   return `${intPart}.${fractPart}`;
+}
+
+export async function isLoggedInWithArConnect() {
+  let address;
+  try {
+    address = await window.arweaveWallet.getActiveAddress();
+  } catch (error) {
+    console.log("isLoggedInWithArConnect -> ERR:", error);
+    return '';
+  }
+
+  return address;
+}
+
+export async function getSigner() {
+  let wallet = await isLoggedInWithArConnect();
+
+  // Logged In With ArConnect
+  if (wallet) {
+    return createDataItemSigner(window.arweaveWallet);
+  }
+
+  // Logged In With Metamask
+  //------------------------
+
+  // create an arweave wallet
+  wallet = await createArweaveWallet();
+
+  // create an arweave signer
+  console.log("created wallet:", wallet)
+  const signer = arweaveSigner(wallet.key) as any;
+  return signer;
+}
+
+export async function createArweaveWallet() {
+  let wallet: CreateWalletReturnProps;
+  const isWalletExist = localStorage.getItem('wallet');
+
+  if (isWalletExist) {
+    wallet = JSON.parse(isWalletExist);
+  } else {
+    wallet = await createWallet({
+      seedPhrase: true,
+      environment: 'mainnet',
+    });
+
+    localStorage.setItem('wallet', JSON.stringify(wallet));
+  }
+
+  return wallet;
+}
+
+// create a custom ethereum signer
+// export const ethereumSigner = () => async ({
+//   data,
+//   tags = [],
+//   target,
+//   anchor
+// }: {
+//   data: any;
+//   tags?: { name: string; value: string }[];
+//   target?: string;
+//   anchor?: string;
+// }): Promise<{ id: string; raw: ArrayBuffer }> => {
+
+//   const provider = new Web3Provider((window as any).ethereum)
+//   const signer = new InjectedEthereumSigner(provider);
+//   await signer.setPublicKey()
+//   const dataItem = createData(data, signer, { tags, target, anchor })
+
+//   await dataItem.sign(signer)
+
+//   return {
+//     id: dataItem.id,
+//     raw: dataItem.getRaw()
+//   }
+// }
+
+// create a custom arweave signer
+export const arweaveSigner = (jwk: JWKInterface) => async ({
+  data,
+  tags = [],
+  target,
+  anchor
+}: {
+  data: any;
+  tags?: { name: string; value: string }[];
+  target?: string;
+  anchor?: string;
+}): Promise<{ id: string; raw: ArrayBuffer }> => {
+
+  const signer = new ArweaveSigner(jwk);
+  const dataItem = createData(data, signer, { tags, target, anchor });
+  await dataItem.sign(signer);
+
+  return {
+    id: dataItem.id,
+    raw: dataItem.getRaw()
+  }
 }

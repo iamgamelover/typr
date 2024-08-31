@@ -3,7 +3,8 @@ import './Portrait.css';
 import { publish, subscribe } from '../util/event';
 import { AOT_TEST, AO_STORY, AO_TWITTER, LUA } from '../util/consts';
 import {
-  connectWallet, evaluate, getDefaultProcess, getProfile, getTokenBalance,
+  browserDetect,
+  connectArConnectWallet, createArweaveWallet, evaluate, getDefaultProcess, getProfile, getTokenBalance,
   getWalletAddress, isLoggedIn, messageToAO, randomAvatar, shortAddr, shortStr, spawnProcess, timeOfNow
 } from '../util/util';
 import { Server } from '../../server/server';
@@ -12,12 +13,18 @@ import QuestionModal from '../modals/QuestionModal';
 import { BsToggleOn, BsWallet2 } from 'react-icons/bs';
 import * as Othent from "@othent/kms";
 import MessageModal from '../modals/MessageModal';
+import { ethers } from 'ethers';
+import { createWallet } from 'arweavekit/wallet'
+import { ArConnect } from 'arweavekit/auth'
 
 import {
   connect,
   disconnect,
   getActiveAddress,
 } from "@othent/kms";
+import AlertModal from '../modals/AlertModal';
+import { createDataItemSigner, message } from '@permaweb/aoconnect/browser';
+import { readFileSync } from 'fs';
 
 declare var window: any;
 
@@ -31,6 +38,7 @@ interface PortraitState {
   address: string;
   question: string;
   message: string;
+  alert: string;
 }
 
 class Portrait extends React.Component<PortraitProps, PortraitState> {
@@ -43,6 +51,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
       address: '',
       question: '',
       message: '',
+      alert: '',
     };
 
     this.onQuestionYes = this.onQuestionYes.bind(this);
@@ -71,7 +80,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
     this.isExisted(address)
   }
 
-  async connect2Othent() {
+  async connectOthent() {
     try {
       this.setState({ message: 'Connecting...' });
       let res = await connect();
@@ -79,24 +88,53 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
       // console.log("res:", res)
 
       window.arweaveWallet = Othent;
-      this.afterConnected(res.walletAddress, res);
+      this.afterConnect(res.walletAddress, res);
     } catch (error) {
       console.log(error)
       this.setState({ message: '' });
     }
   }
 
-  async connect2ArConnect() {
-    let connected = await connectWallet();
+  async connectArConnect() {
+    let connected = await connectArConnectWallet();
     if (connected) {
       let address = await getWalletAddress();
-      this.afterConnected(address);
+      this.afterConnect(address);
     }
   }
 
-  async afterConnected(address: string, othent?: any) {
+  async connectMetaMask() {
+    const name = browserDetect();
+    if (name === 'safari' || name === 'ie' || name === 'yandex' || name === 'others') {
+      this.setState({ alert: 'MetaMask is not supported for this browser! Please use the Wallet Connect.' });
+      return false;
+    }
+
+    if (typeof window.ethereum === 'undefined') {
+      this.setState({ alert: 'MetaMask is not installed!' });
+      return false;
+    }
+
+    try {
+      // const provider = new Web3Provider(window.ethereum);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const accounts = await provider.send("eth_requestAccounts", []);
+      const address = accounts[0];
+      console.log("[ address ]", address);
+      this.afterConnect(address);
+      await createArweaveWallet();
+      return true;
+    } catch (error: any) {
+      this.setState({ alert: error.message });
+      return false;
+    }
+  }
+
+  async afterConnect(address: string, othent?: any) {
     Server.service.setIsLoggedIn(address);
     Server.service.setActiveAddress(address);
+    localStorage.setItem('owner', address);
+
     publish('wallet-events');
 
     if (othent)
@@ -150,6 +188,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
     Server.service.setIsLoggedIn('');
     Server.service.setActiveAddress('');
     localStorage.removeItem('id_token');
+    localStorage.removeItem('owner');
     publish('wallet-events');
 
     this.setState({ address: '', question: '', message: '' });
@@ -214,18 +253,21 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
           :
           <div>
             <div className='portrait-conn-pc'>
-              <div className="app-icon-button connect" onClick={() => this.connect2ArConnect()}>
+              <div className="app-icon-button connect" onClick={() => this.connectArConnect()}>
                 <BsWallet2 size={20} />ArConnect
               </div>
+              <div className="app-icon-button connect" onClick={() => this.connectMetaMask()}>
+                🦊 Metamask
+              </div>
               <div className='portrait-div-or'>- OR -</div>
-              <div className="app-icon-button connect othent" onClick={() => this.connect2Othent()}>
+              <div className="app-icon-button connect othent" onClick={() => this.connectOthent()}>
                 <BsToggleOn size={25} />Othent
               </div>
               <div className='portrait-label'>Google or others</div>
             </div>
 
             <div className='portrait-conn-mobile'>
-              <div className="app-icon-button connect othent" onClick={() => this.connect2Othent()}>
+              <div className="app-icon-button connect othent" onClick={() => this.connectOthent()}>
                 <BsToggleOn size={25} />Connect
               </div>
             </div>
@@ -234,6 +276,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
 
         <Tooltip id="my-tooltip" />
         <MessageModal message={this.state.message} />
+        <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />
         <QuestionModal message={this.state.question} onYes={this.onQuestionYes} onNo={this.onQuestionNo} />
       </div>
     );

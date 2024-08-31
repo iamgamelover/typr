@@ -5,7 +5,8 @@ import AlertModal from '../modals/AlertModal';
 import MessageModal from '../modals/MessageModal';
 import {
   checkContent, getDataFromAO, getWalletAddress, timeOfNow,
-  messageToAO, uuid, isBookmarked} from '../util/util';
+  messageToAO, uuid, isBookmarked,
+  createArweaveWallet} from '../util/util';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import ActivityPost from '../elements/ActivityPost';
 import { AO_TWITTER, PAGE_SIZE, TIP_CONN, TIP_IMG } from '../util/consts';
@@ -97,10 +98,12 @@ class HomePage extends React.Component<{}, HomePageState> {
   }
 
   async start() {
-    await this.getPosts();
+    this.getPosts();
 
     // check the new post every 10 seconds.
     // this.refresh = setInterval(() => this.refreshPosts(), 10000);
+
+    createArweaveWallet();
   }
 
   async getTokens() {
