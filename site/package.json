@@ -29,7 +29,7 @@
   },
   "scripts": {
     "start": "react-app-rewired start",
-    "build": "GENERATE_SOURCEMAP=false react-scripts build",
+    "build": "GENERATE_SOURCEMAP=false react-app-rewired build",
     "deploy": "irys upload-dir ./build -h https://node1.irys.xyz --wallet ./wallet.json -t arweave --index-file index.html"
   },
   "eslintConfig": {
