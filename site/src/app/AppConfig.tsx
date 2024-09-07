@@ -13,7 +13,7 @@ export class AppConfig {
       text: 'Story',
       icon: 'story',
       to: '/story',
-      beta: false,
+      // beta: false,
       loggedIn: false
     },
     {
@@ -26,7 +26,7 @@ export class AppConfig {
       text: 'TokenEco',
       icon: 'token',
       to: '/token',
-      beta: true,
+      // beta: true,
       loggedIn: true
     },
     {
@@ -39,7 +39,7 @@ export class AppConfig {
       text: 'Notifications',
       icon: 'notifications',
       to: '/notifications',
-      new: true,
+      // new: true,
       loggedIn: true
     },
     {

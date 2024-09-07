@@ -646,8 +646,8 @@ export async function getTokenBalance(process: string, address: string) {
       { name: 'Recipient', value: address },
     ],
   });
-
-  return result.Messages[0].Data;
+  
+  return result.Messages[0]?.Data;
 }
 
 export function formatBalance(str: string, len: number) {
