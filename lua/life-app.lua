@@ -83,7 +83,7 @@ end
 
 Handlers.add(
   "SendMessage",
-  Handlers.utils.hasMatchingTag("Action", "SendMessage"),
+  { Action =  "SendMessage" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -111,7 +111,7 @@ Handlers.add(
 
 Handlers.add(
   "GetMessages",
-  Handlers.utils.hasMatchingTag("Action", "GetMessages"),
+  { Action =  "GetMessages" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -136,7 +136,7 @@ Handlers.add(
 
 Handlers.add(
   "Register",
-  Handlers.utils.hasMatchingTag("Action", "Register"),
+  { Action =  "Register" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -166,7 +166,7 @@ Handlers.add(
 
 Handlers.add(
   "GetProfile",
-  Handlers.utils.hasMatchingTag("Action", "GetProfile"),
+  { Action =  "GetProfile" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -189,7 +189,7 @@ Handlers.add(
 
 Handlers.add(
   "SendTxid",
-  Handlers.utils.hasMatchingTag("Action", "SendTxid"),
+  { Action =  "SendTxid" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -215,7 +215,7 @@ Handlers.add(
 
 Handlers.add(
   "GetTxid",
-  Handlers.utils.hasMatchingTag("Action", "GetTxid"),
+  { Action =  "GetTxid" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -238,7 +238,7 @@ Handlers.add(
 
 Handlers.add(
   "GetPosts",
-  Handlers.utils.hasMatchingTag("Action", "GetPosts"),
+  { Action =  "GetPosts" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -288,13 +288,14 @@ Handlers.add(
     })
 
     local rows = query(stmt)
-    Handlers.utils.reply(json.encode(rows))(msg)
+    msg.reply({Data = json.encode(rows)})
+    print('GetPosts Done!')
   end
 )
 
 Handlers.add(
   "SendPost",
-  Handlers.utils.hasMatchingTag("Action", "SendPost"),
+  { Action =  "SendPost" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -320,13 +321,14 @@ Handlers.add(
 
     stmt:step()
     stmt:reset()
+    msg.reply({Data = "SendPost Done!"})
     print('SendPost Done!')
   end
 )
 
 Handlers.add(
   "GetReplies",
-  Handlers.utils.hasMatchingTag("Action", "GetReplies"),
+  { Action =  "GetReplies" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -348,13 +350,14 @@ Handlers.add(
     })
 
     local rows = query(stmt)
-    Handlers.utils.reply(json.encode(rows))(msg)
+    msg.reply({Data = json.encode(rows)})
+    print('GetReplies Done!')
   end
 )
 
 Handlers.add(
   "SendReply",
-  Handlers.utils.hasMatchingTag("Action", "SendReply"),
+  { Action =  "SendReply" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -386,7 +389,7 @@ Handlers.add(
 
 Handlers.add(
   "UpdateReply",
-  Handlers.utils.hasMatchingTag("Action", "UpdateReply"),
+  { Action =  "UpdateReply" },
   function(msg)
     local id = json.decode(msg.Data)
 
@@ -408,7 +411,7 @@ Handlers.add(
 
 Handlers.add(
   "UpdateBounty",
-  Handlers.utils.hasMatchingTag("Action", "UpdateBounty"),
+  { Action =  "UpdateBounty" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -433,7 +436,7 @@ Handlers.add(
 
 Handlers.add(
   "Follow",
-  Handlers.utils.hasMatchingTag("Action", "Follow"),
+  { Action =  "Follow" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -460,7 +463,7 @@ Handlers.add(
 
 Handlers.add(
   "Unfollow",
-  Handlers.utils.hasMatchingTag("Action", "Unfollow"),
+  { Action =  "Unfollow" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -485,7 +488,7 @@ Handlers.add(
 
 Handlers.add(
   "GetFollowing",
-  Handlers.utils.hasMatchingTag("Action", "GetFollowing"),
+  { Action =  "GetFollowing" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -526,7 +529,7 @@ Handlers.add(
 
 Handlers.add(
   "GetFollowers",
-  Handlers.utils.hasMatchingTag("Action", "GetFollowers"),
+  { Action =  "GetFollowers" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -554,7 +557,7 @@ Handlers.add(
 
 Handlers.add(
   "TempGetFollowsTable",
-  Handlers.utils.hasMatchingTag("Action", "TempGetFollowsTable"),
+  { Action =  "TempGetFollowsTable" },
   function(msg)
     local stmt = DB:prepare [[
       SELECT * FROM follows
@@ -571,7 +574,7 @@ Handlers.add(
 
 Handlers.add(
   "SendLike",
-  Handlers.utils.hasMatchingTag("Action", "SendLike"),
+  { Action =  "SendLike" },
   function(msg)
     local data = json.decode(msg.Data)
 
@@ -598,7 +601,7 @@ Handlers.add(
 
 Handlers.add(
   "GetLike",
-  Handlers.utils.hasMatchingTag("Action", "GetLike"),
+  { Action =  "GetLike" },
   function(msg)
     local data = json.decode(msg.Data)
     print(data)
@@ -623,7 +626,7 @@ Handlers.add(
 
 Handlers.add(
   "UpdateLike",
-  Handlers.utils.hasMatchingTag("Action", "UpdateLike"),
+  { Action =  "UpdateLike" },
   function(msg)
     local id = json.decode(msg.Data)
 
@@ -645,7 +648,7 @@ Handlers.add(
 
 Handlers.add(
   "UpdateLikeForReply",
-  Handlers.utils.hasMatchingTag("Action", "UpdateLikeForReply"),
+  { Action =  "UpdateLikeForReply" },
   function(msg)
     local id = json.decode(msg.Data)
 
