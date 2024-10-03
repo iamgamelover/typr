@@ -1,8 +1,9 @@
 local json    = require("json")
 local sqlite3 = require("lsqlite3")
+local dbAdmin = require("DbAdmin")
 
 DB            = DB or sqlite3.open_memory()
-
+local admin = dbAdmin.new(DB)
 DB:exec [[
   CREATE TABLE IF NOT EXISTS users (
     address TEXT PRIMARY KEY,
@@ -236,59 +237,73 @@ Handlers.add(
   end
 )
 
+-- Handlers.add(
+--   "GetPosts",
+--   { Action = "GetPosts" },
+--   function(msg)
+--     print('msg', msg)
+--     -- local data = json.decode(msg.Data)
+
+--     -- local offset    = data.offset
+--     -- local id        = data.id
+--     -- local address   = data.address
+
+--     local stmt_all  = [[
+--       SELECT p.*, u.avatar, u.nickname
+--       FROM posts p
+--       JOIN users u ON p.address = u.address
+--       ORDER BY p.time DESC LIMIT 10;
+--     ]]
+
+--     -- local stmt_one  = [[
+--     --   SELECT p.*, u.avatar, u.nickname
+--     --   FROM posts p
+--     --   JOIN users u ON p.address = u.address
+--     --   WHERE p.id = :id;
+--     -- ]]
+
+--     -- local stmt_addr = [[
+--     --   SELECT p.*, u.avatar, u.nickname
+--     --   FROM posts p
+--     --   JOIN users u ON p.address = u.address
+--     --   WHERE p.address = :address
+--     --   ORDER BY p.time DESC LIMIT 10 OFFSET :offset;
+--     -- ]]
+
+--     local stmt
+--     -- if id ~= nil then
+--     --   stmt = DB:prepare(stmt_one)
+--     -- elseif address ~= nil then
+--     --   stmt = DB:prepare(stmt_addr)
+--     -- else
+--     stmt = DB:prepare(stmt_all)
+--     -- end
+
+--     if not stmt then
+--       error("Failed to prepare SQL statement: " .. DB:errmsg())
+--     end
+
+--     -- stmt:bind_names({
+--     --   id = id,
+--     --   offset = offset,
+--     --   address = address,
+--     -- })
+
+--     local rows = query(stmt)
+--     local response = json.encode(rows)
+--     msg.reply({Data = response})
+--     print('GetPosts Done!')
+--   end
+-- )
+
+
 Handlers.add(
   "GetPosts",
-  { Action =  "GetPosts" },
+  { Action = "GetPosts" },
   function(msg)
-    local data = json.decode(msg.Data)
-
-    local offset    = data.offset
-    local id        = data.id
-    local address   = data.address
-
-    local stmt_all  = [[
-      SELECT p.*, u.avatar, u.nickname
-      FROM posts p
-      JOIN users u ON p.address = u.address
-      ORDER BY p.time DESC LIMIT 10 OFFSET :offset;
-    ]]
-
-    local stmt_one  = [[
-      SELECT p.*, u.avatar, u.nickname
-      FROM posts p
-      JOIN users u ON p.address = u.address
-      WHERE p.id = :id;
-    ]]
-
-    local stmt_addr = [[
-      SELECT p.*, u.avatar, u.nickname
-      FROM posts p
-      JOIN users u ON p.address = u.address
-      WHERE p.address = :address
-      ORDER BY p.time DESC LIMIT 10 OFFSET :offset;
-    ]]
-
-    local stmt
-    if id ~= nil then
-      stmt = DB:prepare(stmt_one)
-    elseif address ~= nil then
-      stmt = DB:prepare(stmt_addr)
-    else
-      stmt = DB:prepare(stmt_all)
-    end
-
-    if not stmt then
-      error("Failed to prepare SQL statement: " .. DB:errmsg())
-    end
-
-    stmt:bind_names({
-      id = id,
-      offset = offset,
-      address = address,
-    })
-
-    local rows = query(stmt)
-    msg.reply({Data = json.encode(rows)})
+    local results = admin:exec("SELECT * FROM posts;")
+    print('results', results)
+    msg.reply({Data = json.encode(results)})
     print('GetPosts Done!')
   end
 )

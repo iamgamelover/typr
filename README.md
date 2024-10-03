@@ -50,3 +50,30 @@ Send({
 ```
 
 hooray.
+
+
+## testing
+
+setup process with dbAdmin
+```
+.load-blueprint apm
+apm.install "@rakis/DbAdmin"
+
+.load splx-on-ao/lua/life-app.lua
+
+.load splx-on-ao/lua/DbAdmin.lua
+```
+
+to test some queries
+
+read
+```
+local sqlite3 = require("lsqlite3")
+local dbAdmin = require("DbAdmin")
+
+DB = DB or sqlite3.open_memory()
+local admin = dbAdmin.new(DB)
+-- local results = admin:exec("SELECT * FROM posts;")
+local count = admin:count("posts")
+print('results', count)
+```

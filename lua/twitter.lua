@@ -4,24 +4,25 @@ Replies = Replies or {}
 
 -- Handlers.add(
 --   "Register",
---   Handlers.utils.hasMatchingTag("Action", "Register"),
+--   {Action = "Register"},
 --   function(msg)
 --     table.insert(Members, msg.From)
---     Handlers.utils.reply("registered")(msg)
+--     Handlers.utils.reply({Data = "registered")(msg)
 --   end
 -- )
 
 Handlers.add(
   "GetPosts",
-  Handlers.utils.hasMatchingTag("Action", "GetPosts"),
+  {Action = "GetPosts"},
   function(msg)
-    Handlers.utils.reply(table.concat(Posts, "▲"))(msg)
+    msg.reply({Data = table.concat(Posts, "▲")})
+    print('server: replied to' .. msg.Data)
   end
 )
 
 Handlers.add(
   "SendPost",
-  Handlers.utils.hasMatchingTag("Action", "SendPost"),
+  {Action = "SendPost"},
   function(msg)
     table.insert(Posts, msg.Data)
   end
@@ -29,15 +30,15 @@ Handlers.add(
 
 Handlers.add(
   "GetReplies",
-  Handlers.utils.hasMatchingTag("Action", "GetReplies"),
+  {Action = "GetReplies"},
   function(msg)
-    Handlers.utils.reply(table.concat(Replies, "▲"))(msg)
+    msg.reply({Data = table.concat(Replies, "▲")})
   end
 )
 
 Handlers.add(
   "SendReply",
-  Handlers.utils.hasMatchingTag("Action", "SendReply"),
+  {Action = "SendReply"},
   function(msg)
     table.insert(Replies, msg.Data)
   end
