@@ -6,6 +6,8 @@ import { BsHeartFill, BsPersonFillLock } from 'react-icons/bs';
 import { FaCoins } from "react-icons/fa";
 import { IoMdChatbubbles } from "react-icons/io";
 
+import parse from 'html-react-parser';
+
 interface StoryCardProps {
   data: any;
 }
@@ -36,6 +38,7 @@ class StoryCard extends React.Component<StoryCardProps, StoryCardState> {
     if (!image) image = './dream.jpg';
 
     let title = getFirstLine(str);
+    // console.log("title:", title)
     if (!title) title = 'A Fine Stroy!';
 
     this.setState({ title, image });
@@ -57,7 +60,12 @@ class StoryCard extends React.Component<StoryCardProps, StoryCardState> {
             <div className='story-card-summary'>{formatTimestamp(data.time, true)}</div>
             {data.range === 'private' && <BsPersonFillLock size={20} color='gray' />}
           </div>
-          <div className='story-card-title'>{this.state.title}</div>
+
+          {/* <div className='story-card-title'>{this.state.title}</div> */}
+          <div className='story-card-title'>
+            {parse(this.state.title)}
+          </div>
+
           {/* <div className='story-card-summary'>{data.summary}</div> */}
 
           <div className='story-card-state-row'>

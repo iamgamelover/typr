@@ -67,8 +67,8 @@ class SitePage extends React.Component<{}, SitePageState> {
     let process = await getDefaultProcess(address);
     Server.service.setDefaultProcess(process);
 
-    this.getStatus();
-    setInterval(() => this.getStatus(), 60000); // 1 min
+    // this.getStatus();
+    // setInterval(() => this.getStatus(), 60000); // 1 min
 
     // getting notifications.
     setInterval(() => this.getNotis(), 20000); // 20 seconds
