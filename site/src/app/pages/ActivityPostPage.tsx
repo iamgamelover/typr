@@ -16,6 +16,7 @@ import { AO_STORY, AO_TWITTER, PAGE_SIZE, TIP_CONN, TIP_IMG } from '../util/cons
 import { Server } from '../../server/server';
 import QuestionModal from '../modals/QuestionModal';
 import Loading from '../elements/Loading';
+import parse from 'html-react-parser';
 
 interface ActivityPostPageProps {
   type: string;
@@ -316,7 +317,9 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
           <div>
             {this.state.loading ? 'Loading...' :
               this.props.type == 'post' ? 'Post' : 
-              <div className="activity-post-page-story-title">{title}</div>
+              <div className="activity-post-page-story-title">
+                {parse(title)}
+              </div>
             }
           </div>
           {this.props.type == 'post' && date != 'Invalid Date' && <div className='activity-post-time'>&#x2022;&nbsp;&nbsp;{date}</div>}

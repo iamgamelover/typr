@@ -5,7 +5,6 @@ import { NavLink } from 'react-router-dom';
 import { BsHeartFill, BsPersonFillLock } from 'react-icons/bs';
 import { FaCoins } from "react-icons/fa";
 import { IoMdChatbubbles } from "react-icons/io";
-
 import parse from 'html-react-parser';
 
 interface StoryCardProps {
