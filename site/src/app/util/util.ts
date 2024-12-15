@@ -646,7 +646,7 @@ export async function getTokenBalance(process: string, address: string) {
       { name: 'Recipient', value: address },
     ],
   });
-  
+  // console.log("result:", process, result)
   return result.Messages[0]?.Data;
 }
 

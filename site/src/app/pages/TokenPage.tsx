@@ -5,7 +5,7 @@ import {
   numberWithCommas, transferToken, evaluate, spawnProcess,
   formatBalance
 } from '../util/util';
-import { CRED, AOT_TEST, TRUNK, LUA, WAR, AR_DEC, TIP_CONN, ORBT, USDA } from '../util/consts';
+import { AOT_TEST, TRUNK, LUA, WAR, AR_DEC, TIP_CONN, ORBT, USDA } from '../util/consts';
 import { dryrun } from "@permaweb/aoconnect/browser";
 import MessageModal from '../modals/MessageModal';
 import { Server } from '../../server/server';
@@ -22,7 +22,6 @@ interface TokenPageState {
   process: string;
   hasAOT: boolean;
   isLoaded: boolean;
-  balOfCRED: number;
   balOfAOT: number;
   balOfTRUNK: number;
   balOfWAR: number;
@@ -43,7 +42,6 @@ class TokenPage extends React.Component<{}, TokenPageState> {
       process: '',
       hasAOT: true,
       isLoaded: false,
-      balOfCRED: 0,
       balOfAOT: 0,
       balOfTRUNK: 0,
       balOfWAR: 0,
@@ -66,10 +64,6 @@ class TokenPage extends React.Component<{}, TokenPageState> {
       return;
     }
 
-    let balOfCRED = await getTokenBalance(CRED, process);
-    // balOfCRED = formatBalance(balOfCRED, 3);
-    Server.service.setBalanceOfCRED(balOfCRED);
-
     let balOfTRUNK = await getTokenBalance(TRUNK, process);
     // balOfTRUNK = formatBalance(balOfTRUNK, 3);
     Server.service.setBalanceOfTRUNK(balOfTRUNK);
@@ -89,12 +83,13 @@ class TokenPage extends React.Component<{}, TokenPageState> {
     // console.log("balOfUSDA:", balOfUSDA)
     Server.service.setBalanceOfUSDA(balOfUSDA);
 
-    this.setState({ balOfCRED, balOfTRUNK, balOfWAR, balOf0rbit, balOfUSDA });
-    this.displayAOT(process);
+    this.setState({ balOfTRUNK, balOfWAR, balOf0rbit, balOfUSDA, loading: false });
+    // this.displayAOT(process);
   }
 
   async displayAOT(address: string) {
     let balOfAOT = await getTokenBalance(AOT_TEST, address);
+    console.log("balOfAOT:", balOfAOT)
     Server.service.setBalanceOfAOT(balOfAOT);
     this.setState({ balOfAOT, loading: false });
 
@@ -146,15 +141,15 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   }
 
   renderTokens() {
-    let tokens = ['AOT-Test', 'Wrapped AR', 'AOCRED-Test', 'TRUNK', '0rbit', 'USDA-TST'];
-    let icons = ['./logo.png', './logo-war.png', './logo-ao.png', './logo-trunk.png', './logo-0rbit.jpg', './logo-usda.png'];
-    let bals = [this.state.balOfAOT, this.state.balOfWAR, this.state.balOfCRED, this.state.balOfTRUNK, this.state.balOf0rbit, this.state.balOfUSDA];
+    let tokens = ['AOT-Test', 'Wrapped AR', 'TRUNK', '0rbit', 'USDA-TST'];
+    let icons = ['./logo.png', './logo-war.png', './logo-trunk.png', './logo-0rbit.jpg', './logo-usda.png'];
+    let bals = [this.state.balOfAOT, this.state.balOfWAR, this.state.balOfTRUNK, this.state.balOf0rbit, this.state.balOfUSDA];
 
     let divs = [];
     for (let i = 0; i < tokens.length; i++) {
       divs.push(
         <div key={i} className='token-page-card'>
-          <img className={`token-page-icon ${i !== 3 && 'cred'} ${i == 4 && 'circle'}`} src={icons[i]} />
+          <img className={`token-page-icon ${i !== 2 && 'cred'} ${i == 3 && 'circle'}`} src={icons[i]} />
           <div>
             <div className='token-page-title'>{tokens[i]}</div>
             {this.state.loading

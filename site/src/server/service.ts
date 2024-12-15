@@ -9,7 +9,6 @@ export class Service {
   protected addrLogIn:string;
   protected activeAddress:string;
   protected defaultProcess:string;
-  protected balanceOfCRED:number;
   protected balanceOfAOT:number;
   protected balanceOfTRUNK:number;
   protected balanceOfWAR:number;
@@ -108,14 +107,6 @@ export class Service {
 
   public getBalanceOfTRUNK() {
     return this.balanceOfTRUNK;
-  }
-  
-  public setBalanceOfCRED(bal:number) {
-    this.balanceOfCRED = bal;
-  }
-
-  public getBalanceOfCRED() {
-    return this.balanceOfCRED;
   }
   
   public setBalanceOfWAR(bal:number) {

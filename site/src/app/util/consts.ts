@@ -12,8 +12,7 @@ export const regexPatterns = {
 export const AO_TWITTER = "8s1ZpAx_NueKS4N2ZOMYWCkl5qVcGkgnBFSnqSVX9Fo";
 export const AO_STORY = "AAwa2zqVLSMvxOPMjhUVtPHS_SN1ObbsaY27X9OPCbw";
 export const STORY_INCOME = "LsNy8F1GSkGvE0IJ6g1RFpHHjKE6tmtXUT91WIv3PMQ";
-export const CRED = "Sa0iBLPNyJQrwpTTG-tWLQU-1QeUAJA73DdxGGiKoJc";
-export const TRUNK = "OT9qTE2467gcozb2g8R6D6N3nQS94ENcaAIJfUzHCww";
+export const TRUNK = "wOrb8b_V8QixWyXZub48Ki5B6OIDyf_p1ngoonsaRpQ";
 export const WAR = "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10";
 export const ORBT = "BUhZLMwQ6yZHguLtJYA5lLUa9LQzLXMXRfaq9FVcPJc";
 export const USDA = "GcFxqTQnKHcr304qnOcq00ZqbaYGDn4Wbb0DHAM-wvU";
@@ -32,13 +31,12 @@ export const MODULE = "GYrbbe0VbHim_7Hi6zrOpHQXrSQz07XNtwCnfbFo2I0"
 export const SCHEDULER = "_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA"
 export const ARWEAVE_GATEWAY = "https://arweave.net/";
 
-export const TOKEN_PID = new Map([[0, AOT_TEST], [1, WAR], [2, TRUNK], [3, CRED], [4, ORBT], [5, USDA]]);
-export const TOKEN_NAME = new Map([[0, 'AOT_TEST'], [1, 'wAR'], [2, 'TRUNK'], [3, 'CRED'], [4, '0RBT'], [5, 'USDA-TST']]);
+export const TOKEN_PID = new Map([[0, AOT_TEST], [1, WAR], [2, TRUNK], [3, ORBT], [4, USDA]]);
+export const TOKEN_NAME = new Map([[0, 'AOT_TEST'], [1, 'wAR'], [2, 'TRUNK'], [3, '0RBT'], [4, 'USDA-TST']]);
 export const TOKEN_ICON = new Map([
   ['wAR', './logo-war.png'],
   ['WAR', './logo-war.png'],
   ['TRUNK', './logo-trunk.png'],
-  ['CRED', './logo-ao.png'],
   ['AOT_TEST', './logo.png'],
   ['TYPR', './logo.png'],
   ['0RBT', './logo-0rbit.jpg'],

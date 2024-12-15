@@ -87,7 +87,6 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
     let bal_war = Server.service.getBalanceOfWAR();
     let bal_trunk = Server.service.getBalanceOfTRUNK();
-    let bal_cred = Server.service.getBalanceOfCRED();
     let bal_aot = Server.service.getBalanceOfAOT();
     let bal_0rbit = Server.service.getBalanceOf0rbit();
     let bal_usda = Server.service.getBalanceOfUSDA();
@@ -109,7 +108,7 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
         bal_usda = 0;
     }
 
-    let balances = [bal_aot, bal_war, bal_trunk, bal_cred, bal_0rbit, bal_usda];
+    let balances = [bal_aot, bal_war, bal_trunk, bal_0rbit, bal_usda];
 
     let divs = [];
     for (let i = 0; i < tokens.length; i++) {
@@ -154,7 +153,6 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
       [0, Server.service.getBalanceOfAOT()],
       [1, Server.service.getBalanceOfWAR()],
       [2, Server.service.getBalanceOfTRUNK()],
-      [3, Server.service.getBalanceOfCRED()],
       [4, Server.service.getBalanceOf0rbit()],
       [5, Server.service.getBalanceOfUSDA()]
     ]);
@@ -221,13 +219,10 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
         Server.service.setBalanceOfTRUNK(bal_new);
         break;
       case 3:
-        Server.service.setBalanceOfCRED(bal_new);
-        break;
-      case 4:
         bal_new = bal_new / AR_DEC;
         Server.service.setBalanceOf0rbit(bal_new);
         break;
-      case 5:
+      case 4:
         bal_new = bal_new / AR_DEC;
         Server.service.setBalanceOfUSDA(bal_new);
         break;

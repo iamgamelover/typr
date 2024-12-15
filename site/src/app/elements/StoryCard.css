@@ -53,9 +53,7 @@
 .story-card-title {
   display: flex;
   font-size: 1.1em;
-  word-break: break-all;
-  /* word-wrap: break-word; */
-  /* overflow-wrap: break-word; */
+  word-wrap: break-word;
 }
 
 .story-card-summary {
