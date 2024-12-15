@@ -95,7 +95,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
   async getStory(category?: string) {
     let data = { category, offset: 0 };
     let posts = await getDataFromAO(AO_STORY, 'GetStories', data);
-    // console.log("stories:", posts)
+    console.log("stories:", posts)
 
     if (posts.length < PAGE_SIZE)
       this.setState({ isAll: true })
@@ -139,8 +139,14 @@ class StoryPage extends React.Component<{}, StoryPageState> {
 
     let divs = [];
     for (let i = 0; i < this.state.posts.length; i++) {
+      // temp way - hide story for the Aolotto project
+      let id1 = "db822f63-3a72-4fae-ab78-a2e8fb69bef2";
+      let id2 = "eddf4ac0-a091-4f7b-ae5e-d3b7f9b79091";
+
+      let story = this.state.posts[i]
+      if (story.id == id1 || story.id == id2) continue
       divs.push(
-        <StoryCard key={uuid()} data={this.state.posts[i]} />
+        <StoryCard key={uuid()} data={story} />
       )
     }
 
