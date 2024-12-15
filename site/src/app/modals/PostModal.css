@@ -29,6 +29,11 @@
   margin-right: 200px;
 }
 
+.story-title-input {
+  width: 95%;
+  margin-bottom: 20px;
+}
+
 @media (max-width: 650px) {
   .modal-content {
     /* max-width: 330px; */

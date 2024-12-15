@@ -72,6 +72,11 @@
   margin-top: 12px;
 }
 
+.activity-post-page-story-title {
+  font-size: large;
+  color: yellow;
+}
+
 @media (max-width: 650px) {
   .activity-post-page {
     padding: 10px;

@@ -37,9 +37,12 @@ class StoryCard extends React.Component<StoryCardProps, StoryCardState> {
     let image = getFirstImage(str);
     if (!image) image = './dream.jpg';
 
-    let title = getFirstLine(str);
-    // console.log("title:", title)
-    if (!title) title = 'A Fine Stroy!';
+    // To be compatible with the previous version.
+    let title = this.props.data.title;
+    if (!title) {
+      title = getFirstLine(str);
+      if (!title) title = 'A Fine Stroy!';
+    }
 
     this.setState({ title, image });
   }

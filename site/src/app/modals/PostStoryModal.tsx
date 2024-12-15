@@ -8,7 +8,9 @@ import SharedQuillEditor from '../elements/SharedQuillEditor';
 import { AO_STORY, AO_TWITTER, STORY_INCOME, TIP_CONN, TIP_IMG } from '../util/consts';
 import {
   checkContent, getWalletAddress, timeOfNow, uuid, messageToAO,
-  numberWithCommas, transferToken, getDefaultProcess
+  numberWithCommas, transferToken, getDefaultProcess,
+  shortAddr,
+  randomAvatar
 } from '../util/util';
 import { MdOutlineToken } from 'react-icons/md';
 import { Server } from '../../server/server';
@@ -17,26 +19,26 @@ import QuestionModal from './QuestionModal';
 
 declare var window: any;
 
-interface PostModalProps {
+interface PostStoryModalProps {
   open: boolean;
   onClose: Function;
-  isStory?: boolean;
 }
 
-interface PostModalState {
+interface PostStoryModalState {
   message: string;
   alert: string;
   question: string;
   range: string;
   category: string;
+  title: string;
 }
 
-class PostModal extends React.Component<PostModalProps, PostModalState> {
+class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModalState> {
   quillRef: any;
   wordCount = 0;
   refresh: any;
 
-  constructor(props: PostModalProps) {
+  constructor(props: PostStoryModalProps) {
     super(props);
 
     this.state = {
@@ -45,8 +47,10 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
       question: '',
       range: 'everyone',
       category: 'travel',
+      title: '',
     }
 
+    this.onTitleChange = this.onTitleChange.bind(this);
     this.onContentChange = this.onContentChange.bind(this);
     this.onRangeChange = this.onRangeChange.bind(this);
     this.onCategoryChange = this.onCategoryChange.bind(this);
@@ -61,6 +65,10 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
 
   onQuestionNo() {
     this.setState({ question: '' });
+  }
+
+  onTitleChange(e: any) {
+    this.setState({ title: e.currentTarget.value });
   }
 
   onContentChange(length: number) {
@@ -81,6 +89,24 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
   }
 
   async onPost() {
+    // TEMP CODE 
+    // let address2 = Server.service.getActiveAddress();
+    // let nickname = shortAddr(address2, 4);
+    // let data2 = { address: address2, avatar: randomAvatar(), banner: '', nickname, bio: '', time: timeOfNow() };
+    // console.log("data2:", data2)
+    // await messageToAO(AO_STORY, data2, 'Register');
+
+
+    // check the title
+    if (!this.state.title.trim()) {
+      this.setState({ alert: 'The story title is empty.' });
+      return;
+    }
+    if (this.state.title.length > 100) {
+      this.setState({ alert: 'Story title can be up to 100 characters long.' });
+      return;
+    }
+
     let result = checkContent(this.quillRef, this.wordCount);
     if (result) {
       this.setState({ alert: result });
@@ -93,26 +119,24 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
       return;
     }
 
-    if (this.props.isStory) {
-      let resp = await this.transferFee();
-      if (!resp) return;
-    }
+    // if (this.props.isStory) {
+    //   let resp = await this.transferFee();
+    //   if (!resp) return;
+    // }
 
     this.setState({ message: 'Posting...' });
 
     let post = this.quillRef.root.innerHTML;
 
     let data = {
-      id: uuid(), address, post, range: this.state.range,
+      id: uuid(), address, post,
+      title: this.state.title,
+      range: this.state.range,
       category: this.state.category,
       likes: 0, replies: 0, coins: 0, time: timeOfNow()
     };
 
-    let response;
-    if (this.props.isStory)
-      response = await messageToAO(AO_STORY, data, 'SendStory');
-    else
-      response = await messageToAO(AO_TWITTER, data, 'SendPost');
+    let response = await messageToAO(AO_STORY, data, 'SendStory');
 
     if (response) {
       this.setState({ message: '' });
@@ -120,7 +144,7 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
 
       // store the txid of a post. 
       let txid = { id: data.id, txid: response };
-      messageToAO(this.props.isStory ? AO_STORY : AO_TWITTER, txid, 'SendTxid');
+      messageToAO(AO_STORY, txid, 'SendTxid');
     }
     else
       this.setState({ message: '', alert: TIP_IMG });
@@ -173,63 +197,49 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
             <BsFillXCircleFill />
           </button>
 
-          {this.props.isStory &&
-            <div>
-              <div className='post-modal-header-row'>
-                <div className="post-modal-header-title">New Story</div>
-                <div className='post-modal-header-balance'>
-                  <MdOutlineToken size={20} />
-                  {numberWithCommas(Number(Server.service.getBalanceOfAOT()))}
-                </div>
-              </div>
-              <div className='bounty-modal-header-line' />
+          <div>
+            <div className='post-modal-header-row'>
+              <div className="post-modal-header-title">New Story</div>
+              {/* <div className='post-modal-header-balance'>
+                <MdOutlineToken size={20} />
+                {numberWithCommas(Number(Server.service.getBalanceOfAOT()))}
+              </div> */}
             </div>
-          }
+            <div className='bounty-modal-header-line' />
+          </div>
+
+          <input
+            className="story-title-input"
+            placeholder="Story title"
+            value={this.state.title}
+            onChange={this.onTitleChange}
+          />
 
           <div className="home-input-container">
+
             <SharedQuillEditor
-              placeholder={this.props.isStory ? 'The first text line and image are the story name and cover.' : 'What is happening?!'}
+              placeholder={'The first image will be the story cover.'}
               onChange={this.onContentChange}
               getRef={(ref: any) => this.quillRef = ref}
             />
 
             <div className='post-modal-actions'>
-              {this.props.isStory
-                ?
-                <select
-                  className="home-filter"
-                  value={this.state.category}
-                  onChange={this.onCategoryChange}
-                >
-                  <option value="travel">Travel</option>
-                  <option value="learn">Learn</option>
-                  <option value="fiction">Fiction</option>
-                  <option value="music">Music</option>
-                  <option value="sports">Sports</option>
-                  <option value="movies">Movies</option>
-                </select>
-                :
-                <select
-                  className="home-filter"
-                  value={this.state.range}
-                  onChange={this.onRangeChange}
-                >
-                  <option value="everyone">Everyone</option>
-                  {/* <option value="following">Following</option> */}
-                  <option value="private">Private</option>
-                </select>
-              }
+              <select
+                className="home-filter"
+                value={this.state.category}
+                onChange={this.onCategoryChange}
+              >
+                <option value="travel">Travel</option>
+                <option value="learn">Learn</option>
+                <option value="fiction">Fiction</option>
+                <option value="music">Music</option>
+                <option value="sports">Sports</option>
+                <option value="movies">Movies</option>
+              </select>
 
-              {this.props.isStory
-                ?
-                <div className="app-icon-button fire-color" onClick={() => this.tipTransfer()}>
-                  <AiOutlineFire size={20} />New Story
-                </div>
-                :
-                <div className="app-icon-button" onClick={() => this.onPost()}>
-                  <BsSend size={20} />Post
-                </div>
-              }
+              <div className="app-icon-button fire-color" onClick={() => this.onPost()}>
+                <AiOutlineFire size={20} />New Story
+              </div>
             </div>
           </div>
         </div>
@@ -242,4 +252,4 @@ class PostModal extends React.Component<PostModalProps, PostModalState> {
   }
 }
 
-export default PostModal;
+export default PostStoryModal;

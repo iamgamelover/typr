@@ -9,7 +9,8 @@ import { BsFillArrowLeftCircleFill, BsReply } from 'react-icons/bs';
 import { subscribe } from '../util/event';
 import {
   checkContent, getDataFromAO, getWalletAddress, isLoggedIn,
-  timeOfNow, messageToAO, uuid, isBookmarked
+  timeOfNow, messageToAO, uuid, isBookmarked,
+  getFirstLine
 } from '../util/util';
 import { AO_STORY, AO_TWITTER, PAGE_SIZE, TIP_CONN, TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
@@ -121,7 +122,6 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
   async getStory() {
     let post = await getDataFromAO(this.process, 'GetStories', { id: this.postId });
-    console.log("story:", post)
     if (post.length == 0) {
       this.setState({ alert: 'Story not found.' });
       return;
@@ -298,15 +298,28 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
   render() {
     let date = new Date(this.state.post.time * 1000).toLocaleString();
 
+    // About the story title - compatible the previous version
+    let title;
+    let post = this.state.post.post;
+    if (post) {
+      title = this.state.post.title;
+      if (!title) {
+        title = getFirstLine(post);
+        if (!title) title = 'A Fine Stroy!';
+      }
+    }
+
     return (
       <div className="activity-post-page">
         <div className="activity-post-page-header" onClick={() => this.onBack()}>
           <div className="activity-post-page-back-button"><BsFillArrowLeftCircleFill /></div>
           <div>
             {this.state.loading ? 'Loading...' :
-              this.props.type == 'post' ? 'Post' : 'Story'}
+              this.props.type == 'post' ? 'Post' : 
+              <div className="activity-post-page-story-title">{title}</div>
+            }
           </div>
-          {date != 'Invalid Date' && <div className='activity-post-time'>&#x2022;&nbsp;&nbsp;{date}</div>}
+          {this.props.type == 'post' && date != 'Invalid Date' && <div className='activity-post-time'>&#x2022;&nbsp;&nbsp;{date}</div>}
         </div>
 
         {!this.state.loading &&
