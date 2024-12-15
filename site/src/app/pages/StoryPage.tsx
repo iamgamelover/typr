@@ -71,9 +71,6 @@ class StoryPage extends React.Component<{}, StoryPageState> {
   }
 
   onCategoryChange(e: any) {
-    // let data = { category: 'learn' };
-    // messageToAO(AO_STORY, data, 'GetStories');
-    
     let category = e.currentTarget.value;
     this.setState({ category, loading: true });
     if (category == 'all')
@@ -172,7 +169,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
   }
 
   renderFilters() {
-    let filters = ['All New', 'Top Story'];
+    let filters = ['Hot Projects', 'Top Story', 'All New'];
 
     let divs = [];
     for (let i = 0; i < filters.length; i++) {
@@ -193,7 +190,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
     return (
       <div className='story-page'>
         <div className='story-page-header'>
-          <div className='story-page-title'>Stories</div>
+          <div className='story-page-title'>Story</div>
           {Server.service.isLoggedIn() &&
             <div className="app-icon-button fire-color" onClick={this.onOpen}>
               <AiOutlineFire size={20} />New Story
@@ -212,12 +209,13 @@ class StoryPage extends React.Component<{}, StoryPageState> {
             onChange={this.onCategoryChange}
           >
             <option value="all">All</option>
+            <option value="project">Project</option>
             <option value="travel">Travel</option>
             <option value="learn">Learn</option>
             <option value="fiction">Fiction</option>
             <option value="music">Music</option>
-            <option value="sports">Sports</option>
-            <option value="movies">Movies</option>
+            <option value="sports">Sport</option>
+            <option value="movie">Movie</option>
           </select>
         </div>
 

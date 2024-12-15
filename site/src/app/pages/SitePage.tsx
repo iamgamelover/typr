@@ -73,26 +73,26 @@ class SitePage extends React.Component<{}, SitePageState> {
     // getting notifications.
     setInterval(() => this.getNotis(), 20000); // 20 seconds
 
-    let bal_aot = await getTokenBalance(AOT_TEST, process);
-    console.log("bal_aot:", bal_aot)
-    Server.service.setBalanceOfAOT(bal_aot);
+    // let bal_aot = await getTokenBalance(AOT_TEST, process);
+    // console.log("bal_aot:", bal_aot)
+    // Server.service.setBalanceOfAOT(bal_aot);
 
     let bal_trunk = await getTokenBalance(TRUNK, process);
     // bal_trunk = formatBalance(bal_trunk, 3);
-    console.log("bal_trunk:", bal_trunk)
+    // console.log("bal_trunk:", bal_trunk)
     Server.service.setBalanceOfTRUNK(bal_trunk);
 
     let bal_war = await getTokenBalance(WAR, process);
-    console.log("bal_war:", bal_war)
+    // console.log("bal_war:", bal_war)
     Server.service.setBalanceOfWAR(bal_war / AR_DEC);
 
-    let bal_0rbit = await getTokenBalance(ORBT, process);
-    console.log("bal_0rbit:", bal_0rbit)
-    Server.service.setBalanceOf0rbit(bal_0rbit / AR_DEC);
+    // let bal_0rbit = await getTokenBalance(ORBT, process);
+    // console.log("bal_0rbit:", bal_0rbit)
+    // Server.service.setBalanceOf0rbit(bal_0rbit / AR_DEC);
 
-    let bal_usda = await getTokenBalance(USDA, process);
-    console.log("bal_usda:", bal_usda)
-    Server.service.setBalanceOfUSDA(bal_usda / AR_DEC);
+    // let bal_usda = await getTokenBalance(USDA, process);
+    // console.log("bal_usda:", bal_usda)
+    // Server.service.setBalanceOfUSDA(bal_usda / AR_DEC);
 
     publish('get-bal-done');
   }

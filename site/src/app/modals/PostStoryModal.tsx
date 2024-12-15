@@ -46,7 +46,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
       alert: '',
       question: '',
       range: 'everyone',
-      category: 'travel',
+      category: 'project',
       title: '',
     }
 
@@ -210,7 +210,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
 
           <input
             className="story-title-input"
-            placeholder="Story title"
+            placeholder="Title"
             value={this.state.title}
             onChange={this.onTitleChange}
           />
@@ -229,12 +229,13 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
                 value={this.state.category}
                 onChange={this.onCategoryChange}
               >
+                <option value="project">Project</option>
                 <option value="travel">Travel</option>
                 <option value="learn">Learn</option>
                 <option value="fiction">Fiction</option>
                 <option value="music">Music</option>
-                <option value="sports">Sports</option>
-                <option value="movies">Movies</option>
+                <option value="sports">Sport</option>
+                <option value="movie">Movie</option>
               </select>
 
               <div className="app-icon-button fire-color" onClick={() => this.onPost()}>

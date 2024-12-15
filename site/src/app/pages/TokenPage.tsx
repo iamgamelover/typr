@@ -73,17 +73,17 @@ class TokenPage extends React.Component<{}, TokenPageState> {
     // console.log("balOfWAR:", balOfWAR)
     Server.service.setBalanceOfWAR(balOfWAR);
 
-    let balOf0rbit = await getTokenBalance(ORBT, process);
-    balOf0rbit = balOf0rbit / AR_DEC;
+    // let balOf0rbit = await getTokenBalance(ORBT, process);
+    // balOf0rbit = balOf0rbit / AR_DEC;
     // console.log("balOf0rbit:", balOf0rbit)
-    Server.service.setBalanceOf0rbit(balOf0rbit);
+    // Server.service.setBalanceOf0rbit(balOf0rbit);
 
-    let balOfUSDA = await getTokenBalance(USDA, process);
-    balOfUSDA = balOfUSDA / AR_DEC;
+    // let balOfUSDA = await getTokenBalance(USDA, process);
+    // balOfUSDA = balOfUSDA / AR_DEC;
     // console.log("balOfUSDA:", balOfUSDA)
-    Server.service.setBalanceOfUSDA(balOfUSDA);
+    // Server.service.setBalanceOfUSDA(balOfUSDA);
 
-    this.setState({ balOfTRUNK, balOfWAR, balOf0rbit, balOfUSDA, loading: false });
+    this.setState({ balOfTRUNK, balOfWAR, loading: false });
     // this.displayAOT(process);
   }
 
@@ -141,9 +141,9 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   }
 
   renderTokens() {
-    let tokens = ['AOT-Test', 'Wrapped AR', 'TRUNK', '0rbit', 'USDA-TST'];
-    let icons = ['./logo.png', './logo-war.png', './logo-trunk.png', './logo-0rbit.jpg', './logo-usda.png'];
-    let bals = [this.state.balOfAOT, this.state.balOfWAR, this.state.balOfTRUNK, this.state.balOf0rbit, this.state.balOfUSDA];
+    let tokens = ['Wrapped AR', 'TRUNK'];
+    let icons = ['./logo-war.png', './logo-trunk.png'];
+    let bals = [this.state.balOfWAR, this.state.balOfTRUNK];
 
     let divs = [];
     for (let i = 0; i < tokens.length; i++) {
@@ -180,7 +180,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
           }
         </div>
 
-        {!this.state.loading && isLoggedIn &&
+        {/* {!this.state.loading && isLoggedIn &&
           <div>
             <button onClick={() => this.loadCode()}>Upload the code</button>
 
@@ -193,11 +193,11 @@ class TokenPage extends React.Component<{}, TokenPageState> {
               </button>
             }
           </div>
-        }
+        } */}
 
-        {this.state.isLoaded &&
+        {/* {this.state.isLoaded &&
           <div className='token-page-prompt'>Upload the code to your process successfully.</div>
-        }
+        } */}
 
         <div className="token-page-balance-title">Balances</div>
         <div className='token-page-balance-line' />
@@ -206,9 +206,9 @@ class TokenPage extends React.Component<{}, TokenPageState> {
           {this.renderTokens()}
         </div>
 
-        {!this.state.hasAOT &&
+        {/* {!this.state.hasAOT &&
           <div><button onClick={() => this.getAOT()}>Get 10,000 AOT-Test</button></div>
-        }
+        } */}
 
         <MessageModal message={this.state.message} />
       </div>

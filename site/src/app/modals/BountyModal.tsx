@@ -75,15 +75,15 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     this.tokenPicked = index;
     this.renderTokens();
     // this.forceUpdate();
-    if (index == 1)
+    if (index == 5)
       this.setState({ unit: 'winston' });
     else
       this.setState({ unit: 'unit' });
   }
 
   renderTokens() {
-    let tokens = ['AOT-Test', 'Wrapped AR', 'TRUNK', 'AOCRED-Test', '0rbit', 'USDA-TST'];
-    let icons = ['./logo.png', './logo-war.png', './logo-trunk.png', './logo-ao.png', './logo-0rbit.jpg', './logo-usda.png'];
+    let tokens = ['Wrapped AR', 'TRUNK'];
+    let icons = ['./logo-war.png', './logo-trunk.png'];
 
     let bal_war = Server.service.getBalanceOfWAR();
     let bal_trunk = Server.service.getBalanceOfTRUNK();
@@ -108,7 +108,7 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
         bal_usda = 0;
     }
 
-    let balances = [bal_aot, bal_war, bal_trunk, bal_0rbit, bal_usda];
+    let balances = [bal_war, bal_trunk];
 
     let divs = [];
     for (let i = 0; i < tokens.length; i++) {
@@ -150,11 +150,8 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
   async onBounty() {
     let bal_tokens = new Map([
-      [0, Server.service.getBalanceOfAOT()],
-      [1, Server.service.getBalanceOfWAR()],
-      [2, Server.service.getBalanceOfTRUNK()],
-      [4, Server.service.getBalanceOf0rbit()],
-      [5, Server.service.getBalanceOfUSDA()]
+      [0, Server.service.getBalanceOfWAR()],
+      [1, Server.service.getBalanceOfTRUNK()]
     ]);
 
     this.setState({ message: 'Bounty...' });
@@ -172,7 +169,7 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     if (!bal) bal = 0;
 
     // Wrapped AR or 0rbit or USDA
-    if (this.tokenPicked == 1 || this.tokenPicked == 4 || this.tokenPicked == 5) {
+    if (this.tokenPicked == 0 || this.tokenPicked == 4 || this.tokenPicked == 5) {
       bal = bal * AR_DEC;
     }
     // console.log("bal:", bal)
@@ -209,22 +206,11 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     let bal_new = bal - Number(qty);
     switch (this.tokenPicked) {
       case 0:
-        Server.service.setBalanceOfAOT(bal_new);
-        break;
-      case 1:
         bal_new = bal_new / AR_DEC;
         Server.service.setBalanceOfWAR(bal_new);
         break;
-      case 2:
+      case 1:
         Server.service.setBalanceOfTRUNK(bal_new);
-        break;
-      case 3:
-        bal_new = bal_new / AR_DEC;
-        Server.service.setBalanceOf0rbit(bal_new);
-        break;
-      case 4:
-        bal_new = bal_new / AR_DEC;
-        Server.service.setBalanceOfUSDA(bal_new);
         break;
     }
 
