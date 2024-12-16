@@ -1,0 +1,31 @@
+.post-story-modal-story-title {
+  width: 95%;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.post-story-modal-left-actions {
+  display: flex;
+  column-gap: 20px;
+}
+
+.post-story-modal-poll-icon {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.post-story-modal-poll-container {
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+  padding: 10px;
+  margin: 10px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  border: 1px solid lightgray;
+}
+
+.post-story-modal-poll-option {
+  width: 80%;
+}

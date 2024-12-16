@@ -3,6 +3,7 @@ import { BsFillXCircleFill, BsSend } from 'react-icons/bs';
 import AlertModal from './AlertModal';
 import './Modal.css'
 import './PostModal.css'
+import './PostStoryModal.css'
 import MessageModal from './MessageModal';
 import SharedQuillEditor from '../elements/SharedQuillEditor';
 import { AO_STORY, AO_TWITTER, STORY_INCOME, TIP_CONN, TIP_IMG } from '../util/consts';
@@ -16,6 +17,8 @@ import { MdOutlineToken } from 'react-icons/md';
 import { Server } from '../../server/server';
 import { AiOutlineFire } from 'react-icons/ai';
 import QuestionModal from './QuestionModal';
+import { FaPollH } from 'react-icons/fa';
+import { Tooltip } from 'react-tooltip'
 
 declare var window: any;
 
@@ -31,6 +34,9 @@ interface PostStoryModalState {
   range: string;
   category: string;
   title: string;
+  openPoll: boolean;
+  poll_option_1: string;
+  poll_option_2: string;
 }
 
 class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModalState> {
@@ -48,6 +54,9 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
       range: 'everyone',
       category: 'project',
       title: '',
+      openPoll: false,
+      poll_option_1: '',
+      poll_option_2: '',
     }
 
     this.onTitleChange = this.onTitleChange.bind(this);
@@ -56,6 +65,8 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     this.onCategoryChange = this.onCategoryChange.bind(this);
     this.onQuestionYes = this.onQuestionYes.bind(this);
     this.onQuestionNo = this.onQuestionNo.bind(this);
+    this.onPollOptionChange_1 = this.onPollOptionChange_1.bind(this);
+    this.onPollOptionChange_2 = this.onPollOptionChange_2.bind(this);
   }
 
   onQuestionYes() {
@@ -69,6 +80,14 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
 
   onTitleChange(e: any) {
     this.setState({ title: e.currentTarget.value });
+  }
+
+  onPollOptionChange_1(e: any) {
+    this.setState({ poll_option_1: e.currentTarget.value });
+  }
+
+  onPollOptionChange_2(e: any) {
+    this.setState({ poll_option_2: e.currentTarget.value });
   }
 
   onContentChange(length: number) {
@@ -186,6 +205,41 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     return true;
   }
 
+  renderPollOption_1() {
+    return (
+      <input
+        className="post-story-modal-poll-option"
+        placeholder="Choice 1"
+        value={this.state.poll_option_1}
+        onChange={this.onPollOptionChange_1}
+      />
+    )
+  }
+
+  renderPollOption_2() {
+    return (
+      <input
+        className="post-story-modal-poll-option"
+        placeholder="Choice 2"
+        value={this.state.poll_option_2}
+        onChange={this.onPollOptionChange_2}
+      />
+    )
+  }
+
+  renderPoll() {
+    return (
+      <div className='post-story-modal-poll-container'>
+        {this.renderPollOption_1()}
+        {this.renderPollOption_2()}
+      </div>
+    )
+  }
+
+  onPoll() {
+    this.setState({ openPoll: true });
+  }
+
   render() {
     if (!this.props.open)
       return (<div></div>);
@@ -205,11 +259,11 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
                 {numberWithCommas(Number(Server.service.getBalanceOfAOT()))}
               </div> */}
             </div>
-            <div className='bounty-modal-header-line' />
+            {/* <div className='bounty-modal-header-line' /> */}
           </div>
 
           <input
-            className="story-title-input"
+            className="post-story-modal-story-title"
             placeholder="Title"
             value={this.state.title}
             onChange={this.onTitleChange}
@@ -223,20 +277,35 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
               getRef={(ref: any) => this.quillRef = ref}
             />
 
+            {this.state.openPoll &&
+              this.renderPoll()
+            }
+
             <div className='post-modal-actions'>
-              <select
-                className="home-filter"
-                value={this.state.category}
-                onChange={this.onCategoryChange}
-              >
-                <option value="project">Project</option>
-                <option value="travel">Travel</option>
-                <option value="learn">Learn</option>
-                <option value="fiction">Fiction</option>
-                <option value="music">Music</option>
-                <option value="sports">Sport</option>
-                <option value="movie">Movie</option>
-              </select>
+              <div className='post-story-modal-left-actions'>
+                <select
+                  className="home-filter"
+                  value={this.state.category}
+                  onChange={this.onCategoryChange}
+                >
+                  <option value="project">Project</option>
+                  <option value="travel">Travel</option>
+                  <option value="learn">Learn</option>
+                  <option value="fiction">Fiction</option>
+                  <option value="music">Music</option>
+                  <option value="sports">Sport</option>
+                  <option value="movie">Movie</option>
+                </select>
+
+                {/* <div
+                  className="post-story-modal-poll-icon"
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Poll"
+                  onClick={() => this.onPoll()}
+                >
+                  <FaPollH size={35} />
+                </div> */}
+              </div>
 
               <div className="app-icon-button fire-color" onClick={() => this.onPost()}>
                 <AiOutlineFire size={20} />New Story
@@ -245,6 +314,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
           </div>
         </div>
 
+        <Tooltip id="my-tooltip" />
         <MessageModal message={this.state.message} />
         <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />
         <QuestionModal message={this.state.question} onYes={this.onQuestionYes} onNo={this.onQuestionNo} />

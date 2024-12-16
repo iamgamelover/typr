@@ -142,9 +142,10 @@ class StoryPage extends React.Component<{}, StoryPageState> {
       // temp way - hide story for the Aolotto project
       let id1 = "db822f63-3a72-4fae-ab78-a2e8fb69bef2";
       let id2 = "eddf4ac0-a091-4f7b-ae5e-d3b7f9b79091";
+      let id3 = "a72589d5-bea1-473e-a440-6f77f86c92fd";
 
       let story = this.state.posts[i]
-      if (story.id == id1 || story.id == id2) continue
+      if (story.id == id1 || story.id == id2 || story.id == id3) continue
       divs.push(
         <StoryCard key={uuid()} data={story} />
       )
