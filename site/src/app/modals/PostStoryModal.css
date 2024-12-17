@@ -27,5 +27,37 @@
 }
 
 .post-story-modal-poll-option {
-  width: 80%;
+  width: 83%;
+}
+
+.poll-option-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.add-poll-option-icon {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin-left: 20px;
+}
+
+.poll-length-input {
+  width: 120px;
+  margin-right: 20px;
+}
+
+.poll-token-process {
+  width: 200px;
+  margin-right: 20px;
+}
+
+.poll-token-amount {
+  width: 60px;
+  margin-right: 20px;
+}
+
+.poll-token-send {
+  width: 100px;
 }
