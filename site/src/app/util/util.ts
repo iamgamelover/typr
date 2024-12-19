@@ -389,7 +389,7 @@ export function checkContent(quillRef: any, wordCount: number) {
     return 'Contains up to 5 media file.';
 
   if (wordCount == 0 && mediaAmount == 0)
-    message = 'Post is empty.';
+    message = 'Content is empty.';
   else if (wordCount > 100000)
     message = 'Content can be up to 100000 characters long.';
 
@@ -420,7 +420,6 @@ export function uuid() {
 export function timeOfNow() {
   let now = Math.floor(Date.now() / 1000);
   return now;
-  // return now.toString();
 }
 
 export async function spawnProcess() {
@@ -717,7 +716,7 @@ export function trimDecimal(num: number, digits: number) {
   } else {
     fractPart = fractPart.padEnd(digits, '0');
   }
-  
+
   return `${intPart}.${fractPart}`;
 }
 
@@ -818,4 +817,24 @@ export const arweaveSigner = (jwk: JWKInterface) => async ({
     id: dataItem.id,
     raw: dataItem.getRaw()
   }
+}
+
+/**
+ * 
+ * @param days 
+ * @param hours 
+ * @param minutes 
+ * @returns 返回截止时间的时间戳（以秒为单位）
+ */
+export function calculateDeadlineTimestamp(days: number, hours: number, minutes: number) {
+  // 将输入的天、小时、分钟转换成总的毫秒数
+  const totalMilliseconds =
+    (days * 24 * 60 * 60 * 1000) +   // 天转为毫秒
+    (hours * 60 * 60 * 1000) +      // 小时转为毫秒
+    (minutes * 60 * 1000);          // 分钟转为毫秒
+
+  // 计算截止时间
+  const deadline = new Date(Date.now() + totalMilliseconds);
+
+  return Math.floor(deadline.getTime() / 1000);
 }

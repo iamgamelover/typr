@@ -1,6 +1,8 @@
 .post-modal-content {
   padding-top: 50px;
   width: 500px;
+  max-height: 600px;
+  overflow-y: auto;
 }
 
 .post-modal-actions {

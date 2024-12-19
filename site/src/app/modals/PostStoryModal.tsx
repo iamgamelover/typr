@@ -11,7 +11,8 @@ import {
   checkContent, getWalletAddress, timeOfNow, uuid, messageToAO,
   numberWithCommas, transferToken, getDefaultProcess,
   shortAddr,
-  randomAvatar
+  randomAvatar,
+  calculateDeadlineTimestamp
 } from '../util/util';
 import { MdOutlineToken } from 'react-icons/md';
 import { Server } from '../../server/server';
@@ -37,6 +38,12 @@ interface PostStoryModalState {
   title: string;
   openPoll: boolean;
   poll_options: string[];
+  days: string;
+  hours: string;
+  minutes: string;
+  poll_token_process: string;
+  poll_token_amount: string;
+  poll_bonus: string;
 }
 
 class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModalState> {
@@ -55,7 +62,13 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
       category: 'project',
       title: '',
       openPoll: false,
-      poll_options: ['', '']
+      poll_options: ['', ''],
+      days: '1',
+      hours: '0',
+      minutes: '0',
+      poll_token_process: '',
+      poll_token_amount: '',
+      poll_bonus: '',
     }
 
     this.onTitleChange = this.onTitleChange.bind(this);
@@ -63,6 +76,12 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     this.onCategoryChange = this.onCategoryChange.bind(this);
     this.onQuestionYes = this.onQuestionYes.bind(this);
     this.onQuestionNo = this.onQuestionNo.bind(this);
+    this.onDaysChange = this.onDaysChange.bind(this);
+    this.onHoursChange = this.onHoursChange.bind(this);
+    this.onMinutesChange = this.onMinutesChange.bind(this);
+    this.onPollTokenProcessChange = this.onPollTokenProcessChange.bind(this);
+    this.onPollTokenAmountChange = this.onPollTokenAmountChange.bind(this);
+    this.onPollBonusChange = this.onPollBonusChange.bind(this);
   }
 
   onPollOptionChange(index: number, e: React.ChangeEvent<HTMLInputElement>) {
@@ -92,19 +111,35 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     this.setState({ category: e.currentTarget.value });
   };
 
+  onDaysChange(e: any) {
+    this.setState({ days: e.currentTarget.value });
+  };
+
+  onHoursChange(e: any) {
+    this.setState({ hours: e.currentTarget.value });
+  };
+
+  onMinutesChange(e: any) {
+    this.setState({ minutes: e.currentTarget.value });
+  };
+
+  onPollTokenProcessChange(e: any) {
+    this.setState({ poll_token_process: e.currentTarget.value });
+  };
+
+  onPollTokenAmountChange(e: any) {
+    this.setState({ poll_token_amount: e.currentTarget.value });
+  };
+
+  onPollBonusChange(e: any) {
+    this.setState({ poll_bonus: e.currentTarget.value });
+  };
+
   tipTransfer() {
     this.setState({ question: 'Publish a story will spend 100 AOT-Test token.' })
   }
 
   async onPost() {
-    // TEMP CODE 
-    for (let i = 0; i < this.state.poll_options.length; i++) {
-      const element = this.state.poll_options[i];
-      console.log("element:", element)
-
-    }
-    return
-
     // check the title
     if (!this.state.title.trim()) {
       this.setState({ alert: 'The story title is empty.' });
@@ -132,30 +167,99 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     //   if (!resp) return;
     // }
 
+    // check for poll
+    let option_count = 0;
+    let option_texts: string[] = [];
+    let expires_at = 0;
+
+    if (this.state.openPoll) {
+      for (let i = 0; i < this.state.poll_options.length; i++) {
+        const poll_option = this.state.poll_options[i].trim();
+        console.log("poll_option:", poll_option)
+
+        if (i == 0 || i == 1) { // must give the options
+          if (!poll_option) {
+            this.setState({ alert: "Poll option is empty." });
+            return
+          }
+        }
+
+        if (poll_option) {
+          option_count++;
+          option_texts.push(poll_option);
+        }
+      }
+
+      expires_at = calculateDeadlineTimestamp(
+        Number(this.state.days),
+        Number(this.state.hours),
+        Number(this.state.minutes)
+      )
+    }
+
+    // Start to post the story...
     this.setState({ message: 'Posting...' });
 
     let post = this.quillRef.root.innerHTML;
 
-    let data = {
-      id: uuid(), address, post,
+    // data of stories table
+    let dataOfStory = {
+      id: uuid(),
+      address,
+      post,
       title: this.state.title,
       range: this.state.range,
       category: this.state.category,
-      likes: 0, replies: 0, coins: 0, time: timeOfNow()
+      likes: 0,
+      replies: 0,
+      coins: 0,
+      time: timeOfNow(),
+      option_count,
+      expires_at,
+      updated_at: timeOfNow()
     };
+    console.log("dataOfStory:", dataOfStory)
 
-    let response = await messageToAO(AO_STORY, data, 'SendStory');
+    let response = await messageToAO(AO_STORY, dataOfStory, 'SendStory');
 
     if (response) {
-      this.setState({ message: '' });
-      this.props.onClose(data);
-
-      // store the txid of a post. 
-      let txid = { id: data.id, txid: response };
+      // store the txid of a story. 
+      let txid = { id: dataOfStory.id, txid: response };
       messageToAO(AO_STORY, txid, 'SendTxid');
+
+      if (option_count == 0) {
+        this.setState({ message: '' });
+        this.props.onClose(dataOfStory);
+        return;
+      }
     }
-    else
+    else {
       this.setState({ message: '', alert: TIP_IMG });
+      return;
+    }
+
+    // Start to post the poll...
+    if (this.state.openPoll) {
+      // data of poll_options table
+      for (let i = 0; i < option_texts.length; i++) {
+        let data = {
+          option_id: uuid(),
+          story_id: dataOfStory.id,
+          option_text: option_texts[i],
+          vote_count: 0
+        };
+        console.log("dataOfPollOption:", data)
+
+        let response = await messageToAO(AO_STORY, data, 'AddPollOption');
+        if (!response) {
+          this.setState({ message: '', alert: TIP_IMG });
+          return;
+        }
+      }
+    }
+
+    // Post successful
+    this.setState({ message: '' });
   }
 
   async transferFee() {
@@ -198,6 +302,23 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     this.setState({ openPoll: true });
   }
 
+  offPoll() {
+    this.setState({ openPoll: false });
+  }
+
+  // offPoll() {
+  //   this.setState({
+  //     openPoll: false,
+  //     poll_options: ['', ''],
+  //     days: '1',
+  //     hours: '0',
+  //     minutes: '0',
+  //     poll_token_process: '',
+  //     poll_token_amount: '',
+  //     poll_bonus: ''
+  //   });
+  // }
+
   renderPollOptions() {
     return this.state.poll_options.map((option, index) => (
       <div key={index} className="poll-option-container">
@@ -234,29 +355,38 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
       <div>
         <select
           className="poll-length-input"
-          value={this.state.category}
-          onChange={this.onCategoryChange}
+          value={this.state.days}
+          onChange={this.onDaysChange}
         >
-          <option value="0">0 days</option>
-          <option value="1">1 days</option>
+          {Array.from({ length: 8 }, (_, i) => (
+            <option key={i} value={i}>
+              {i} days
+            </option>
+          ))}
         </select>
 
         <select
           className="poll-length-input"
-          value={this.state.category}
-          onChange={this.onCategoryChange}
+          value={this.state.hours}
+          onChange={this.onHoursChange}
         >
-          <option value="0">0 hours</option>
-          <option value="1">1 hours</option>
+          {Array.from({ length: 24 }, (_, i) => (
+            <option key={i} value={i}>
+              {i} hours
+            </option>
+          ))}
         </select>
 
         <select
           className="poll-length-input"
-          value={this.state.category}
-          onChange={this.onCategoryChange}
+          value={this.state.minutes}
+          onChange={this.onMinutesChange}
         >
-          <option value="0">0 minutes</option>
-          <option value="1">1 minutes</option>
+          {Array.from({ length: 60 }, (_, i) => (
+            <option key={i} value={i}>
+              {i} minutes
+            </option>
+          ))}
         </select>
       </div>
     )
@@ -268,22 +398,25 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
         <input
           className="poll-token-process"
           placeholder='poll token process'
-        // value={option}
-        // onChange={(e) => this.onPollOptionChange(index, e)}
+          value={this.state.poll_token_process}
+          onChange={this.onPollTokenProcessChange}
         />
+
         <input
           className="poll-token-amount"
           placeholder='amount'
-        // value={option}
-        // onChange={(e) => this.onPollOptionChange(index, e)}
+          value={this.state.poll_token_amount}
+          onChange={this.onPollTokenAmountChange}
         />
+
         <select
           className="poll-token-send"
-          value={this.state.category}
-          onChange={this.onCategoryChange}
+          value={this.state.poll_bonus}
+          onChange={this.onPollBonusChange}
         >
           <option value="1">1 / user</option>
-          <option value="1">2 / user</option>
+          <option value="2">2 / user</option>
+          <option value="3">3 / user</option>
         </select>
       </div>
     );
@@ -353,14 +486,18 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
                   <option value="movie">Movie</option>
                 </select>
 
-                <div
-                  className="post-story-modal-poll-icon"
-                  data-tooltip-id="my-tooltip"
-                  data-tooltip-content="Poll"
-                  onClick={() => this.onPoll()}
-                >
-                  <FaPollH size={35} />
-                </div>
+                {this.state.openPoll
+                  ? <button className="button-remove-poll"
+                    onClick={() => this.offPoll()}>Remove Poll</button>
+                  : <div
+                    className="post-story-modal-poll-icon"
+                    data-tooltip-id="my-tooltip"
+                    data-tooltip-content="Poll"
+                    onClick={() => this.onPoll()}
+                  >
+                    <FaPollH size={35} />
+                  </div>
+                }
               </div>
 
               <div className="app-icon-button fire-color" onClick={() => this.onPost()}>
