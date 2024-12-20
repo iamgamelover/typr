@@ -28,6 +28,7 @@ interface ActivityPostProps {
   isPostPage?: boolean;
   isStory?: boolean;
   txid?: string;
+  pollOptions?: any;
 }
 
 interface ActivityPostState {
@@ -285,6 +286,18 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     this.setState({ openImage: false, openBounty: false, openBountyRecords: false });
   }
 
+  renderPollOptions() {
+    let divs = [];
+    let data = this.props.pollOptions;
+
+    for (let i = 0; i < data.length; i++)
+      divs.push(
+        <button key={i}>{data[i].option_text}</button>
+      )
+
+    return divs;
+  }
+
   renderActionsRow(data: any) {
     let isStory = false;
     let path = window.location.hash.slice(1);
@@ -431,6 +444,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
         <div className='activity-post-content'>
           {parse(this.state.content, this.parseOptions)}
+          {this.renderPollOptions()}
         </div>
 
         {this.renderActionsRow(data)}

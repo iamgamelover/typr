@@ -34,6 +34,7 @@ interface ActivityPostPageState {
   txid: string;
   loadNextPage: boolean;
   isAll: boolean;
+  poll_options: any;
 }
 
 class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPostPageState> {
@@ -57,6 +58,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
       txid: '',
       loadNextPage: false,
       isAll: false,
+      poll_options: ''
     };
 
     this.onContentChange = this.onContentChange.bind(this);
@@ -123,6 +125,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
   async getStory() {
     let post = await getDataFromAO(this.process, 'GetStories', { id: this.postId });
+    console.log("post:", post)
     if (post.length == 0) {
       this.setState({ alert: 'Story not found.' });
       return;
@@ -132,6 +135,13 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     let isLiked = await getDataFromAO(this.process, 'GetLike', data);
     if (isLiked.length > 0) {
       post[0].isLiked = true;
+    }
+
+    if (post[0].option_count > 0) {
+      let story_id = { id: this.postId };
+      let poll_options = await getDataFromAO(this.process, 'GetPollOptions', story_id);
+      console.log("pollOptions:", poll_options)
+      this.setState({ poll_options });
     }
 
     this.setState({ post: post[0], loading: false });
@@ -331,6 +341,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
             isPostPage={true}
             isStory={this.props.type == 'story' && true}
             txid={this.state.txid}
+            pollOptions={this.state.poll_options}
           />
         }
 

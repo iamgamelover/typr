@@ -140,6 +140,9 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
   }
 
   async onPost() {
+    // messageToAO(AO_STORY, {}, 'AlterTable');
+    // return
+
     // check the title
     if (!this.state.title.trim()) {
       this.setState({ alert: 'The story title is empty.' });

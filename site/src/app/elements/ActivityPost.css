@@ -115,6 +115,9 @@
 }
 
 .activity-post-content {
+  display: flex;
+  flex-direction: column;
+  row-gap: 15px;
   padding-left: 55px;
   padding-right: 15px;
   margin-bottom: 10px;
