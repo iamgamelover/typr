@@ -22,6 +22,7 @@ export const USDA = "GcFxqTQnKHcr304qnOcq00ZqbaYGDn4Wbb0DHAM-wvU";
 export const AOT_TEST = "UabERwDSwechOsHg9M1N6qTk2O7EXPf63qABDTAj_Vs";
 export const CHATROOM = "F__i_YGIUOGw43zyqLY9dEKNNEhB_uTqzL9tOTWJ-KA";
 export const TIP_IMG = "Sending the message is encountering a problem. Is there a picture in the post? Size just up to 200 kb for now.";
+export const TIP_VOTE = "Vote failed. Please try again."
 export const ICON_SIZE = 28;
 export const PAGE_SIZE = "10";
 export const TIP_CONN = "You should connect to wallet first.";

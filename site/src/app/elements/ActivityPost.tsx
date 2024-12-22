@@ -2,7 +2,8 @@ import React from 'react';
 import { BsBookmark, BsBookmarkFill, BsChat, BsHeart, BsHeartFill } from 'react-icons/bs';
 import {
   convertUrlsToLinks, getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO,
-  numberWithCommas, randomAvatar, shortAddr, timeOfNow, transferToken
+  numberWithCommas, randomAvatar, shortAddr, timeOfNow, transferToken,
+  uuid
 } from '../util/util';
 import { formatTimestamp } from '../util/util';
 import './ActivityPost.css';
@@ -16,7 +17,7 @@ import { subscribe } from '../util/event';
 import { Tooltip } from 'react-tooltip'
 import BountyModal from '../modals/BountyModal';
 import { FaCoins } from 'react-icons/fa';
-import { AO_STORY, AO_TWITTER, STORY_INCOME } from '../util/consts';
+import { AO_STORY, AO_TWITTER, STORY_INCOME, TIP_CONN, TIP_IMG, TIP_VOTE } from '../util/consts';
 import MessageModal from '../modals/MessageModal';
 import BountyRecordsModal from '../modals/BountyRecordsModal';
 import { HiOutlineLockClosed } from "react-icons/hi2";
@@ -43,6 +44,7 @@ interface ActivityPostState {
   question: string;
   address: string;
   isBookmarked: boolean;
+  isVoted: boolean;
 }
 
 class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState> {
@@ -80,6 +82,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       question: '',
       address: '',
       isBookmarked: false,
+      isVoted: false,
     };
 
     this.onBounty = this.onBounty.bind(this);
@@ -130,6 +133,24 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
     let address = await getWalletAddress();
     this.setState({ address });
+
+    // get voting
+    let options = this.props.pollOptions;
+    if (options) {
+      for (let i = 0; i < options.length; i++) {
+        let data = {
+          option_id: options[i].option_id,
+          address
+        }
+        console.log("data:", data)
+        let response = await getDataFromAO(AO_STORY, 'GetVotes', data);
+        console.log("response:", response)
+        if (response.length > 0) {
+          this.setState({ isVoted: true });
+          return
+        }
+      }
+    }
   }
 
   async getPostContent() {
@@ -286,13 +307,58 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     this.setState({ openImage: false, openBounty: false, openBountyRecords: false });
   }
 
+  async onVote(option: any) {
+    // console.log("option:", option)
+    let address = Server.service.getActiveAddress();
+    if (!address) {
+      this.setState({ alert: TIP_CONN });
+      return;
+    }
+
+    this.setState({ message: 'Voting...' });
+
+    let data = {
+      vote_id: uuid(),
+      story_id: option.story_id,
+      option_id: option.option_id,
+      address,
+      created_at: timeOfNow()
+    };
+    // console.log("dataOfVoteTable:", data)
+
+    let response = await messageToAO(AO_STORY, data, 'Vote');
+    if (response) {
+      let response = await messageToAO(AO_STORY, option.option_id, 'UpdateOption');
+      if (response) {
+        this.setState({ message: '', alert: "Vote success." });
+
+      } else {
+        this.setState({ message: '', alert: TIP_VOTE });
+      }
+    } else {
+      this.setState({ message: '', alert: TIP_VOTE });
+    }
+  }
+
   renderPollOptions() {
     let divs = [];
     let data = this.props.pollOptions;
 
     for (let i = 0; i < data.length; i++)
       divs.push(
-        <button key={i}>{data[i].option_text}</button>
+        <button key={i} onClick={() => this.onVote(data[i])}>{data[i].option_text}</button>
+      )
+
+    return divs;
+  }
+
+  renderVoting() {
+    let divs = [];
+    let data = this.props.pollOptions;
+
+    for (let i = 0; i < data.length; i++)
+      divs.push(
+        <div key={i}>{data[i].option_text}</div>
       )
 
     return divs;
@@ -444,7 +510,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
         <div className='activity-post-content'>
           {parse(this.state.content, this.parseOptions)}
-          {this.renderPollOptions()}
+          {this.state.isVoted ? this.renderVoting() : this.renderPollOptions()}
         </div>
 
         {this.renderActionsRow(data)}
