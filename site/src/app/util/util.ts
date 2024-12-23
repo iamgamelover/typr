@@ -86,7 +86,7 @@ export function formatTimestamp(time: number, ago?: boolean) {
  * @returns the time value in milliseconds
  */
 export function msOfNow() {
-  return new Date().getTime();
+  return Date.now();
 }
 
 /**
@@ -94,7 +94,7 @@ export function msOfNow() {
  * @returns the time value in seconds
  */
 export function secondsOfNow() {
-  return Math.floor(new Date().getTime() / 1000);
+  return Math.floor(Date.now() / 1000);
 }
 
 /**
@@ -837,4 +837,32 @@ export function calculateDeadlineTimestamp(days: number, hours: number, minutes:
   const deadline = new Date(Date.now() + totalMilliseconds);
 
   return Math.floor(deadline.getTime() / 1000);
+}
+
+/**
+ * 
+ * @param timestampInSeconds 
+ * @returns 
+ */
+export function timeLeftUntil(timestampInSeconds: number) {
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  let timeLeft = timestampInSeconds - nowInSeconds;
+  // 如果时间已经过去
+  if (timeLeft <= 0) {
+    return "Final results";
+  }
+
+  // 计算剩余的天、小时、分钟
+  const days = Math.floor(timeLeft / (24 * 60 * 60));
+  const hours = Math.floor(timeLeft / (60 * 60));
+  const minutes = Math.floor(timeLeft / 60);
+
+  // 根据剩余时间显示不同的单位
+  if (days > 0) {
+    return `${days} days left`;
+  } else if (hours > 0) {
+    return `${hours} hours left`;
+  } else {
+    return `${minutes} minutes left`;
+  }
 }

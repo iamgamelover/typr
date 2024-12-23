@@ -30,7 +30,7 @@ interface ActivityPostPageState {
   question: string;
   loading: boolean;
   loading_reply: boolean;
-  address: string;
+  // address: string;
   txid: string;
   loadNextPage: boolean;
   isAll: boolean;
@@ -43,6 +43,8 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
   wordCount = 0;
   postId: string;
   process: string;
+  address: string;
+  votedOptionId: string;
 
   constructor(props: ActivityPostPageProps) {
     super(props);
@@ -54,7 +56,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
       question: '',
       loading: true,
       loading_reply: true,
-      address: '',
+      // address: '',
       txid: '',
       loadNextPage: false,
       isAll: false,
@@ -106,8 +108,8 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
   async start() {
     window.scrollTo(0, 0);
-    let address = await isLoggedIn();
-    this.setState({ address });
+    this.address = await isLoggedIn();
+    // this.setState({ address });
 
     let type = this.props.type;
     let path = window.location.hash.slice(1);
@@ -123,32 +125,56 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     }
   }
 
+  voteDone() {
+    this.setState({ message: 'Voting...' });
+    this.getStory()
+  }
+
   async getStory() {
     let post = await getDataFromAO(this.process, 'GetStories', { id: this.postId });
-    console.log("post:", post)
+    // console.log("post:", post)
     if (post.length == 0) {
       this.setState({ alert: 'Story not found.' });
       return;
     }
 
-    let data = { id: this.postId, address: this.state.address }
+    // let data = { id: this.postId, address: this.state.address }
+    let data = { id: this.postId, address: this.address }
     let isLiked = await getDataFromAO(this.process, 'GetLike', data);
     if (isLiked.length > 0) {
       post[0].isLiked = true;
     }
 
-    if (post[0].option_count > 0) {
-      let story_id = { id: this.postId };
-      let poll_options = await getDataFromAO(this.process, 'GetPollOptions', story_id);
-      console.log("pollOptions:", poll_options)
-      this.setState({ poll_options });
-    }
+    await this.getPollOptions(post);
 
-    this.setState({ post: post[0], loading: false });
+    this.setState({ post: post[0], loading: false, message: '' });
     this.getReplies();
 
     let txid = await getDataFromAO(this.process, 'GetTxid', { id: this.postId });
     this.setState({ txid: txid[0].txid });
+  }
+
+  async getPollOptions(post: any) {
+    if (post[0].option_count > 0) {
+      let story_id = { id: this.postId };
+      let poll_options = await getDataFromAO(this.process, 'GetPollOptions', story_id);
+      // console.log("pollOptions:", poll_options);
+      this.setState({ poll_options });
+
+      // get voting
+      for (let i = 0; i < poll_options.length; i++) {
+        let data = {
+          option_id: poll_options[i].option_id,
+          address: this.address
+        };
+        // console.log("get vote data:", data);
+        let response = await getDataFromAO(AO_STORY, 'GetVotes', data);
+        if (response.length > 0) {
+          this.votedOptionId = data.option_id;
+          break;
+        }
+      }
+    }
   }
 
   async getPost() {
@@ -246,7 +272,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     this.setState({ message: 'Replying...' });
 
     let post = this.quillRef.root.innerHTML;
-    
+
     let data = {
       id: uuid(), post_id: this.postId, address, post,
       likes: 0, replies: 0, coins: 0, time: timeOfNow()
@@ -326,10 +352,10 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
           <div className="activity-post-page-back-button"><BsFillArrowLeftCircleFill /></div>
           <div>
             {this.state.loading ? 'Loading...' :
-              this.props.type == 'post' ? 'Post' : 
-              <div className="activity-post-page-story-title">
-                {parse(title)}
-              </div>
+              this.props.type == 'post' ? 'Post' :
+                <div className="activity-post-page-story-title">
+                  {parse(title)}
+                </div>
             }
           </div>
           {this.props.type == 'post' && date != 'Invalid Date' && <div className='activity-post-time'>&#x2022;&nbsp;&nbsp;{date}</div>}
@@ -342,10 +368,13 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
             isStory={this.props.type == 'story' && true}
             txid={this.state.txid}
             pollOptions={this.state.poll_options}
+            votedOptionId={this.votedOptionId}
+            voteDone={() => this.voteDone()}
           />
         }
 
-        {!this.state.loading && this.state.address && !this.state.loading_reply &&
+        {/* {!this.state.loading && this.state.address && !this.state.loading_reply && */}
+        {!this.state.loading && this.address && !this.state.loading_reply &&
           <div className="activity-post-page-reply-container">
             <SharedQuillEditor
               placeholder='Post your reply'

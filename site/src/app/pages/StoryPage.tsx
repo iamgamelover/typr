@@ -2,8 +2,7 @@ import React from 'react';
 import './StoryPage.css';
 import StoryCard from '../elements/StoryCard';
 import { AiOutlineFire } from 'react-icons/ai';
-import PostModal from '../modals/PostModal';
-import { getDataFromAO, messageToAO, uuid } from '../util/util';
+import { getDataFromAO, uuid } from '../util/util';
 import { AO_STORY, PAGE_SIZE } from '../util/consts';
 import Loading from '../elements/Loading';
 import { Server } from '../../server/server';
@@ -83,11 +82,9 @@ class StoryPage extends React.Component<{}, StoryPageState> {
   }
 
   onClose(data: any) {
-    // console.log("onClose:", data)
     this.setState({ open: false });
     if (data) {
       this.getStory();
-      // this.setState({ posts: [], loading: true, isAll: false });
       this.setState({ isAll: false });
     }
   }
@@ -95,7 +92,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
   async getStory(category?: string) {
     let data = { category, offset: 0 };
     let posts = await getDataFromAO(AO_STORY, 'GetStories', data);
-    console.log("stories:", posts)
+    // console.log("stories:", posts)
 
     if (posts.length < PAGE_SIZE)
       this.setState({ isAll: true })

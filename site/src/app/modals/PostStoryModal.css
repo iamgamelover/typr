@@ -18,12 +18,13 @@
 .post-story-modal-poll-container {
   display: flex;
   flex-direction: column;
-  row-gap: 10px;
+  /* row-gap: 10px; */
   padding: 10px;
   margin: 10px;
   margin-bottom: 20px;
   border-radius: 10px;
   border: 1px solid lightgray;
+  color: gray;
 }
 
 .post-story-modal-poll-option {
@@ -46,6 +47,7 @@
 .poll-length-input {
   width: 120px;
   margin-right: 20px;
+  margin-bottom: 10px;
 }
 
 .poll-token-process {

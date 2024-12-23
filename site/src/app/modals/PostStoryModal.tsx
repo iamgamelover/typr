@@ -178,13 +178,18 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     if (this.state.openPoll) {
       for (let i = 0; i < this.state.poll_options.length; i++) {
         const poll_option = this.state.poll_options[i].trim();
-        console.log("poll_option:", poll_option)
+        // console.log("poll_option:", poll_option)
 
         if (i == 0 || i == 1) { // must give the options
           if (!poll_option) {
             this.setState({ alert: "Poll option is empty." });
             return
           }
+        }
+
+        if (poll_option.length > 25) {
+          this.setState({ alert: "Poll option can be up to 25 characters long." });
+          return
         }
 
         if (poll_option) {
@@ -221,7 +226,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
       expires_at,
       updated_at: timeOfNow()
     };
-    console.log("dataOfStory:", dataOfStory)
+    // console.log("dataOfStory:", dataOfStory)
 
     let response = await messageToAO(AO_STORY, dataOfStory, 'SendStory');
 
@@ -251,7 +256,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
           option_text: option_texts[i],
           vote_count: 0
         };
-        console.log("dataOfPollOption:", data)
+        // console.log("dataOfPollOption:", data)
 
         let response = await messageToAO(AO_STORY, data, 'AddPollOption');
         if (!response) {
@@ -263,6 +268,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
 
     // Post successful
     this.setState({ message: '' });
+    this.props.onClose('Done');
   }
 
   async transferFee() {

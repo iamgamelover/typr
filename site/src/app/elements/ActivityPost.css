@@ -131,6 +131,45 @@
   margin-top: -1px;
 }
 
+.poll-option-row {
+  display: flex;
+  position: relative;
+  justify-content: space-between;
+  padding: 2px 15px;
+}
+
+.poll-option-text {
+  display: flex;
+  align-items: center;
+  column-gap: 15px;
+  position: relative;
+  z-index: 1;
+}
+
+.poll-option-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  border-radius: 5px;
+  background-color: #85c8ff;
+  z-index: 0;
+}
+
+.poll-option-progress.zero {
+  background-color: lightgray;
+}
+
+.poll-option-percentage {
+  position: relative;
+  font-weight: 600;
+}
+
+.poll-option-bottom {
+  color: gray;
+  font-size: 13px;
+}
+
 @media (max-width: 650px) {
   .activity-post-nickname {
     font-size: 15px;

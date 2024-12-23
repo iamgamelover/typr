@@ -2,7 +2,7 @@ import React from 'react';
 import { BsBookmark, BsBookmarkFill, BsChat, BsHeart, BsHeartFill } from 'react-icons/bs';
 import {
   convertUrlsToLinks, getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO,
-  numberWithCommas, randomAvatar, shortAddr, timeOfNow, transferToken,
+  numberWithCommas, randomAvatar, shortAddr, timeLeftUntil, timeOfNow, transferToken,
   uuid
 } from '../util/util';
 import { formatTimestamp } from '../util/util';
@@ -16,12 +16,13 @@ import { Server } from '../../server/server';
 import { subscribe } from '../util/event';
 import { Tooltip } from 'react-tooltip'
 import BountyModal from '../modals/BountyModal';
-import { FaCoins } from 'react-icons/fa';
+import { FaCheckCircle, FaCoins } from 'react-icons/fa';
 import { AO_STORY, AO_TWITTER, STORY_INCOME, TIP_CONN, TIP_IMG, TIP_VOTE } from '../util/consts';
 import MessageModal from '../modals/MessageModal';
 import BountyRecordsModal from '../modals/BountyRecordsModal';
 import { HiOutlineLockClosed } from "react-icons/hi2";
 import ExternalEmbed from './externalEmbed';
+import { FaRegCircleCheck } from "react-icons/fa6";
 
 interface ActivityPostProps {
   data: any;
@@ -30,6 +31,8 @@ interface ActivityPostProps {
   isStory?: boolean;
   txid?: string;
   pollOptions?: any;
+  votedOptionId?: string;
+  voteDone?: Function;
 }
 
 interface ActivityPostState {
@@ -44,7 +47,6 @@ interface ActivityPostState {
   question: string;
   address: string;
   isBookmarked: boolean;
-  isVoted: boolean;
 }
 
 class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState> {
@@ -82,7 +84,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       question: '',
       address: '',
       isBookmarked: false,
-      isVoted: false,
     };
 
     this.onBounty = this.onBounty.bind(this);
@@ -133,24 +134,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
     let address = await getWalletAddress();
     this.setState({ address });
-
-    // get voting
-    let options = this.props.pollOptions;
-    if (options) {
-      for (let i = 0; i < options.length; i++) {
-        let data = {
-          option_id: options[i].option_id,
-          address
-        }
-        console.log("data:", data)
-        let response = await getDataFromAO(AO_STORY, 'GetVotes', data);
-        console.log("response:", response)
-        if (response.length > 0) {
-          this.setState({ isVoted: true });
-          return
-        }
-      }
-    }
   }
 
   async getPostContent() {
@@ -330,8 +313,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     if (response) {
       let response = await messageToAO(AO_STORY, option.option_id, 'UpdateOption');
       if (response) {
-        this.setState({ message: '', alert: "Vote success." });
-
+        this.setState({ message: '' });
+        this.props.voteDone();
       } else {
         this.setState({ message: '', alert: TIP_VOTE });
       }
@@ -341,6 +324,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   renderPollOptions() {
+    if (!this.props.isStory) return;
+
     let divs = [];
     let data = this.props.pollOptions;
 
@@ -356,10 +341,40 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     let divs = [];
     let data = this.props.pollOptions;
 
-    for (let i = 0; i < data.length; i++)
+    let total_votes = 0;
+    for (let i = 0; i < data.length; i++) {
+      total_votes += data[i].vote_count
+    }
+    // console.log("total_votes:", total_votes)
+
+    for (let i = 0; i < data.length; i++) {
+      // 计算每个选项的宽度（以百分比表示）
+      let percentage = total_votes > 0 ? (data[i].vote_count / total_votes) * 100 : 0;
+      percentage = Math.round(percentage)
+      // console.log("percentage:", percentage)
+
       divs.push(
-        <div key={i}>{data[i].option_text}</div>
+        <div key={i} className='poll-option-row'>
+          <div
+            className={`poll-option-progress ${percentage == 0 && 'zero'}`}
+            style={{ width: `${percentage == 0 ? '1.5' : percentage}%` }}
+          />
+          <div className="poll-option-text">
+            {data[i].option_text}
+            {this.props.votedOptionId == data[i].option_id && <FaCheckCircle />}
+          </div>
+          <div className="poll-option-percentage">{percentage}%</div>
+        </div>
       )
+    }
+
+    divs.push(
+      <div key={uuid()} className='poll-option-bottom'>
+        {total_votes} votes
+        &nbsp;&nbsp;·&nbsp;&nbsp;
+        {timeLeftUntil(this.props.data.expires_at)}
+      </div>
+    )
 
     return divs;
   }
@@ -510,7 +525,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
         <div className='activity-post-content'>
           {parse(this.state.content, this.parseOptions)}
-          {this.state.isVoted ? this.renderVoting() : this.renderPollOptions()}
+          {this.props.votedOptionId ? this.renderVoting() : this.renderPollOptions()}
         </div>
 
         {this.renderActionsRow(data)}
