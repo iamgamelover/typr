@@ -112,11 +112,31 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
   };
 
   onDaysChange(e: any) {
-    this.setState({ days: e.currentTarget.value });
+    let days = e.currentTarget.value;
+    this.setState({ days });
+    if (days == '0') {
+      if (this.state.minutes == '0') {
+        if (this.state.hours == '0') {
+          this.setState({ hours: '1' });
+        }
+      } else {
+        if (this.state.hours == '0') {
+          this.setState({ minutes: '5' });
+        }
+      }
+    }
   };
 
   onHoursChange(e: any) {
-    this.setState({ hours: e.currentTarget.value });
+    let hours = e.currentTarget.value;
+    this.setState({ hours });
+    if (hours == '0') {
+      if (this.state.days == '0') {
+        if (this.state.minutes < '5') {
+          this.setState({ minutes: '5' });
+        }
+      }
+    }
   };
 
   onMinutesChange(e: any) {

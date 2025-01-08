@@ -807,7 +807,7 @@ export const arweaveSigner = (jwk: JWKInterface) => async ({
   tags?: { name: string; value: string }[];
   target?: string;
   anchor?: string;
-}): Promise<{ id: string; raw: ArrayBuffer }> => {
+}): Promise<{ id: string; raw: Buffer }> => {
 
   const signer = new ArweaveSigner(jwk);
   const dataItem = createData(data, signer, { tags, target, anchor });

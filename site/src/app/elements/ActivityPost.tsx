@@ -337,7 +337,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     return divs;
   }
 
-  renderVoting() {
+  renderResultsOfVoting() {
     let divs = [];
     let data = this.props.pollOptions;
 
@@ -479,6 +479,9 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   render() {
     let data = this.props.data;
 
+    // check the aviable of voting
+    let timeLeftOfVoting = timeLeftUntil(data.expires_at)
+
     if (this.state.navigate)
       return <Navigate to={this.state.navigate} />;
 
@@ -525,7 +528,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
         <div className='activity-post-content'>
           {parse(this.state.content, this.parseOptions)}
-          {this.props.votedOptionId ? this.renderVoting() : this.renderPollOptions()}
+          {this.props.votedOptionId || timeLeftOfVoting == "Final results"
+            ? this.renderResultsOfVoting() : this.renderPollOptions()}
         </div>
 
         {this.renderActionsRow(data)}
