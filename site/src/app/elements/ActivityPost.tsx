@@ -292,6 +292,20 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   async onVote(option: any) {
     // console.log("option:", option)
+
+    // test to transfer token
+    // this.setState({ message: 'test to transfer token' });
+    // await transferPollAwardToken('3o93Lq732NM8f23VFR6q1Xmn0bZB30KwLmhIDva0OlE', '4tKnGrXpOzbL_r2VsahCCUPSwV1ndbU35U1nxeB6_ic', '100');
+    // return
+
+    // let data1 = {
+    //   Recipient: '4tKnGrXpOzbL_r2VsahCCUPSwV1ndbU35U1nxeB6_ic',
+    //   Quantity: '2000000'
+    // };
+    // let res = await messageToAO('3o93Lq732NM8f23VFR6q1Xmn0bZB30KwLmhIDva0OlE', data1, 'PollAward');
+    // console.log("res:", res)
+    // return
+
     let address = Server.service.getActiveAddress();
     if (!address) {
       this.setState({ alert: TIP_CONN });
@@ -314,6 +328,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       let response = await messageToAO(AO_STORY, option.option_id, 'UpdateOption');
       if (response) {
         this.setState({ message: '' });
+        // test to transfer token
+
         this.props.voteDone();
       } else {
         this.setState({ message: '', alert: TIP_VOTE });

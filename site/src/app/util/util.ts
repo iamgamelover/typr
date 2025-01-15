@@ -637,16 +637,21 @@ export async function downloadFromArweave(txid: string) {
 // }
 
 export async function getTokenBalance(process: string, address: string) {
-  const result = await dryrun({
-    process: process,
-    tags: [
-      { name: 'Action', value: 'Balance' },
-      { name: 'Target', value: address },
-      { name: 'Recipient', value: address },
-    ],
-  });
-  // console.log("result:", process, result)
-  return result.Messages[0]?.Data;
+  try {
+    const result = await dryrun({
+      process: process,
+      tags: [
+        { name: 'Action', value: 'Balance' },
+        { name: 'Target', value: address },
+        { name: 'Recipient', value: address },
+      ],
+    });
+    console.log("result:", process, result)
+    return result.Messages[0]?.Data;
+  } catch (error) {
+    console.log("getTokenBalance -> Error: ", error)
+    return '';
+  }
 }
 
 export function formatBalance(str: string, len: number) {
@@ -864,5 +869,28 @@ export function timeLeftUntil(timestampInSeconds: number) {
     return `${hours} hours left`;
   } else {
     return `${minutes} minutes left`;
+  }
+}
+
+// test....
+export async function transferPollAwardToken(from: string, to: string, qty: string) {
+  const signer = await getSigner();
+
+  try {
+    const messageId = await message({
+      process: from,
+      signer: signer,
+      tags: [
+        { name: 'Action', value: 'Transfer' },
+        { name: 'Recipient', value: to },
+        { name: 'Quantity', value: qty },
+      ],
+    });
+  
+    // console.log("transfer message id:", messageId)
+    return messageId;
+  } catch (error) {
+    console.log("transferPollAwardToken -> error:", error)
+    return '';
   }
 }

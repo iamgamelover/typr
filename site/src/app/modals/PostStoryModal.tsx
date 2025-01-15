@@ -12,7 +12,8 @@ import {
   numberWithCommas, transferToken, getDefaultProcess,
   shortAddr,
   randomAvatar,
-  calculateDeadlineTimestamp
+  calculateDeadlineTimestamp,
+  getTokenBalance
 } from '../util/util';
 import { MdOutlineToken } from 'react-icons/md';
 import { Server } from '../../server/server';
@@ -223,7 +224,30 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
         Number(this.state.hours),
         Number(this.state.minutes)
       )
+
+      // Poll award token
+      let tokenProcess = this.state.poll_token_process.trim();
+      console.log("tokenProcess:", tokenProcess)
+      if (tokenProcess) {
+        let tokenBalance = await getTokenBalance(tokenProcess, address);
+        console.log("tokenBalance:", tokenBalance)
+        if (!tokenBalance) {
+          this.setState({ alert: "The token process is invaild." });
+          return;
+        }
+
+        let awardAmount = this.state.poll_token_amount.trim();
+        console.log("awardAmount:", awardAmount)
+        if (awardAmount) {
+          if (Number(awardAmount) > Number(tokenBalance)) {
+            this.setState({ alert: "Insufficient Poll Award Token Balance!" });
+          }
+        } else {
+          this.setState({ alert: "Award token amount is empty." });
+        }
+      }
     }
+    return
 
     // Start to post the story...
     this.setState({ message: 'Posting...' });
@@ -426,7 +450,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
       <div className="poll-token-containe">
         <input
           className="poll-token-process"
-          placeholder='poll token process'
+          placeholder='token process'
           value={this.state.poll_token_process}
           onChange={this.onPollTokenProcessChange}
         />
@@ -437,16 +461,6 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
           value={this.state.poll_token_amount}
           onChange={this.onPollTokenAmountChange}
         />
-
-        <select
-          className="poll-token-send"
-          value={this.state.poll_bonus}
-          onChange={this.onPollBonusChange}
-        >
-          <option value="1">1 / user</option>
-          <option value="2">2 / user</option>
-          <option value="3">3 / user</option>
-        </select>
       </div>
     );
   }
@@ -490,11 +504,11 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
 
             {this.state.openPoll &&
               <div className='post-story-modal-poll-container'>
-                <div>Poll options</div>
+                <div>Poll Options</div>
                 <div>{this.renderPollOptions()}</div>
-                <div>Poll length</div>
+                <div>Poll Length</div>
                 <div>{this.renderPollLength()}</div>
-                <div>Poll token (optional)</div>
+                <div>Token Award (optional)</div>
                 <div>{this.renderPollToken()}</div>
               </div>
             }
