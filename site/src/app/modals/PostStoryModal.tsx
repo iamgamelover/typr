@@ -92,7 +92,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
   };
 
   onQuestionYes() {
-    this.onPost();
+    this.postStory();
     this.setState({ question: '' });
   }
 
@@ -160,7 +160,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     this.setState({ question: 'Publish a story will spend 100 AOT-Test token.' })
   }
 
-  async onPost() {
+  async postStory() {
     // messageToAO(AO_STORY, {}, 'AlterTable');
     // return
 
@@ -247,7 +247,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
         }
       }
     }
-    return
+    // return
 
     // Start to post the story...
     this.setState({ message: 'Posting...' });
@@ -259,7 +259,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
       id: uuid(),
       address,
       post,
-      title: this.state.title,
+      title: this.state.title.trim(),
       range: this.state.range,
       category: this.state.category,
       likes: 0,
@@ -268,7 +268,10 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
       time: timeOfNow(),
       option_count,
       expires_at,
-      updated_at: timeOfNow()
+      updated_at: timeOfNow(),
+      poll_token_process: this.state.poll_token_process.trim(),
+      poll_token_amount: this.state.poll_token_amount.trim(),
+      award_token: 0
     };
     // console.log("dataOfStory:", dataOfStory)
 
@@ -450,7 +453,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
       <div className="poll-token-containe">
         <input
           className="poll-token-process"
-          placeholder='token process'
+          placeholder='Token Process ID'
           value={this.state.poll_token_process}
           onChange={this.onPollTokenProcessChange}
         />
@@ -460,6 +463,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
           placeholder='amount'
           value={this.state.poll_token_amount}
           onChange={this.onPollTokenAmountChange}
+          type='number'
         />
       </div>
     );
@@ -543,7 +547,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
                 }
               </div>
 
-              <div className="app-icon-button fire-color" onClick={() => this.onPost()}>
+              <div className="app-icon-button fire-color" onClick={() => this.postStory()}>
                 <AiOutlineFire size={20} />New Story
               </div>
             </div>

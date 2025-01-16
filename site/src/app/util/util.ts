@@ -495,27 +495,22 @@ export async function getDataFromAO(
   let start = performance.now();
   // console.log('==> [getDataFromAO]');
 
-  let result;
   try {
-    result = await dryrun({
+    let result = await dryrun({
       process,
       data: JSON.stringify(data),
       tags: [{ name: 'Action', value: action }]
     });
+    // console.log('action', action);
+    // console.log('result', result);
+    let resp = result.Messages[0].Data;
+    let end = performance.now();
+    // console.log(`<== [getDataFromAO] [${Math.round(end - start)} ms]`);
+    return JSON.parse(resp);
   } catch (error) {
     console.log('getDataFromAO --> ERR:', error)
     return '';
   }
-
-  // console.log('action', action);
-  // console.log('result', result);
-
-  let resp = result.Messages[0].Data;
-
-  let end = performance.now();
-  // console.log(`<== [getDataFromAO] [${Math.round(end - start)} ms]`);
-
-  return JSON.parse(resp);
 }
 
 // check the state of bookmark
@@ -646,10 +641,26 @@ export async function getTokenBalance(process: string, address: string) {
         { name: 'Recipient', value: address },
       ],
     });
-    console.log("result:", process, result)
+    // console.log("result:", process, result)
     return result.Messages[0]?.Data;
   } catch (error) {
     console.log("getTokenBalance -> Error: ", error)
+    return '';
+  }
+}
+
+export async function getTokenInfo(process: string) {
+  try {
+    const result = await dryrun({
+      process: process,
+      tags: [
+        { name: 'Action', value: 'Info' },
+      ],
+    });
+    // console.log("getTokenInfo:", process, result)
+    return result.Messages[0].Tags;
+  } catch (error) {
+    console.log("getTokenInfo -> Error: ", error)
     return '';
   }
 }

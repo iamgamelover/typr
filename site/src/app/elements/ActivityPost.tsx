@@ -1,8 +1,8 @@
 import React from 'react';
 import { BsBookmark, BsBookmarkFill, BsChat, BsHeart, BsHeartFill } from 'react-icons/bs';
 import {
-  convertUrlsToLinks, getDataFromAO, getDefaultProcess, getWalletAddress, messageToAO,
-  numberWithCommas, randomAvatar, shortAddr, timeLeftUntil, timeOfNow, transferToken,
+  convertUrlsToLinks, getDataFromAO, getDefaultProcess, getTokenInfo, getWalletAddress, messageToAO,
+  numberWithCommas, randomAvatar, shortAddr, timeLeftUntil, timeOfNow, transferPollAwardToken, transferToken,
   uuid
 } from '../util/util';
 import { formatTimestamp } from '../util/util';
@@ -47,6 +47,9 @@ interface ActivityPostState {
   question: string;
   address: string;
   isBookmarked: boolean;
+  tokenLogo: string;
+  tokenName: string;
+  tokenTicker: string;
 }
 
 class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState> {
@@ -84,6 +87,9 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       question: '',
       address: '',
       isBookmarked: false,
+      tokenLogo: '',
+      tokenName: '',
+      tokenTicker: '',
     };
 
     this.onBounty = this.onBounty.bind(this);
@@ -128,12 +134,58 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   async start() {
     this.getPostContent();
-
-    // for testing
     this.setState({ isBookmarked: this.props.data.isBookmarked });
-
     let address = await getWalletAddress();
     this.setState({ address });
+
+    this.tokenInfo();
+    // when the poll got the final results then send the token award.
+    this.awardPollToken(address);
+  }
+
+  async tokenInfo() {
+    if (!this.props.data.poll_token_process) return;
+
+    let info = await getTokenInfo(this.props.data.poll_token_process);
+    // console.log("token info:", info)
+    for (let i = 0; i < info.length; i++) {
+      if (info[i].name == 'Name') {
+        this.setState({ tokenName: info[i].value });
+      }
+      if (info[i].name == 'Ticker') {
+        this.setState({ tokenTicker: info[i].value });
+      }
+      if (info[i].name == 'Logo') {
+        this.setState({ tokenLogo: info[i].value });
+      }
+    }
+  }
+
+  async awardPollToken(address: string) {
+    let data = this.props.data;
+    // console.log("data:", data)
+
+    // only the story publisher need to send the award,
+    // if did the award then do not again.
+    if (address != data.address) return;
+    if (data.award_token == 1) return;
+
+    let voteAddress = await getDataFromAO(AO_STORY, 'GetVoteAddress', { story_id: data.id });
+    console.log("voteAddress:", voteAddress)
+
+    let pollTimeLeft = timeLeftUntil(data.expires_at);
+    if (pollTimeLeft == "Final results") {
+      // every voter get the same awards.
+      let award = Number(data.poll_token_amount) / voteAddress.length;
+
+      for (let i = 0; i < voteAddress.length; i++) {
+        let res = await transferPollAwardToken(data.poll_token_process, voteAddress[i].address, award.toString());
+        if (!res) return;
+        if (i == voteAddress.length - 1) {
+          messageToAO(AO_STORY, data.id, 'UpdateAward');
+        }
+      }
+    }
   }
 
   async getPostContent() {
@@ -395,6 +447,20 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     return divs;
   }
 
+  renderTokenAward() {
+    let imgSrc = 'https://arweave.net/' + this.state.tokenLogo;
+    return (
+      <div className='poll-token-row'>
+        <img className='poll-token-logo' src={imgSrc} />
+        <div>Token Pool</div>
+        <div>•</div>
+        <div className='poll-token-name'>{this.state.tokenName} ({this.state.tokenTicker})</div>
+        <div>•</div>
+        <div>{this.props.data.poll_token_amount} amount</div>
+      </div>
+    )
+  }
+
   renderActionsRow(data: any) {
     let isStory = false;
     let path = window.location.hash.slice(1);
@@ -494,9 +560,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   render() {
     let data = this.props.data;
-
-    // check the aviable of voting
-    let timeLeftOfVoting = timeLeftUntil(data.expires_at)
+    // console.log("data:", data)
+    let pollTimeLeft = timeLeftUntil(data.expires_at);
 
     if (this.state.navigate)
       return <Navigate to={this.state.navigate} />;
@@ -544,8 +609,10 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
         <div className='activity-post-content'>
           {parse(this.state.content, this.parseOptions)}
-          {this.props.votedOptionId || timeLeftOfVoting == "Final results"
-            ? this.renderResultsOfVoting() : this.renderPollOptions()}
+          {this.props.votedOptionId || pollTimeLeft == "Final results"
+            ? this.renderResultsOfVoting() : this.renderPollOptions()
+          }
+          {data.poll_token_process && this.renderTokenAward()}
         </div>
 
         {this.renderActionsRow(data)}
