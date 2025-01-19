@@ -31,7 +31,8 @@ export const AR_DEC = 1000000000000; // For Wrapped AR
 
 // Supporting the AO SQLite
 export const MODULE = "GYrbbe0VbHim_7Hi6zrOpHQXrSQz07XNtwCnfbFo2I0"
-
+export const AOS_V2_MODULE = "GuzQrkf50rBUqz3uUgjOIFOL1XmW9nSNysTBC-wyiWM"
+export const MU = "fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY"
 export const SCHEDULER = "_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA"
 export const ARWEAVE_GATEWAY = "https://arweave.net/";
 

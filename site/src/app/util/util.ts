@@ -1,5 +1,5 @@
-import { createDataItemSigner, dryrun, message, spawn } from "@permaweb/aoconnect/browser";
-import { AO_TWITTER, ARWEAVE_GATEWAY, MODULE, SCHEDULER, regexPatterns } from "./consts";
+import { createDataItemSigner, dryrun, message, monitor, spawn, unmonitor } from "@permaweb/aoconnect/browser";
+import { AO_TWITTER, ARWEAVE_GATEWAY, MODULE, AOS_V2_MODULE, SCHEDULER, regexPatterns, MU } from "./consts";
 import { Server } from "../../server/server";
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
@@ -420,50 +420,6 @@ export function uuid() {
 export function timeOfNow() {
   let now = Math.floor(Date.now() / 1000);
   return now;
-}
-
-export async function spawnProcess() {
-  const signer = await getSigner();
-
-  try {
-    const processId = await spawn({
-      module: MODULE,
-      scheduler: SCHEDULER,
-      // signer: createDataItemSigner(window.arweaveWallet),
-      signer: signer,
-      tags: [{ name: 'Name', value: 'personal-life-app' }]
-    });
-
-    return processId;
-  } catch (error) {
-    console.log("spawnProcess --> error:", error)
-    return '';
-  }
-}
-
-/**
- * Load the lua code into users process
- * @param process 
- * @param data 
- * @returns 
- */
-export async function evaluate(process: string, data: string) {
-  const signer = await getSigner();
-
-  try {
-    const messageId = await message({
-      process,
-      // signer: createDataItemSigner(window.arweaveWallet),
-      signer: signer,
-      tags: [{ name: 'Action', value: 'Eval' }],
-      data
-    });
-
-    return messageId;
-  } catch (error) {
-    console.log("evaluate --> error:", error)
-    return '';
-  }
 }
 
 export async function messageToAO(process: string, data: any, action: string) {
@@ -897,11 +853,110 @@ export async function transferPollAwardToken(from: string, to: string, qty: stri
         { name: 'Quantity', value: qty },
       ],
     });
-  
+
     // console.log("transfer message id:", messageId)
     return messageId;
   } catch (error) {
     console.log("transferPollAwardToken -> error:", error)
+    return '';
+  }
+}
+
+export async function spawnProcess() {
+  const signer = await getSigner();
+
+  try {
+    const processId = await spawn({
+      module: AOS_V2_MODULE,
+      scheduler: SCHEDULER,
+      signer: signer,
+      tags: [
+        { name: "Authority", value: MU },
+        { name: 'Name', value: 'personal-life-app' }
+      ]
+    });
+
+    return processId;
+  } catch (error) {
+    console.log("spawnProcess --> error:", error)
+    return '';
+  }
+}
+
+export async function spawnCronProcess(cronInterval: string) {
+  const signer = await getSigner();
+
+  try {
+    const processId = await spawn({
+      module: AOS_V2_MODULE,
+      scheduler: SCHEDULER,
+      signer: signer,
+      tags: [
+        { name: "Authority", value: MU },
+        { name: "Cron-Interval", value: cronInterval },
+        { name: "Cron-Tag-Action", value: "Cron" }
+      ]
+    });
+
+    return processId;
+  } catch (error) {
+    console.log("spawnPollTokenProcess --> error:", error)
+    return '';
+  }
+}
+
+/**
+ * Load the lua code into users process
+ * @param process 
+ * @param data 
+ * @returns 
+ */
+export async function evaluate(process: string, data: string) {
+  const signer = await getSigner();
+
+  try {
+    const messageId = await message({
+      process,
+      signer: signer,
+      tags: [{ name: 'Action', value: 'Eval' }],
+      data
+    });
+
+    return messageId;
+  } catch (error) {
+    console.log("evaluate --> error:", error)
+    return '';
+  }
+}
+
+export async function monitorCronProcess() {
+  const signer = await getSigner();
+
+  try {
+    const result = await monitor({
+      process: "SuPB8BVrtwt5G1DwnvE9epBBZt4WQWQCyngBUA7lllY",
+      signer: signer
+    });
+    // console.log("monitorCronProcess --> result -->", result)
+    return result;
+  } catch (error) {
+    console.log("monitorCronProcess --> error:", error)
+    return '';
+  }
+}
+
+export async function unmonitorCronProcess() {
+  const signer = await getSigner();
+
+  try {
+    const result = await unmonitor({
+      process: "SuPB8BVrtwt5G1DwnvE9epBBZt4WQWQCyngBUA7lllY",
+      signer: signer
+    });
+    // console.log("unmonitorCronProcess --> result -->", result)
+    return result;
+  } catch (error) {
+    console.log("unmonitorCronProcess --> error:", error)
     return '';
   }
 }

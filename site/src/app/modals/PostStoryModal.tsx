@@ -13,7 +13,10 @@ import {
   shortAddr,
   randomAvatar,
   calculateDeadlineTimestamp,
-  getTokenBalance
+  getTokenBalance,
+  spawnCronProcess,
+  monitorCronProcess,
+  unmonitorCronProcess
 } from '../util/util';
 import { MdOutlineToken } from 'react-icons/md';
 import { Server } from '../../server/server';
@@ -161,6 +164,12 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
   }
 
   async postStory() {
+    let res = await spawnCronProcess("30-seconds");
+    // let res = await monitorCronProcess();
+    // let res = await unmonitorCronProcess();
+    console.log("res:", res)
+    return
+
     // messageToAO(AO_STORY, {}, 'AlterTable');
     // return
 
