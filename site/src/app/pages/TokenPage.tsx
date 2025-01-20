@@ -2,7 +2,7 @@ import React from 'react';
 import './TokenPage.css';
 import {
   getTokenBalance, getDefaultProcess, getWalletAddress,
-  numberWithCommas, transferToken, evaluate, spawnProcess,
+  numberWithCommas, transferToken, uploadCodeToProcess, spawnProcess,
   formatBalance
 } from '../util/util';
 import { AOT_TEST, TRUNK, LUA, WAR, AR_DEC, TIP_CONN, ORBT, USDA } from '../util/consts';
@@ -127,7 +127,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
     this.setState({ message: 'Upload...' });
 
     // load lua code into user's process
-    let messageId = await evaluate(this.state.process, LUA);
+    let messageId = await uploadCodeToProcess(this.state.process, LUA);
     console.log("Upload successfully -->", messageId)
     this.setState({ isLoaded: true, message: '' });
   }

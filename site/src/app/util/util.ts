@@ -839,29 +839,6 @@ export function timeLeftUntil(timestampInSeconds: number) {
   }
 }
 
-// test....
-export async function transferPollAwardToken(from: string, to: string, qty: string) {
-  const signer = await getSigner();
-
-  try {
-    const messageId = await message({
-      process: from,
-      signer: signer,
-      tags: [
-        { name: 'Action', value: 'Transfer' },
-        { name: 'Recipient', value: to },
-        { name: 'Quantity', value: qty },
-      ],
-    });
-
-    // console.log("transfer message id:", messageId)
-    return messageId;
-  } catch (error) {
-    console.log("transferPollAwardToken -> error:", error)
-    return '';
-  }
-}
-
 export async function spawnProcess() {
   const signer = await getSigner();
 
@@ -886,58 +863,103 @@ export async function spawnProcess() {
 export async function spawnCronProcess(cronInterval: string) {
   const signer = await getSigner();
 
-  try {
-    const processId = await spawn({
-      module: AOS_V2_MODULE,
-      scheduler: SCHEDULER,
-      signer: signer,
-      tags: [
-        { name: "Authority", value: MU },
-        { name: "Cron-Interval", value: cronInterval },
-        { name: "Cron-Tag-Action", value: "Cron" }
-      ]
-    });
+  while (1) {
+    try {
+      const processId = await spawn({
+        module: AOS_V2_MODULE,
+        scheduler: SCHEDULER,
+        signer: signer,
+        tags: [
+          { name: "Authority", value: MU },
+          { name: "Cron-Interval", value: cronInterval },
+          { name: "Cron-Tag-Action", value: "Cron" }
+        ]
+      });
 
-    return processId;
-  } catch (error) {
-    console.log("spawnPollTokenProcess --> error:", error)
-    return '';
+      return processId;
+    } catch (error) {
+      console.log("spawnCronProcess --> error:", error)
+      console.log('Try spawning again...');
+      await wait(1000);  // try again after 1 seconds
+    }
   }
 }
 
+// export async function spawnCronProcess(cronInterval: string) {
+//   const signer = await getSigner();
+
+//   try {
+//     const processId = await spawn({
+//       module: AOS_V2_MODULE,
+//       scheduler: SCHEDULER,
+//       signer: signer,
+//       tags: [
+//         { name: "Authority", value: MU },
+//         { name: "Cron-Interval", value: cronInterval },
+//         { name: "Cron-Tag-Action", value: "Cron" }
+//       ]
+//     });
+
+//     return processId;
+//   } catch (error) {
+//     console.log("spawnCronProcess --> error:", error)
+//     return '';
+//   }
+// }
+
 /**
- * Load the lua code into users process
+ * Load the lua code into a process
  * @param process 
  * @param data 
  * @returns 
  */
-export async function evaluate(process: string, data: string) {
+export async function uploadCodeToProcess(process: string, data: string) {
   const signer = await getSigner();
 
-  try {
-    const messageId = await message({
-      process,
-      signer: signer,
-      tags: [{ name: 'Action', value: 'Eval' }],
-      data
-    });
-
-    return messageId;
-  } catch (error) {
-    console.log("evaluate --> error:", error)
-    return '';
+  while (1) {
+    try {
+      const messageId = await message({
+        process,
+        signer: signer,
+        tags: [{ name: 'Action', value: 'Eval' }],
+        data
+      });
+      console.log('--> uploadCodeToProcess Success!');
+      return messageId;
+    } catch (error) {
+      console.log("uploadCodeToProcess --> error:", error);
+      console.log('Try uploading again...');
+      await wait(1000);  // try again after 1 seconds
+    }
   }
 }
+// export async function uploadCodeToProcess(process: string, data: string) {
+//   const signer = await getSigner();
 
-export async function monitorCronProcess() {
+//   try {
+//     const messageId = await message({
+//       process,
+//       signer: signer,
+//       tags: [{ name: 'Action', value: 'Eval' }],
+//       data
+//     });
+
+//     return messageId;
+//   } catch (error) {
+//     console.log("uploadCodeToProcess --> error:", error)
+//     return '';
+//   }
+// }
+
+export async function monitorCronProcess(process: string) {
   const signer = await getSigner();
 
   try {
     const result = await monitor({
-      process: "SuPB8BVrtwt5G1DwnvE9epBBZt4WQWQCyngBUA7lllY",
+      process,
       signer: signer
     });
-    // console.log("monitorCronProcess --> result -->", result)
+    console.log("monitorCronProcess --> result -->", result)
     return result;
   } catch (error) {
     console.log("monitorCronProcess --> error:", error)
@@ -945,12 +967,12 @@ export async function monitorCronProcess() {
   }
 }
 
-export async function unmonitorCronProcess() {
+export async function unmonitorCronProcess(process: string) {
   const signer = await getSigner();
 
   try {
     const result = await unmonitor({
-      process: "SuPB8BVrtwt5G1DwnvE9epBBZt4WQWQCyngBUA7lllY",
+      process,
       signer: signer
     });
     // console.log("unmonitorCronProcess --> result -->", result)
@@ -959,4 +981,179 @@ export async function unmonitorCronProcess() {
     console.log("unmonitorCronProcess --> error:", error)
     return '';
   }
+}
+
+// FOR TEST to poll token award process
+export async function createTokenAwardProcess(data: any) {
+  let process = await spawnCronProcess("10-seconds");
+
+  // check the process if already on-chain (exist on Arweave)
+  let check = true;
+  while (check) {
+    await wait(1000);  // to check after 1 seconds
+    const isOnChain = await isProcessOnChain(process);
+    console.log("process isOnChain --> ", Boolean(isOnChain))
+
+    if (isOnChain) {
+      check = false;
+    } else {
+      console.log('Check onchain again...');
+    }
+  }
+
+  let code = tokenAwardLuaCode(data);
+  await uploadCodeToProcess(process, code);
+  return process;
+}
+
+export async function isProcessOnChain(id: string) {
+  const start = performance.now();
+  // console.log('==> [isProcessOnChain]');
+
+  const queryObject = {
+    query:
+      `{
+        transactions (
+          ids: "${id}"
+        ) {
+          edges {
+            node {
+              id
+              owner {
+                address
+              }
+              tags {
+                name
+                value
+              }
+            }
+          }
+        }
+      }`
+  };
+
+  try {
+    const response = await fetchGraphQL(queryObject);
+    // console.log("response:", response)
+
+    const end = performance.now();
+    // console.log(`<== [isProcessOnChain] [${Math.round(end - start)} ms]`);
+
+    if (response.length == 0)
+      return '';
+    else
+      return response[0].node.id;
+  } catch (error) {
+    console.log("isProcessOnChain -> ERR:", error);
+    return '';
+  }
+}
+
+export function wait(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+export async function transferTokenAward(token_process: string, to: string, qty: string) {
+  const signer = await getSigner();
+
+  try {
+    const messageId = await message({
+      process: token_process,
+      signer: signer,
+      tags: [
+        { name: 'Action', value: 'Transfer' },
+        { name: 'Recipient', value: to },
+        { name: 'Quantity', value: qty },
+      ],
+    });
+
+    // console.log("transferTokenAward message id:", messageId)
+    return messageId;
+  } catch (error) {
+    console.log("transferTokenAward -> error:", error)
+    return '';
+  }
+}
+
+export function tokenAwardLuaCode(data: any) {
+  const CODE =
+    `
+    local json          = require("json")
+    local STORY_PROCESS = '${data.story_process}'
+    local TOKEN_PROCESS = '${data.token_process}'
+    local token_amount  = ${data.token_amount}
+    local expires_at    = ${data.expires_at}
+    local data          = { story_id = '${data.story_id}' }
+
+    local function transferAward()
+      print("os time: " .. os.time())
+      if os.time() > expires_at then
+        Send({ Target = ao.id, Action = "TransferAward" })
+      end
+    end
+
+    Handlers.add(
+      "CronTick",
+      Handlers.utils.hasMatchingTag("Action", "Cron"),
+      function(msg)
+        local status, err = pcall(transferAward)
+        if not status then
+          print('pcall failed --> Error: ' .. err)
+        else
+          print("pcall success.")
+        end
+      end
+    )
+
+    Handlers.once(
+      "transferAward",
+      { Action = "TransferAward" },
+      function(msg)
+        local response = Send({ Target = STORY_PROCESS, Action = "GetVoteAddress", Data = data }).receive().Data
+        print("getVoteAddress: " .. response)
+
+        local address  = json.decode(response)
+
+        if type(address) ~= "table" or #address == 0 then
+          -- if no one to vote then transfer token back to Owner
+          response = Send({
+            Target = TOKEN_PROCESS,
+            Action = "Transfer",
+            Recipient = Owner,
+            Quantity = tostring(token_amount)
+          }).receive().Data
+          print("Returned all token to Owner: " .. response)
+        else
+          local quantity = math.floor(token_amount / #address)
+          local remainder = token_amount % #address
+          print("votes: " .. #address)
+          print("quantity per voter: " .. quantity)
+          print("remainder: " .. remainder)
+
+          for _, value in ipairs(address) do
+            response = Send({
+              Target = TOKEN_PROCESS,
+              Action = "Transfer",
+              Recipient = value.address,
+              Quantity = tostring(quantity)
+            }).receive().Data
+            print(response)
+          end
+
+          -- 将余数返还给 Owner
+          if remainder > 0 then
+            response = Send({
+              Target = TOKEN_PROCESS,
+              Action = "Transfer",
+              Recipient = Owner,
+              Quantity = tostring(remainder)
+            }).receive().Data
+            print("Returned remainder: " .. response)
+          end
+        end
+      end
+    )
+  `;
+
+  return CODE;
 }

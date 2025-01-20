@@ -132,7 +132,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
   async getStory() {
     let post = await getDataFromAO(this.process, 'GetStories', { id: this.postId });
-    // console.log("post:", post)
+    console.log("post:", post)
     if (post.length == 0) {
       this.setState({ alert: 'Story not found.' });
       return;

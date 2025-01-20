@@ -16,7 +16,10 @@ import {
   getTokenBalance,
   spawnCronProcess,
   monitorCronProcess,
-  unmonitorCronProcess
+  unmonitorCronProcess,
+  createTokenAwardProcess,
+  transferTokenAward,
+  getTokenInfo
 } from '../util/util';
 import { MdOutlineToken } from 'react-icons/md';
 import { Server } from '../../server/server';
@@ -163,35 +166,43 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     this.setState({ question: 'Publish a story will spend 100 AOT-Test token.' })
   }
 
-  async postStory() {
-    let res = await spawnCronProcess("30-seconds");
-    // let res = await monitorCronProcess();
-    // let res = await unmonitorCronProcess();
-    console.log("res:", res)
-    return
-
+  confirmTokenAward() {
     // messageToAO(AO_STORY, {}, 'AlterTable');
     // return
 
-    // check the title
+    if (this.state.openPoll) {
+      let tokenProcess = this.state.poll_token_process.trim();
+      let tokenAmount = this.state.poll_token_amount.trim();
+      if (tokenProcess && tokenAmount) {
+        this.setState({ question: 'The token award will go through a new process that will allocate it to voters.' })
+        return;
+      }
+    }
+
+    this.postStory();
+  }
+
+  async postStory() {
+    this.setState({ message: 'Checking...' });
+
     if (!this.state.title.trim()) {
-      this.setState({ alert: 'The story title is empty.' });
+      this.setState({ alert: 'The story title is empty.', message: '' });
       return;
     }
     if (this.state.title.length > 100) {
-      this.setState({ alert: 'Story title can be up to 100 characters long.' });
+      this.setState({ alert: 'Story title can be up to 100 characters long.', message: '' });
       return;
     }
 
     let result = checkContent(this.quillRef, this.wordCount);
     if (result) {
-      this.setState({ alert: result });
+      this.setState({ alert: result, message: '' });
       return;
     }
 
     let address = await getWalletAddress();
     if (!address) {
-      this.setState({ alert: TIP_CONN });
+      this.setState({ alert: TIP_CONN, message: '' });
       return;
     }
 
@@ -204,6 +215,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     let option_count = 0;
     let option_texts: string[] = [];
     let expires_at = 0;
+    let awardAmount = 0;
 
     if (this.state.openPoll) {
       for (let i = 0; i < this.state.poll_options.length; i++) {
@@ -212,13 +224,13 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
 
         if (i == 0 || i == 1) { // must give the options
           if (!poll_option) {
-            this.setState({ alert: "Poll option is empty." });
+            this.setState({ alert: "Poll option is empty.", message: '' });
             return
           }
         }
 
         if (poll_option.length > 25) {
-          this.setState({ alert: "Poll option can be up to 25 characters long." });
+          this.setState({ alert: "Poll option can be up to 25 characters long.", message: '' });
           return
         }
 
@@ -241,22 +253,35 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
         let tokenBalance = await getTokenBalance(tokenProcess, address);
         console.log("tokenBalance:", tokenBalance)
         if (!tokenBalance) {
-          this.setState({ alert: "The token process is invaild." });
+          this.setState({ alert: "The token process is invaild.", message: '' });
           return;
         }
 
-        let awardAmount = this.state.poll_token_amount.trim();
+        awardAmount = Number(this.state.poll_token_amount.trim());
         console.log("awardAmount:", awardAmount)
         if (awardAmount) {
-          if (Number(awardAmount) > Number(tokenBalance)) {
-            this.setState({ alert: "Insufficient Poll Award Token Balance!" });
+          // test...
+          let info = await getTokenInfo(tokenProcess);
+          console.log("token info:", info)
+          for (let i = 0; i < info.length; i++) {
+            if (info[i].name == 'Denomination') {
+              awardAmount = awardAmount * 10 ** Number(info[i].value);
+              console.log("awardAmount 2:", awardAmount)
+              break;
+            }
+          }
+          // return
+
+          if (awardAmount > Number(tokenBalance)) {
+            this.setState({ alert: "Insufficient Poll Award Token Balance!", message: '' });
+            return;
           }
         } else {
-          this.setState({ alert: "Award token amount is empty." });
+          this.setState({ alert: "Award token amount is empty.", message: '' });
+          return;
         }
       }
     }
-    // return
 
     // Start to post the story...
     this.setState({ message: 'Posting...' });
@@ -279,8 +304,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
       expires_at,
       updated_at: timeOfNow(),
       poll_token_process: this.state.poll_token_process.trim(),
-      poll_token_amount: this.state.poll_token_amount.trim(),
-      award_token: 0
+      poll_token_amount: awardAmount.toString()
     };
     // console.log("dataOfStory:", dataOfStory)
 
@@ -319,6 +343,31 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
           this.setState({ message: '', alert: TIP_IMG });
           return;
         }
+      }
+
+      //---------------
+      // create a process and transfer the token to it.
+      let token_process = dataOfStory.poll_token_process;
+      let token_amount = dataOfStory.poll_token_amount;
+      if (token_process && token_amount) {
+        let data = {
+          story_process: AO_STORY,
+          token_process,
+          token_amount,
+          expires_at: dataOfStory.expires_at * 1000,
+          story_id: dataOfStory.id
+        };
+        // console.log("token award process DATA:", data)
+
+        this.setState({ message: 'The token award process is creating...' });
+        let awardProcess = await createTokenAwardProcess(data);
+        console.log("token award process:", awardProcess)
+
+        // transfer the token
+        this.setState({ message: 'The token award is transfering...' });
+        await transferTokenAward(data.token_process, awardProcess, data.token_amount);
+        await monitorCronProcess(awardProcess);
+        // let res = await unmonitorCronProcess();
       }
     }
 
@@ -556,7 +605,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
                 }
               </div>
 
-              <div className="app-icon-button fire-color" onClick={() => this.postStory()}>
+              <div className="app-icon-button fire-color" onClick={() => this.confirmTokenAward()}>
                 <AiOutlineFire size={20} />New Story
               </div>
             </div>

@@ -92,7 +92,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
   async getStory(category?: string) {
     let data = { category, offset: 0 };
     let posts = await getDataFromAO(AO_STORY, 'GetStories', data);
-    console.log("stories:", posts)
+    // console.log("stories:", posts)
 
     if (posts.length < PAGE_SIZE)
       this.setState({ isAll: true })

@@ -2,7 +2,7 @@ import React from 'react';
 import { BsBookmark, BsBookmarkFill, BsChat, BsHeart, BsHeartFill } from 'react-icons/bs';
 import {
   convertUrlsToLinks, getDataFromAO, getDefaultProcess, getTokenInfo, getWalletAddress, messageToAO,
-  numberWithCommas, randomAvatar, shortAddr, timeLeftUntil, timeOfNow, transferPollAwardToken, transferToken,
+  numberWithCommas, randomAvatar, shortAddr, timeLeftUntil, timeOfNow, transferToken,
   uuid
 } from '../util/util';
 import { formatTimestamp } from '../util/util';
@@ -139,8 +139,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     this.setState({ address });
 
     this.tokenInfo();
-    // when the poll got the final results then send the token award.
-    this.awardPollToken(address);
   }
 
   async tokenInfo() {
@@ -157,33 +155,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       }
       if (info[i].name == 'Logo') {
         this.setState({ tokenLogo: info[i].value });
-      }
-    }
-  }
-
-  async awardPollToken(address: string) {
-    let data = this.props.data;
-    // console.log("data:", data)
-
-    // only the story publisher need to send the award,
-    // if did the award then do not again.
-    if (address != data.address) return;
-    if (data.award_token == 1) return;
-
-    let voteAddress = await getDataFromAO(AO_STORY, 'GetVoteAddress', { story_id: data.id });
-    console.log("voteAddress:", voteAddress)
-
-    let pollTimeLeft = timeLeftUntil(data.expires_at);
-    if (pollTimeLeft == "Final results") {
-      // every voter get the same awards.
-      let award = Number(data.poll_token_amount) / voteAddress.length;
-
-      for (let i = 0; i < voteAddress.length; i++) {
-        let res = await transferPollAwardToken(data.poll_token_process, voteAddress[i].address, award.toString());
-        if (!res) return;
-        if (i == voteAddress.length - 1) {
-          messageToAO(AO_STORY, data.id, 'UpdateAward');
-        }
       }
     }
   }
@@ -456,7 +427,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         <div>•</div>
         <div className='poll-token-name'>{this.state.tokenName} ({this.state.tokenTicker})</div>
         <div>•</div>
-        <div>{this.props.data.poll_token_amount} amount</div>
+        <div>{this.props.data.poll_token_amount} unit</div>
       </div>
     )
   }

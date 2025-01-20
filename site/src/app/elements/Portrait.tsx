@@ -4,7 +4,7 @@ import { publish, subscribe } from '../util/event';
 import { AOT_TEST, AO_STORY, AO_TWITTER, LUA } from '../util/consts';
 import {
   browserDetect,
-  connectArConnectWallet, createArweaveWallet, evaluate, getDefaultProcess, getProfile, getTokenBalance,
+  connectArConnectWallet, createArweaveWallet, uploadCodeToProcess, getDefaultProcess, getProfile, getTokenBalance,
   getWalletAddress, isLoggedIn, messageToAO, randomAvatar, shortAddr, shortStr, spawnProcess, timeOfNow
 } from '../util/util';
 import { Server } from '../../server/server';
@@ -157,8 +157,8 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
 
     setTimeout(async () => {
       // load lua code into the process
-      let messageId = await evaluate(process, LUA);
-      console.log("evaluate -->", messageId)
+      let messageId = await uploadCodeToProcess(process, LUA);
+      console.log("uploadCodeToProcess -->", messageId)
     }, 10000);
 
     let bal_aot = await getTokenBalance(AOT_TEST, process);
