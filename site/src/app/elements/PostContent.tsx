@@ -1,42 +1,27 @@
 import React from 'react';
-import { BsFillXCircleFill, BsSend } from 'react-icons/bs';
-import AlertModal from './AlertModal';
-import './Modal.css'
-import './PostModal.css'
-import './PostStoryModal.css'
-import MessageModal from './MessageModal';
-import SharedQuillEditor from '../elements/SharedQuillEditor';
-import { AO_STORY, AO_TWITTER, STORY_INCOME, TIP_CONN, TIP_IMG } from '../util/consts';
 import {
-  checkContent, getWalletAddress, timeOfNow, uuid, messageToAO,
-  numberWithCommas, transferToken, getDefaultProcess,
-  shortAddr,
-  randomAvatar,
-  calculateDeadlineTimestamp,
-  getTokenBalance,
-  spawnCronProcess,
-  monitorCronProcess,
-  unmonitorCronProcess,
-  createTokenAwardProcess,
-  transferTokenAward,
-  getTokenInfo
+  calculateDeadlineTimestamp, checkContent, createTokenAwardProcess,
+  getTokenBalance, getTokenInfo, getWalletAddress, isValidPositiveNumber,
+  messageToAO, monitorCronProcess, timeOfNow, transferTokenAward, uuid
 } from '../util/util';
-import { MdOutlineToken } from 'react-icons/md';
-import { Server } from '../../server/server';
+import './PostContent.css';
+import { BsSend } from 'react-icons/bs';
+import { FaPollH } from "react-icons/fa";
+import { IoIosAddCircleOutline } from "react-icons/io";
 import { AiOutlineFire } from 'react-icons/ai';
-import QuestionModal from './QuestionModal';
-import { FaPollH } from 'react-icons/fa';
-import { Tooltip } from 'react-tooltip'
-import { IoIosAddCircleOutline } from 'react-icons/io';
+import { Tooltip } from 'react-tooltip';
+import AlertModal from '../modals/AlertModal';
+import MessageModal from '../modals/MessageModal';
+import QuestionModal from '../modals/QuestionModal';
+import { TIP_CONN, AO_STORY, TIP_IMG, AO_TWITTER } from '../util/consts';
+import SharedQuillEditor from './SharedQuillEditor';
 
-declare var window: any;
-
-interface PostStoryModalProps {
-  open: boolean;
+interface PostContentProps {
   onClose: Function;
+  isStory?: boolean;
 }
 
-interface PostStoryModalState {
+interface PostContentState {
   message: string;
   alert: string;
   question: string;
@@ -50,17 +35,15 @@ interface PostStoryModalState {
   minutes: string;
   poll_token_process: string;
   poll_token_amount: string;
-  poll_bonus: string;
 }
 
-class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModalState> {
+class PostContent extends React.Component<PostContentProps, PostContentState> {
   quillRef: any;
   wordCount = 0;
   refresh: any;
 
-  constructor(props: PostStoryModalProps) {
+  constructor(props: PostContentProps) {
     super(props);
-
     this.state = {
       message: '',
       alert: '',
@@ -75,8 +58,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
       minutes: '0',
       poll_token_process: '',
       poll_token_amount: '',
-      poll_bonus: '',
-    }
+    };
 
     this.onTitleChange = this.onTitleChange.bind(this);
     this.onContentChange = this.onContentChange.bind(this);
@@ -88,7 +70,6 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     this.onMinutesChange = this.onMinutesChange.bind(this);
     this.onPollTokenProcessChange = this.onPollTokenProcessChange.bind(this);
     this.onPollTokenAmountChange = this.onPollTokenAmountChange.bind(this);
-    this.onPollBonusChange = this.onPollBonusChange.bind(this);
   }
 
   onPollOptionChange(index: number, e: React.ChangeEvent<HTMLInputElement>) {
@@ -98,7 +79,7 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
   };
 
   onQuestionYes() {
-    this.postStory();
+    this.onPost();
     this.setState({ question: '' });
   }
 
@@ -112,6 +93,10 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
 
   onContentChange(length: number) {
     this.wordCount = length;
+  };
+
+  onRangeChange(e: any) {
+    this.setState({ range: e.currentTarget.value });
   };
 
   onCategoryChange(e: any) {
@@ -158,16 +143,8 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     this.setState({ poll_token_amount: e.currentTarget.value });
   };
 
-  onPollBonusChange(e: any) {
-    this.setState({ poll_bonus: e.currentTarget.value });
-  };
-
-  tipTransfer() {
-    this.setState({ question: 'Publish a story will spend 100 AOT-Test token.' })
-  }
-
   confirmTokenAward() {
-    // messageToAO(AO_STORY, {}, 'AlterTable');
+    // messageToAO(AO_TWITTER, {}, 'AlterTable');
     // return
 
     if (this.state.openPoll) {
@@ -179,19 +156,21 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
       }
     }
 
-    this.postStory();
+    this.onPost();
   }
 
-  async postStory() {
+  async onPost() {
     this.setState({ message: 'Checking...' });
 
-    if (!this.state.title.trim()) {
-      this.setState({ alert: 'The story title is empty.', message: '' });
-      return;
-    }
-    if (this.state.title.length > 100) {
-      this.setState({ alert: 'Story title can be up to 100 characters long.', message: '' });
-      return;
+    if (this.props.isStory) {
+      if (!this.state.title.trim()) {
+        this.setState({ alert: 'The story title is empty.', message: '' });
+        return;
+      }
+      if (this.state.title.length > 100) {
+        this.setState({ alert: 'Story title can be up to 100 characters long.', message: '' });
+        return;
+      }
     }
 
     let result = checkContent(this.quillRef, this.wordCount);
@@ -206,11 +185,6 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
       return;
     }
 
-    // if (this.props.isStory) {
-    //   let resp = await this.transferFee();
-    //   if (!resp) return;
-    // }
-
     // check for poll
     let option_count = 0;
     let option_texts: string[] = [];
@@ -221,7 +195,6 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
       for (let i = 0; i < this.state.poll_options.length; i++) {
         const poll_option = this.state.poll_options[i].trim();
         // console.log("poll_option:", poll_option)
-
         if (i == 0 || i == 1) { // must give the options
           if (!poll_option) {
             this.setState({ alert: "Poll option is empty.", message: '' });
@@ -248,29 +221,34 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
 
       // Poll award token
       let tokenProcess = this.state.poll_token_process.trim();
-      console.log("tokenProcess:", tokenProcess)
+      // console.log("tokenProcess:", tokenProcess)
       if (tokenProcess) {
         let tokenBalance = await getTokenBalance(tokenProcess, address);
-        console.log("tokenBalance:", tokenBalance)
+        // console.log("tokenBalance:", tokenBalance)
         if (!tokenBalance) {
           this.setState({ alert: "The token process is invaild.", message: '' });
           return;
         }
 
         awardAmount = Number(this.state.poll_token_amount.trim());
-        console.log("awardAmount:", awardAmount)
+        // console.log("awardAmount:", awardAmount)
         if (awardAmount) {
           // test...
           let info = await getTokenInfo(tokenProcess);
-          console.log("token info:", info)
+          // console.log("token info:", info)
           for (let i = 0; i < info.length; i++) {
             if (info[i].name == 'Denomination') {
               awardAmount = awardAmount * 10 ** Number(info[i].value);
-              console.log("awardAmount 2:", awardAmount)
+              console.log("will be transfer awardAmount:", awardAmount)
               break;
             }
           }
-          // return
+
+          // Quantity must be a valid positive non-zero number.
+          if (!isValidPositiveNumber(awardAmount)) {
+            this.setState({ alert: "Award amount must be a valid positive non-zero number.", message: '' });
+            return;
+          }
 
           if (awardAmount > Number(tokenBalance)) {
             this.setState({ alert: "Insufficient Poll Award Token Balance!", message: '' });
@@ -288,8 +266,8 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
 
     let post = this.quillRef.root.innerHTML;
 
-    // data of stories table
-    let dataOfStory = {
+    // post content
+    let data = {
       id: uuid(),
       address,
       post,
@@ -308,16 +286,20 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     };
     // console.log("dataOfStory:", dataOfStory)
 
-    let response = await messageToAO(AO_STORY, dataOfStory, 'SendStory');
+    let response;
+    if (this.props.isStory)
+      response = await messageToAO(AO_STORY, data, 'SendStory');
+    else
+      response = await messageToAO(AO_TWITTER, data, 'SendPost');
 
     if (response) {
-      // store the txid of a story. 
-      let txid = { id: dataOfStory.id, txid: response };
-      messageToAO(AO_STORY, txid, 'SendTxid');
+      // store the txid of a post. 
+      let txid = { id: data.id, txid: response };
+      messageToAO(this.props.isStory ? AO_STORY : AO_TWITTER, txid, 'SendTxid');
 
       if (option_count == 0) {
         this.setState({ message: '' });
-        this.props.onClose(dataOfStory);
+        this.props.onClose(data);
         return;
       }
     }
@@ -330,15 +312,15 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     if (this.state.openPoll) {
       // data of poll_options table
       for (let i = 0; i < option_texts.length; i++) {
-        let data = {
+        let param = {
           option_id: uuid(),
-          story_id: dataOfStory.id,
+          story_id: data.id,
           option_text: option_texts[i],
           vote_count: 0
         };
         // console.log("dataOfPollOption:", data)
 
-        let response = await messageToAO(AO_STORY, data, 'AddPollOption');
+        let response = await messageToAO(this.props.isStory ? AO_STORY : AO_TWITTER, param, 'AddPollOption');
         if (!response) {
           this.setState({ message: '', alert: TIP_IMG });
           return;
@@ -347,25 +329,30 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
 
       //---------------
       // create a process and transfer the token to it.
-      let token_process = dataOfStory.poll_token_process;
-      let token_amount = dataOfStory.poll_token_amount;
+      let token_process = data.poll_token_process;
+      let token_amount = data.poll_token_amount;
       if (token_process && token_amount) {
-        let data = {
-          story_process: AO_STORY,
+        let param = {
+          story_process: this.props.isStory ? AO_STORY : AO_TWITTER,
           token_process,
           token_amount,
-          expires_at: dataOfStory.expires_at * 1000,
-          story_id: dataOfStory.id
+          expires_at: data.expires_at * 1000,
+          story_id: data.id
         };
-        // console.log("token award process DATA:", data)
+        // console.log("token award process DATA:", param)
 
         this.setState({ message: 'The token award process is creating...' });
-        let awardProcess = await createTokenAwardProcess(data);
+        let awardProcess = await createTokenAwardProcess(param);
         console.log("token award process:", awardProcess)
 
         // transfer the token
         this.setState({ message: 'The token award is transfering...' });
-        await transferTokenAward(data.token_process, awardProcess, data.token_amount);
+        while (true) {
+          let res = await transferTokenAward(param.token_process, awardProcess, param.token_amount);
+          // console.log("transferTokenAward --> res:", res)
+          if (res) break;
+        }
+
         await monitorCronProcess(awardProcess);
         // let res = await unmonitorCronProcess();
       }
@@ -374,42 +361,20 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
     // Post successful
     this.setState({ message: '' });
     this.props.onClose('Done');
+    this.resetPostContent();
   }
 
-  async transferFee() {
-    this.setState({ message: 'Transfering Fee...' });
-
-    //-------------------
-    // TODO: need to update...
-    // your own process 
-    let from = Server.service.getDefaultProcess();
-    console.log("from:", from)
-    if (!from) {
-      let address = await getWalletAddress();
-      from = await getDefaultProcess(address);
-      console.log("from 2:", from)
-    }
-
-    if (!from) {
-      this.setState({ alert: "You haven't a process yet, try to reconnect to wallet.", message: '' });
-      return false;
-    }
-    //-------------------
-
-    let bal = Server.service.getBalanceOfAOT();
-    console.log("bal:", bal)
-    if (bal < 100) {
-      this.setState({ alert: 'Insufficient balance.', message: '' });
-      return false;
-    }
-
-    await transferToken(from, STORY_INCOME, '100');
-
-    this.setState({ message: '' });
-
-    let bal_new = bal - 100;
-    Server.service.setBalanceOfAOT(bal_new);
-    return true;
+  resetPostContent() {
+    this.quillRef.setText('');
+    this.setState({
+      openPoll: false,
+      poll_options: ['', ''],
+      days: '1',
+      hours: '0',
+      minutes: '0',
+      poll_token_process: '',
+      poll_token_amount: '',
+    });
   }
 
   onPoll() {
@@ -419,19 +384,6 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
   offPoll() {
     this.setState({ openPoll: false });
   }
-
-  // offPoll() {
-  //   this.setState({
-  //     openPoll: false,
-  //     poll_options: ['', ''],
-  //     days: '1',
-  //     hours: '0',
-  //     minutes: '0',
-  //     poll_token_process: '',
-  //     poll_token_amount: '',
-  //     poll_bonus: ''
-  //   });
-  // }
 
   renderPollOptions() {
     return this.state.poll_options.map((option, index) => (
@@ -528,55 +480,42 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
   }
 
   render() {
-    if (!this.props.open)
-      return (<div></div>);
-
     return (
-      <div className="modal open">
-        <div className="modal-content post-modal-content">
-          <button className="modal-close-button" onClick={() => this.props.onClose()}>
-            <BsFillXCircleFill />
-          </button>
-
+      <div>
+        {this.props.isStory &&
           <div>
-            <div className='post-modal-header-row'>
-              <div className="post-modal-header-title">New Story</div>
-              {/* <div className='post-modal-header-balance'>
-                <MdOutlineToken size={20} />
-                {numberWithCommas(Number(Server.service.getBalanceOfAOT()))}
-              </div> */}
-            </div>
-            {/* <div className='bounty-modal-header-line' /> */}
+            <div className="post-modal-header-title">New Story</div>
+            <input
+              className="post-story-modal-story-title"
+              placeholder="Title"
+              value={this.state.title}
+              onChange={this.onTitleChange}
+            />
           </div>
+        }
 
-          <input
-            className="post-story-modal-story-title"
-            placeholder="Title"
-            value={this.state.title}
-            onChange={this.onTitleChange}
+        <div className="home-input-container">
+          <SharedQuillEditor
+            placeholder={this.props.isStory ? 'The first image will be the story cover.' : 'What is happening?!'}
+            onChange={this.onContentChange}
+            getRef={(ref: any) => this.quillRef = ref}
           />
 
-          <div className="home-input-container">
+          {this.state.openPoll &&
+            <div className='post-story-modal-poll-container'>
+              <div>Poll Options</div>
+              <div>{this.renderPollOptions()}</div>
+              <div>Poll Length</div>
+              <div>{this.renderPollLength()}</div>
+              <div>Token Award (optional)</div>
+              <div>{this.renderPollToken()}</div>
+            </div>
+          }
 
-            <SharedQuillEditor
-              placeholder={'The first image will be the story cover.'}
-              onChange={this.onContentChange}
-              getRef={(ref: any) => this.quillRef = ref}
-            />
-
-            {this.state.openPoll &&
-              <div className='post-story-modal-poll-container'>
-                <div>Poll Options</div>
-                <div>{this.renderPollOptions()}</div>
-                <div>Poll Length</div>
-                <div>{this.renderPollLength()}</div>
-                <div>Token Award (optional)</div>
-                <div>{this.renderPollToken()}</div>
-              </div>
-            }
-
-            <div className='post-modal-actions'>
-              <div className='post-story-modal-left-actions'>
+          <div className='post-modal-actions'>
+            <div className='post-story-modal-left-actions'>
+              {this.props.isStory
+                ?
                 <select
                   className="home-filter"
                   value={this.state.category}
@@ -590,25 +529,42 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
                   <option value="sports">Sport</option>
                   <option value="movie">Movie</option>
                 </select>
+                :
+                <select
+                  className="home-filter"
+                  value={this.state.range}
+                  onChange={this.onRangeChange}
+                >
+                  <option value="everyone">Everyone</option>
+                  {/* <option value="following">Following</option> */}
+                  <option value="private">Private</option>
+                </select>
+              }
 
-                {this.state.openPoll
-                  ? <button className="button-remove-poll"
-                    onClick={() => this.offPoll()}>Remove Poll</button>
-                  : <div
-                    className="post-story-modal-poll-icon"
-                    data-tooltip-id="my-tooltip"
-                    data-tooltip-content="Poll"
-                    onClick={() => this.onPoll()}
-                  >
-                    <FaPollH size={35} />
-                  </div>
-                }
-              </div>
+              {this.state.openPoll
+                ? <button className="button-remove-poll"
+                  onClick={() => this.offPoll()}>Remove Poll</button>
+                : <div
+                  className="post-story-modal-poll-icon"
+                  data-tooltip-id="my-tooltip"
+                  data-tooltip-content="Poll"
+                  onClick={() => this.onPoll()}
+                >
+                  <FaPollH size={35} />
+                </div>
+              }
+            </div>
 
+            {this.props.isStory
+              ?
               <div className="app-icon-button fire-color" onClick={() => this.confirmTokenAward()}>
                 <AiOutlineFire size={20} />New Story
               </div>
-            </div>
+              :
+              <div className="app-icon-button" onClick={() => this.confirmTokenAward()}>
+                <BsSend size={20} />Post
+              </div>
+            }
           </div>
         </div>
 
@@ -616,9 +572,9 @@ class PostStoryModal extends React.Component<PostStoryModalProps, PostStoryModal
         <MessageModal message={this.state.message} />
         <AlertModal message={this.state.alert} button="OK" onClose={() => this.setState({ alert: '' })} />
         <QuestionModal message={this.state.question} onYes={this.onQuestionYes} onNo={this.onQuestionNo} />
-      </div>
+      </div >
     )
   }
 }
 
-export default PostStoryModal;
+export default PostContent;

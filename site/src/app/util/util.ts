@@ -983,7 +983,6 @@ export async function unmonitorCronProcess(process: string) {
   }
 }
 
-// FOR TEST to poll token award process
 export async function createTokenAwardProcess(data: any) {
   let process = await spawnCronProcess("10-seconds");
 
@@ -1156,4 +1155,15 @@ export function tokenAwardLuaCode(data: any) {
   `;
 
   return CODE;
+}
+
+export function isValidPositiveNumber(input: any) {
+  // 将输入转换为数字
+  const number = parseFloat(input);
+
+  // 检查是否为有效的数字且大于零
+  if (!isNaN(number) && number > 0) {
+      return true;
+  }
+  return false;
 }

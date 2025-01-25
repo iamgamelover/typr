@@ -30,9 +30,9 @@ interface ActivityPostProps {
   isPostPage?: boolean;
   isStory?: boolean;
   txid?: string;
-  pollOptions?: any;
-  votedOptionId?: string;
-  voteDone?: Function;
+  // pollOptions?: any;
+  // votedOptionId?: string;
+  // voteDone?: Function;
 }
 
 interface ActivityPostState {
@@ -50,13 +50,16 @@ interface ActivityPostState {
   tokenLogo: string;
   tokenName: string;
   tokenTicker: string;
+  pollOptions: any;
+  votedOptionId: string;
+  loading: boolean;
 }
 
 class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState> {
 
   id: string;
+  process: string;
   imgUrl: string;
-  loading: boolean = false;
 
   static service: Service = new Service();
 
@@ -90,6 +93,9 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       tokenLogo: '',
       tokenName: '',
       tokenTicker: '',
+      pollOptions: [],
+      votedOptionId: '',
+      loading: true,
     };
 
     this.onBounty = this.onBounty.bind(this);
@@ -133,12 +139,45 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   // }
 
   async start() {
+    if (this.props.isStory)
+      this.process = AO_STORY;
+    else
+      this.process = AO_TWITTER;
+
     this.getPostContent();
     this.setState({ isBookmarked: this.props.data.isBookmarked });
     let address = await getWalletAddress();
     this.setState({ address });
 
     this.tokenInfo();
+    await this.getPollOptions(this.props.data);
+  }
+
+  async getPollOptions(post: any) {
+    if (post.option_count > 0) {
+      let story_id = { id: post.id };
+      let pollOptions = await getDataFromAO(this.process, 'GetPollOptions', story_id);
+      this.setState({ pollOptions });
+      this.getVoteStatus(pollOptions);
+    }
+  }
+
+  async getVoteStatus(options: any) {
+    for (let i = 0; i < options.length; i++) {
+      let data = {
+        option_id: options[i].option_id,
+        address: this.state.address
+      };
+      // console.log("get vote data:", data);
+
+      let response = await getDataFromAO(this.process, 'GetVotes', data);
+      if (response.length > 0) {
+        this.setState({ votedOptionId: data.option_id });
+        break;
+      }
+    }
+
+    this.setState({ loading: false, message: '' });
   }
 
   async tokenInfo() {
@@ -313,21 +352,9 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     this.setState({ openImage: false, openBounty: false, openBountyRecords: false });
   }
 
-  async onVote(option: any) {
+  async onVote(e: any, option: any) {
     // console.log("option:", option)
-
-    // test to transfer token
-    // this.setState({ message: 'test to transfer token' });
-    // await transferPollAwardToken('3o93Lq732NM8f23VFR6q1Xmn0bZB30KwLmhIDva0OlE', '4tKnGrXpOzbL_r2VsahCCUPSwV1ndbU35U1nxeB6_ic', '100');
-    // return
-
-    // let data1 = {
-    //   Recipient: '4tKnGrXpOzbL_r2VsahCCUPSwV1ndbU35U1nxeB6_ic',
-    //   Quantity: '2000000'
-    // };
-    // let res = await messageToAO('3o93Lq732NM8f23VFR6q1Xmn0bZB30KwLmhIDva0OlE', data1, 'PollAward');
-    // console.log("res:", res)
-    // return
+    e.stopPropagation();
 
     let address = Server.service.getActiveAddress();
     if (!address) {
@@ -346,14 +373,11 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     };
     // console.log("dataOfVoteTable:", data)
 
-    let response = await messageToAO(AO_STORY, data, 'Vote');
+    let response = await messageToAO(this.process, data, 'Vote');
     if (response) {
-      let response = await messageToAO(AO_STORY, option.option_id, 'UpdateOption');
+      let response = await messageToAO(this.process, option.option_id, 'UpdateOption');
       if (response) {
-        this.setState({ message: '' });
-        // test to transfer token
-
-        this.props.voteDone();
+        this.getPollOptions(this.props.data);
       } else {
         this.setState({ message: '', alert: TIP_VOTE });
       }
@@ -363,28 +387,26 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   }
 
   renderPollOptions() {
-    if (!this.props.isStory) return;
-
     let divs = [];
-    let data = this.props.pollOptions;
+    let data = this.state.pollOptions;
+    let total_votes = this.getTotalVotes(data);
 
-    for (let i = 0; i < data.length; i++)
+    for (let i = 0; i < data.length; i++) {
       divs.push(
-        <button key={i} onClick={() => this.onVote(data[i])}>{data[i].option_text}</button>
+        <button key={i} onClick={(e) => this.onVote(e, data[i])}>
+          {data[i].option_text}
+        </button>
       )
+    }
 
+    this.renderVoteStas(total_votes, divs);
     return divs;
   }
 
   renderResultsOfVoting() {
     let divs = [];
-    let data = this.props.pollOptions;
-
-    let total_votes = 0;
-    for (let i = 0; i < data.length; i++) {
-      total_votes += data[i].vote_count
-    }
-    // console.log("total_votes:", total_votes)
+    let data = this.state.pollOptions;
+    let total_votes = this.getTotalVotes(data);
 
     for (let i = 0; i < data.length; i++) {
       // 计算每个选项的宽度（以百分比表示）
@@ -400,13 +422,27 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           />
           <div className="poll-option-text">
             {data[i].option_text}
-            {this.props.votedOptionId == data[i].option_id && <FaCheckCircle />}
+            {this.state.votedOptionId == data[i].option_id && <FaCheckCircle />}
+            {/* {this.props.votedOptionId == data[i].option_id && <FaCheckCircle />} */}
           </div>
           <div className="poll-option-percentage">{percentage}%</div>
         </div>
       )
     }
 
+    this.renderVoteStas(total_votes, divs);
+    return divs;
+  }
+
+  getTotalVotes(data: any) {
+    let total_votes = 0;
+    for (let i = 0; i < data.length; i++) {
+      total_votes += data[i].vote_count
+    }
+    return total_votes;
+  }
+
+  renderVoteStas(total_votes: number, divs: any) {
     divs.push(
       <div key={uuid()} className='poll-option-bottom'>
         {total_votes} votes
@@ -414,8 +450,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         {timeLeftUntil(this.props.data.expires_at)}
       </div>
     )
-
-    return divs;
   }
 
   renderTokenAward() {
@@ -531,7 +565,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
   render() {
     let data = this.props.data;
-    // console.log("data:", data)
+    // console.log("post -> data:", data)
     let pollTimeLeft = timeLeftUntil(data.expires_at);
 
     if (this.state.navigate)
@@ -580,8 +614,9 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
         <div className='activity-post-content'>
           {parse(this.state.content, this.parseOptions)}
-          {this.props.votedOptionId || pollTimeLeft == "Final results"
-            ? this.renderResultsOfVoting() : this.renderPollOptions()
+          {!this.state.loading && data.option_count > 0 &&
+            (this.state.votedOptionId || pollTimeLeft == "Final results"
+              ? this.renderResultsOfVoting() : this.renderPollOptions())
           }
           {data.poll_token_process && this.renderTokenAward()}
         </div>

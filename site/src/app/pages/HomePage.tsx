@@ -6,14 +6,13 @@ import MessageModal from '../modals/MessageModal';
 import {
   checkContent, getDataFromAO, getWalletAddress, timeOfNow,
   messageToAO, uuid, isBookmarked,
-  createArweaveWallet} from '../util/util';
-import SharedQuillEditor from '../elements/SharedQuillEditor';
+  createArweaveWallet
+} from '../util/util';
 import ActivityPost from '../elements/ActivityPost';
 import { AO_TWITTER, PAGE_SIZE, TIP_CONN, TIP_IMG } from '../util/consts';
 import { Server } from '../../server/server';
-import { BsSend } from 'react-icons/bs';
 import Loading from '../elements/Loading';
-import { dryrun } from '@permaweb/aoconnect/browser';
+import PostContent from '../elements/PostContent';
 
 declare var window: any;
 
@@ -157,7 +156,7 @@ class HomePage extends React.Component<{}, HomePageState> {
         this.setState({ isAll: false })
     }
 
-    // console.log("posts:", posts)
+    console.log("posts:", posts)
     this.checkBookmarks(posts);
 
     setTimeout(() => {
@@ -203,10 +202,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       let data = this.state.posts[i];
       if (data.range === 'everyone' || data.address === address) {
         divs.push(
-          <ActivityPost
-            key={uuid()}
-            data={data}
-          />
+          <ActivityPost key={uuid()} data={data} />
         )
       }
     }
@@ -214,72 +210,15 @@ class HomePage extends React.Component<{}, HomePageState> {
     return divs;
   }
 
-  async onPost() {
-    let result = checkContent(this.quillRef, this.wordCount);
-    if (result) {
-      this.setState({ alert: result });
-      return;
-    }
-
-    let address = await getWalletAddress();
-    if (!address) {
-      this.setState({ alert: TIP_CONN });
-      return;
-    }
-
-    this.setState({ message: 'Posting...' });
-
-    let post = this.quillRef.root.innerHTML;
-
-    let data = {
-      id: uuid(), address, post, range: this.state.range,
-      likes: 0, replies: 0, coins: 0, time: timeOfNow()
-    };
-
-    let response = await messageToAO(AO_TWITTER, data, 'SendPost');
-
-    if (response) {
-      this.quillRef.setText('');
-      // this.setState({ message: '', alert: 'Post successful.', posts: [], loading: true });
-      this.setState({ message: '' });
-      this.getPosts(true);
-
-      // store the txid of a post. 
-      let txid = { id: data.id, txid: response };
-      messageToAO(AO_TWITTER, txid, 'SendTxid');
-    }
-    else
-      this.setState({ message: '', alert: TIP_IMG });
+  postDone() {
+    this.getPosts(true);
   }
 
   render() {
     return (
       <div className="home-page">
         {Server.service.isLoggedIn() &&
-          <div className="home-input-container">
-            <SharedQuillEditor
-              placeholder='What is happening?!'
-              onChange={this.onContentChange}
-              getRef={(ref: any) => this.quillRef = ref}
-            />
-
-            <div className='home-actions'>
-              <select
-                className="home-filter"
-                value={this.state.range}
-                onChange={this.onRangeChange}
-              >
-                <option value="everyone">Everyone</option>
-                {/* <option value="following">Following</option> */}
-                <option value="private">Private</option>
-              </select>
-
-              <div className="app-icon-button" onClick={() => this.onPost()}>
-                <BsSend size={20} />
-                <div>Post</div>
-              </div>
-            </div>
-          </div>
+          <PostContent onClose={() => this.postDone()} />
         }
 
         <div className="home-chat-container">

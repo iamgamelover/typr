@@ -30,11 +30,9 @@ interface ActivityPostPageState {
   question: string;
   loading: boolean;
   loading_reply: boolean;
-  // address: string;
   txid: string;
   loadNextPage: boolean;
   isAll: boolean;
-  poll_options: any;
 }
 
 class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPostPageState> {
@@ -44,7 +42,6 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
   postId: string;
   process: string;
   address: string;
-  votedOptionId: string;
 
   constructor(props: ActivityPostPageProps) {
     super(props);
@@ -56,11 +53,9 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
       question: '',
       loading: true,
       loading_reply: true,
-      // address: '',
       txid: '',
       loadNextPage: false,
       isAll: false,
-      poll_options: ''
     };
 
     this.onContentChange = this.onContentChange.bind(this);
@@ -127,25 +122,29 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
   voteDone() {
     this.setState({ message: 'Voting...' });
-    this.getStory()
+
+    let type = this.props.type;
+    if (type == 'post') {
+      this.getPost();
+    }
+    else if (type == 'story') {
+      this.getStory();
+    }
   }
 
   async getStory() {
     let post = await getDataFromAO(this.process, 'GetStories', { id: this.postId });
-    console.log("post:", post)
+    // console.log("story post:", post)
     if (post.length == 0) {
       this.setState({ alert: 'Story not found.' });
       return;
     }
 
-    // let data = { id: this.postId, address: this.state.address }
     let data = { id: this.postId, address: this.address }
     let isLiked = await getDataFromAO(this.process, 'GetLike', data);
     if (isLiked.length > 0) {
       post[0].isLiked = true;
     }
-
-    await this.getPollOptions(post);
 
     this.setState({ post: post[0], loading: false, message: '' });
     this.getReplies();
@@ -154,36 +153,12 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     this.setState({ txid: txid[0].txid });
   }
 
-  async getPollOptions(post: any) {
-    if (post[0].option_count > 0) {
-      let story_id = { id: this.postId };
-      let poll_options = await getDataFromAO(this.process, 'GetPollOptions', story_id);
-      // console.log("pollOptions:", poll_options);
-      this.setState({ poll_options });
-
-      // get voting
-      for (let i = 0; i < poll_options.length; i++) {
-        let data = {
-          option_id: poll_options[i].option_id,
-          address: this.address
-        };
-        // console.log("get vote data:", data);
-        let response = await getDataFromAO(AO_STORY, 'GetVotes', data);
-        if (response.length > 0) {
-          this.votedOptionId = data.option_id;
-          break;
-        }
-      }
-    }
-  }
-
   async getPost() {
     let post = Server.service.getPostFromCache(this.postId);
-
     if (!post) {
       post = await this.getPostById(this.postId)
       if (!post) {
-        this.setState({ alert: 'Post not found.' });
+        this.setState({ alert: 'Post not found.', message: '' });
         return;
       }
 
@@ -191,10 +166,11 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
     }
 
     // console.log("post page:", post)
+
     let address = Server.service.getActiveAddress();
 
     if (post.range === 'everyone' || post.address === address) {
-      this.setState({ post, loading: false });
+      this.setState({ post, loading: false, message: '' });
       this.getReplies();
       let txid = await getDataFromAO(AO_TWITTER, 'GetTxid', { id: this.postId });
       this.setState({ txid: txid[0].txid });
@@ -215,6 +191,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
   async getPostById(id: string) {
     let resp = await getDataFromAO(AO_TWITTER, 'GetPosts', { id });
+    console.log("getPostById:", resp)
     if (resp.length == 0) return;
 
     Server.service.addPostToCache(resp[0]);
@@ -367,13 +344,9 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
             isPostPage={true}
             isStory={this.props.type == 'story' && true}
             txid={this.state.txid}
-            pollOptions={this.state.poll_options}
-            votedOptionId={this.votedOptionId}
-            voteDone={() => this.voteDone()}
           />
         }
 
-        {/* {!this.state.loading && this.state.address && !this.state.loading_reply && */}
         {!this.state.loading && this.address && !this.state.loading_reply &&
           <div className="activity-post-page-reply-container">
             <SharedQuillEditor

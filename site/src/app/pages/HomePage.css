@@ -95,6 +95,7 @@
 
 .home-input-container {
   border-radius: 10px;
+  padding-bottom: 5px;
   background-color: var(--section-color);
 }
 

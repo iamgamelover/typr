@@ -6,20 +6,19 @@ import {
   BsPeopleFill, BsPerson, BsReplyFill, BsSend, BsSendFill
 } from 'react-icons/bs';
 import {
-  formatBalance,
   getDataFromAO, getDefaultProcess,
   getTokenBalance, isLoggedIn,
   messageToAO
 } from '../util/util';
-import { AOT_TEST, AO_TWITTER, AR_DEC, ICON_SIZE, ORBT, TRUNK, USDA, WAR } from '../util/consts';
+import { AO_TWITTER, AR_DEC, ICON_SIZE, TRUNK, WAR } from '../util/consts';
 import { Server } from '../../server/server';
-import PostModal from '../modals/PostModal';
 import Portrait from '../elements/Portrait';
 import { publish, subscribe } from '../util/event';
 import './SitePage.css';
 import { AiOutlineFire } from 'react-icons/ai';
 import { RiQuillPenLine } from "react-icons/ri";
 import { CgMoreO } from "react-icons/cg";
+import PostModal from '../modals/PostModal';
 
 interface SitePageState {
   users: number;
