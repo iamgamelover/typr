@@ -14,6 +14,8 @@ export class Service {
   protected balanceOfWAR:number;
   protected balanceOf0rbit:number;
   protected balanceOfUSDA:number;
+  
+  protected storyTab:number = 0;
 
   constructor() {
     this.profiles = [];
@@ -131,6 +133,14 @@ export class Service {
 
   public getBalanceOfUSDA() {
     return this.balanceOfUSDA;
+  }
+  
+  public setStoryTab(tab:number) {
+    this.storyTab = tab;
+  }
+
+  public getStoryTab() {
+    return this.storyTab;
   }
   
 }

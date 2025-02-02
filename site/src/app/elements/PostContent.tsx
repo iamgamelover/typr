@@ -49,7 +49,7 @@ class PostContent extends React.Component<PostContentProps, PostContentState> {
       alert: '',
       question: '',
       range: 'everyone',
-      category: 'project',
+      category: 'travel',
       title: '',
       openPoll: false,
       poll_options: ['', ''],
@@ -297,9 +297,11 @@ class PostContent extends React.Component<PostContentProps, PostContentState> {
       let txid = { id: data.id, txid: response };
       messageToAO(this.props.isStory ? AO_STORY : AO_TWITTER, txid, 'SendTxid');
 
+      // without a poll
       if (option_count == 0) {
         this.setState({ message: '' });
         this.props.onClose(data);
+        this.resetPostContent();
         return;
       }
     }
@@ -521,7 +523,7 @@ class PostContent extends React.Component<PostContentProps, PostContentState> {
                   value={this.state.category}
                   onChange={this.onCategoryChange}
                 >
-                  <option value="project">Project</option>
+                  {/* <option value="project">Project</option> */}
                   <option value="travel">Travel</option>
                   <option value="learn">Learn</option>
                   <option value="fiction">Fiction</option>

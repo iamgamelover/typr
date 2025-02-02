@@ -567,6 +567,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     let data = this.props.data;
     // console.log("post -> data:", data)
     let pollTimeLeft = timeLeftUntil(data.expires_at);
+    let date = new Date(data.time * 1000);
+    let time = date.toLocaleString();
 
     if (this.state.navigate)
       return <Navigate to={this.state.navigate} />;
@@ -593,7 +595,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           </div>
 
           <div className="home-msg-address">{shortAddr(data.address, 4)}</div>
-          <div className='home-msg-time'>
+          <div className='home-msg-time' title={time}>
             ·&nbsp;&nbsp;{formatTimestamp(data.time)}
           </div>
 

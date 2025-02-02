@@ -29,6 +29,10 @@ export function checkNumber(value: string) {
   }
 };
 
+export function isDifferentYear(timestamp1: number, timestamp2: number) {
+  return new Date(timestamp1).getFullYear() !== new Date(timestamp2).getFullYear();
+}
+
 /**
  * Format time to twitter style ones
  * @param time timestamp in seconds
@@ -50,10 +54,10 @@ export function formatTimestamp(time: number, ago?: boolean) {
 
   if (days > 0) {
     const date = new Date(time * 1000);
-
-    if (days > 365) {
-      return date.toLocaleString();
-    } else {
+    if (isDifferentYear(time * 1000, Date.now())) {
+      return date.toLocaleDateString();
+    }
+    else {
       const month = date.getMonth() + 1;
       const day = date.getDate();
       return m.get(month) + ' ' + day;
@@ -428,7 +432,6 @@ export async function messageToAO(process: string, data: any, action: string) {
   try {
     const messageId = await message({
       process: process,
-      // signer: createDataItemSigner(window.arweaveWallet),
       signer: signer,
       tags: [{ name: 'Action', value: action }],
       data: JSON.stringify(data)
@@ -1163,7 +1166,7 @@ export function isValidPositiveNumber(input: any) {
 
   // 检查是否为有效的数字且大于零
   if (!isNaN(number) && number > 0) {
-      return true;
+    return true;
   }
   return false;
 }

@@ -48,6 +48,8 @@ class StoryCard extends React.Component<StoryCardProps, StoryCardState> {
 
   render() {
     let data = this.props.data;
+    let date = new Date(data.time * 1000);
+    let time = date.toLocaleString();
 
     return (
       <NavLink className='story-card' to={'/story/' + data.id}>
@@ -59,7 +61,7 @@ class StoryCard extends React.Component<StoryCardProps, StoryCardState> {
             <img className='story-card-avatar' src={data.avatar} />
             <div className='story-card-publisher'>{data.nickname}</div>
             {/* <div className='story-card-summary'>·</div> */}
-            <div className='story-card-summary'>{formatTimestamp(data.time, true)}</div>
+            <div className='story-card-summary' title={time}>{formatTimestamp(data.time, true)}</div>
             {data.range === 'private' && <BsPersonFillLock size={20} color='gray' />}
           </div>
 

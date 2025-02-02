@@ -2,7 +2,7 @@ import React from 'react';
 import './StoryPage.css';
 import StoryCard from '../elements/StoryCard';
 import { AiOutlineFire } from 'react-icons/ai';
-import { getDataFromAO, uuid } from '../util/util';
+import { getDataFromAO, messageToAO, uuid, wait } from '../util/util';
 import { AO_STORY, PAGE_SIZE } from '../util/consts';
 import Loading from '../elements/Loading';
 import { Server } from '../../server/server';
@@ -31,9 +31,8 @@ class StoryPage extends React.Component<{}, StoryPageState> {
       loadNextPage: false,
       open: false,
       isAll: false,
-      category: 'all',
+      category: 'project',
     };
-
 
     this.onOpen = this.onOpen.bind(this);
     this.onClose = this.onClose.bind(this);
@@ -46,7 +45,8 @@ class StoryPage extends React.Component<{}, StoryPageState> {
   }
 
   componentDidMount() {
-    this.getStory();
+    let tab = Server.service.getStoryTab();
+    this.onFilter(tab, true);
     window.addEventListener('scroll', this.atBottom);
   }
 
@@ -71,27 +71,37 @@ class StoryPage extends React.Component<{}, StoryPageState> {
 
   onCategoryChange(e: any) {
     let category = e.currentTarget.value;
-    this.setState({ category, loading: true });
+    this.setState({ category });
     if (category == 'all')
       category = null;
     this.getStory(category);
   };
 
   onOpen() {
+    // TEMP
+    // messageToAO(AO_STORY, {}, 'AlterTable');
+    // messageToAO(AO_STORY, '40b17e5a-c36a-409d-8fa6-c3085f8190fb', 'UpdateRecord');
+    // return
+
     this.setState({ open: true });
   }
 
   onClose(data: any) {
     this.setState({ open: false });
     if (data) {
+      this.filterSelected = 2; // All New tab
+      Server.service.setStoryTab(2);
       this.getStory();
       this.setState({ isAll: false });
     }
   }
 
   async getStory(category?: string) {
+    this.setState({ loading: true, isAll: false });
+
     let data = { category, offset: 0 };
     let posts = await getDataFromAO(AO_STORY, 'GetStories', data);
+    console.log("category:", category)
     console.log("stories:", posts)
 
     if (posts.length < PAGE_SIZE)
@@ -103,12 +113,22 @@ class StoryPage extends React.Component<{}, StoryPageState> {
 
   async nextPage() {
     this.setState({ loadNextPage: true });
-
     let offset = this.state.posts.length.toString();
-    // console.log("offset:", offset)
+    let data;
+    switch (this.filterSelected) {
+      case 0:
+        data = { category: 'project', offset };
+        break;
+      case 1:
+        data = { category: 'top', offset };
+        break;
+      case 2:
+        data = { category: null, offset };
+        break;
+    }
 
-    let posts = await getDataFromAO(AO_STORY, 'GetStories', { offset });
-    console.log("stories:", posts)
+    let posts = await getDataFromAO(AO_STORY, 'GetStories', data);
+    console.log("nextPage --> stories:", posts)
     if (posts.length < PAGE_SIZE)
       this.setState({ isAll: true })
 
@@ -136,13 +156,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
 
     let divs = [];
     for (let i = 0; i < this.state.posts.length; i++) {
-      // temp way - hide story for the Aolotto project
-      let id1 = "db822f63-3a72-4fae-ab78-a2e8fb69bef2";
-      let id2 = "eddf4ac0-a091-4f7b-ae5e-d3b7f9b79091";
-      let id3 = "a72589d5-bea1-473e-a440-6f77f86c92fd";
-
       let story = this.state.posts[i]
-      if (story.id == id1 || story.id == id2 || story.id == id3) continue
       divs.push(
         <StoryCard key={uuid()} data={story} />
       )
@@ -151,25 +165,25 @@ class StoryPage extends React.Component<{}, StoryPageState> {
     return divs
   }
 
-  onFilter(index: number) {
-    if (this.filterSelected === index) return;
+  onFilter(index: number, init?: boolean) {
+    if (!init) {
+      if (this.state.loading) return;
+      if (this.filterSelected === index) return;
+    }
 
     this.filterSelected = index;
+    Server.service.setStoryTab(index);
     this.renderFilters();
-    this.forceUpdate()
 
-    // if (index === 0) { // Activity
-    //   this.setState({ posts: [] });
-    //   // setTimeout(() => {
-    //   //   this.getPosts(this.author);
-    //   // }, 10);
-    // }
-    // else if (index === 1) { // Activity
-    //   this.setState({ posts: [] });
-    //   // setTimeout(() => {
-    //   //   this.getPosts(this.author);
-    //   // }, 10);
-    // }
+    if (index === 0) { // Hot Projects
+      this.getStory('project');
+    }
+    else if (index === 1) { // Top Story
+      this.getStory('top');
+    }
+    else if (index === 2) { // All New
+      this.getStory();
+    }
   }
 
   renderFilters() {
@@ -207,20 +221,22 @@ class StoryPage extends React.Component<{}, StoryPageState> {
             {this.renderFilters()}
           </div>
 
-          <select
-            className="story-page-category"
-            value={this.state.category}
-            onChange={this.onCategoryChange}
-          >
-            <option value="all">All</option>
-            <option value="project">Project</option>
-            <option value="travel">Travel</option>
-            <option value="learn">Learn</option>
-            <option value="fiction">Fiction</option>
-            <option value="music">Music</option>
-            <option value="sports">Sport</option>
-            <option value="movie">Movie</option>
-          </select>
+          {this.filterSelected != 0 &&
+            <select
+              className="story-page-category"
+              value={this.state.category}
+              onChange={this.onCategoryChange}
+            >
+              <option value="all">All</option>
+              {/* <option value="project">Project</option> */}
+              <option value="travel">Travel</option>
+              <option value="learn">Learn</option>
+              <option value="fiction">Fiction</option>
+              <option value="music">Music</option>
+              <option value="sports">Sport</option>
+              <option value="movie">Movie</option>
+            </select>
+          }
         </div>
 
         {this.renderStories()}
