@@ -239,7 +239,7 @@ class PostContent extends React.Component<PostContentProps, PostContentState> {
           for (let i = 0; i < info.length; i++) {
             if (info[i].name == 'Denomination') {
               awardAmount = awardAmount * 10 ** Number(info[i].value);
-              console.log("will be transfer awardAmount:", awardAmount)
+              // console.log("will be transfer awardAmount:", awardAmount)
               break;
             }
           }

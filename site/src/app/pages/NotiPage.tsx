@@ -84,7 +84,7 @@ class NotiPage extends React.Component<{}, NotiPageState> {
     let process = await getDefaultProcess(address);
 
     let notis = await getDataFromAO(process, 'Get-Notis', { offset: 0 });
-    console.log("notis:", notis)
+    // console.log("notis:", notis)
 
     if (notis.length < PAGE_SIZE)
       this.setState({ isAll: true })
@@ -94,15 +94,15 @@ class NotiPage extends React.Component<{}, NotiPageState> {
 
   async nextPage() {
     let process = Server.service.getDefaultProcess();
-    console.log("process:", process)
+    // console.log("process:", process)
 
     this.setState({ loadNextPage: true });
 
     let offset = this.state.notis.length.toString();
-    console.log("offset:", offset)
+    // console.log("offset:", offset)
 
     let notis = await getDataFromAO(process, 'Get-Notis', { offset });
-    console.log("notis:", notis)
+    // console.log("notis:", notis)
     if (notis.length < PAGE_SIZE)
       this.setState({ isAll: true })
 

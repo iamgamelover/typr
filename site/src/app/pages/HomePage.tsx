@@ -125,7 +125,7 @@ class HomePage extends React.Component<{}, HomePageState> {
       let posts = await getDataFromAO(AO_TWITTER, 'GetPosts', { id: '0' });
       let newPosts = posts.length - Number(posts_amt);
       localStorage.setItem('posts_amt', posts.length.toString());
-      console.log("newPosts amt:", newPosts)
+      // console.log("newPosts amt:", newPosts)
       if (newPosts > 0)
         this.setState({ newPosts });
     }
@@ -156,7 +156,7 @@ class HomePage extends React.Component<{}, HomePageState> {
         this.setState({ isAll: false })
     }
 
-    console.log("posts:", posts)
+    // console.log("posts:", posts)
     this.checkBookmarks(posts);
 
     setTimeout(() => {

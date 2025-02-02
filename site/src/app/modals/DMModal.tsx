@@ -64,7 +64,7 @@ class DMModal extends React.Component<DMModalProps, DMModalState> {
       time: timeOfNow()
     };
 
-    console.log('dm data ',data)
+    // console.log('dm data ',data)
     await messageToAO(AO_TWITTER, data, 'SendMessage');
 
     this.setState({ message: '' });

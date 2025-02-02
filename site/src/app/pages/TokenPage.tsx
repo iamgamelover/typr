@@ -89,7 +89,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
 
   async displayAOT(address: string) {
     let balOfAOT = await getTokenBalance(AOT_TEST, address);
-    console.log("balOfAOT:", balOfAOT)
+    // console.log("balOfAOT:", balOfAOT)
     Server.service.setBalanceOfAOT(balOfAOT);
     this.setState({ balOfAOT, loading: false });
 
@@ -117,7 +117,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
     this.setState({ message: 'Spawn...' });
 
     let new_process = await spawnProcess();
-    console.log("Spawn --> new_process:", new_process)
+    // console.log("Spawn --> new_process:", new_process)
 
     this.setState({ message: '', loading: true });
     this.start();
@@ -128,7 +128,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
 
     // load lua code into user's process
     let messageId = await uploadCodeToProcess(this.state.process, LUA);
-    console.log("Upload successfully -->", messageId)
+    // console.log("Upload successfully -->", messageId)
     this.setState({ isLoaded: true, message: '' });
   }
 

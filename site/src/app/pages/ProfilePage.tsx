@@ -263,7 +263,7 @@ class ProfilePage extends React.Component<{}, ProfilePageState> {
   async tempGetFollowsTable() {
     // TODO: testing...
     let tempGetFollowsTable = await getDataFromAO(AO_TWITTER, 'TempGetFollowsTable');
-    console.log("tempGetFollowsTable:", tempGetFollowsTable)
+    // console.log("tempGetFollowsTable:", tempGetFollowsTable)
   }
 
   async getFollows() {

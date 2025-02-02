@@ -58,7 +58,8 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
     this.onQuestionNo = this.onQuestionNo.bind(this);
 
     subscribe('wallet-events', () => {
-      this.forceUpdate();
+      // this.forceUpdate();
+      this.start();
     });
 
     subscribe('profile-updated', () => {
@@ -120,7 +121,7 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const accounts = await provider.send("eth_requestAccounts", []);
       const address = accounts[0];
-      console.log("[ address ]", address);
+      // console.log("[ address ]", address);
       this.afterConnect(address);
       await createArweaveWallet();
       return true;
@@ -147,27 +148,27 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
 
     // your own process 
     let process = await getDefaultProcess(address);
-    console.log("Your process:", process)
+    // console.log("Your process:", process)
 
     // Spawn a new process
     if (!process) {
       process = await spawnProcess();
-      console.log("Spawn --> processId:", process)
+      // console.log("Spawn --> processId:", process)
     }
 
     setTimeout(async () => {
       // load lua code into the process
       let messageId = await uploadCodeToProcess(process, LUA);
-      console.log("uploadCodeToProcess -->", messageId)
+      // console.log("uploadCodeToProcess -->", messageId)
     }, 10000);
 
     let bal_aot = await getTokenBalance(AOT_TEST, process);
-    console.log("bal_aot:", bal_aot)
+    // console.log("bal_aot:", bal_aot)
     Server.service.setBalanceOfAOT(bal_aot);
   }
 
   async register(address: string, othent?: any) {
-    console.log('--> register')
+    // console.log('--> register')
 
     let nickname = shortAddr(address, 4);
     let data = { address, avatar: randomAvatar(), banner: '', nickname, bio: '', time: timeOfNow() };

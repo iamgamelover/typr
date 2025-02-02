@@ -486,7 +486,7 @@ export async function connectArConnectWallet() {
     // connect to the ArConnect browser extension
     await window.arweaveWallet.connect(
       // request permissions
-      ["ACCESS_ADDRESS", "SIGN_TRANSACTION"],
+      ["ACCESS_ADDRESS", "ACCESS_ALL_ADDRESSES", "SIGN_TRANSACTION"],
     );
   } catch (error) {
     alert('You should connect to ArConnect browser extension.');

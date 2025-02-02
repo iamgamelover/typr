@@ -101,8 +101,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
 
     let data = { category, offset: 0 };
     let posts = await getDataFromAO(AO_STORY, 'GetStories', data);
-    console.log("category:", category)
-    console.log("stories:", posts)
+    // console.log("stories:", posts)
 
     if (posts.length < PAGE_SIZE)
       this.setState({ isAll: true })
@@ -128,7 +127,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
     }
 
     let posts = await getDataFromAO(AO_STORY, 'GetStories', data);
-    console.log("nextPage --> stories:", posts)
+    // console.log("nextPage --> stories:", posts)
     if (posts.length < PAGE_SIZE)
       this.setState({ isAll: true })
 

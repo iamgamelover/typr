@@ -30,9 +30,6 @@ interface ActivityPostProps {
   isPostPage?: boolean;
   isStory?: boolean;
   txid?: string;
-  // pollOptions?: any;
-  // votedOptionId?: string;
-  // voteDone?: Function;
 }
 
 interface ActivityPostState {
@@ -101,11 +98,9 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     this.onBounty = this.onBounty.bind(this);
     this.openBounty = this.openBounty.bind(this);
     this.onClose = this.onClose.bind(this);
-    // this.onQuestionYes = this.onQuestionYes.bind(this);
-    // this.onQuestionNo = this.onQuestionNo.bind(this);
 
     subscribe('wallet-events', () => {
-      this.forceUpdate();
+      this.start();
     });
   }
 
@@ -147,7 +142,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     this.getPostContent();
     this.setState({ isBookmarked: this.props.data.isBookmarked });
     let address = await getWalletAddress();
-    this.setState({ address });
+    this.setState({ address, loading: true, votedOptionId: '' });
 
     this.tokenInfo();
     await this.getPollOptions(this.props.data);
@@ -269,7 +264,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   async onTransfer() {
     // the user's process to tranfer a bounty
     let to = await getDefaultProcess(this.props.data.address);
-    console.log("to:", to)
+    // console.log("to:", to)
 
     let alert;
     if (!to)
@@ -357,6 +352,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     e.stopPropagation();
 
     let address = Server.service.getActiveAddress();
+    // console.log("onVote --> address:", address)
     if (!address) {
       this.setState({ alert: TIP_CONN });
       return;
@@ -423,7 +419,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
           <div className="poll-option-text">
             {data[i].option_text}
             {this.state.votedOptionId == data[i].option_id && <FaCheckCircle />}
-            {/* {this.props.votedOptionId == data[i].option_id && <FaCheckCircle />} */}
           </div>
           <div className="poll-option-percentage">{percentage}%</div>
         </div>

@@ -104,7 +104,6 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
   async start() {
     window.scrollTo(0, 0);
     this.address = await isLoggedIn();
-    // this.setState({ address });
 
     let type = this.props.type;
     let path = window.location.hash.slice(1);
@@ -191,7 +190,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
   async getPostById(id: string) {
     let resp = await getDataFromAO(AO_TWITTER, 'GetPosts', { id });
-    console.log("getPostById:", resp)
+    // console.log("getPostById:", resp)
     if (resp.length == 0) return;
 
     Server.service.addPostToCache(resp[0]);

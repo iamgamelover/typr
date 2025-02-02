@@ -133,7 +133,7 @@ class ChatPage extends React.Component<{}, ChatPageState> {
 
     let data = { address: this.state.address };
     let chatList = await getDataFromAO(AO_TWITTER, 'GetMessages', data);
-    console.log("getChatList:", chatList)
+    // console.log("getChatList:", chatList)
 
     this.setState({ chatList });
     

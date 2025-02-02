@@ -94,6 +94,15 @@ class SitePage extends React.Component<{}, SitePageState> {
     // Server.service.setBalanceOfUSDA(bal_usda / AR_DEC);
 
     publish('get-bal-done');
+
+    window.addEventListener("walletSwitch", (e: any) => {
+      const newAddress = e.detail.address;
+      // console.log("newAddress:", newAddress)
+      Server.service.setIsLoggedIn(newAddress);
+      Server.service.setActiveAddress(newAddress);
+      localStorage.setItem('owner', newAddress);
+      publish('wallet-events');
+    });
   }
 
   onOpen() {
