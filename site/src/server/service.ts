@@ -1,10 +1,15 @@
 export class Service {
   protected profiles:any;
   protected posts:any;
-  protected postsInProfile:any;
   protected post:any;
+  protected postsInProfile:any;
   protected position:number;
   protected positionInProfile:number;
+  
+  protected stories_all:any;
+  protected stories_project:any;
+  protected stories_top:any;
+  protected story:any;
 
   protected addrLogIn:string;
   protected activeAddress:string;
@@ -21,6 +26,7 @@ export class Service {
     this.profiles = [];
     this.post = [];
     this.postsInProfile = [];
+    this.story = [];
   }
 
   public getProfile(id:string) {
@@ -143,4 +149,37 @@ export class Service {
     return this.storyTab;
   }
   
+  public addAllStoriesToCache(stories:any) {
+    this.stories_all = stories;
+  }
+  
+  public getAllStoriesFromCache() {
+    return this.stories_all;
+  }
+  
+  
+  public addProjectStoriesToCache(stories:any) {
+    this.stories_project = stories;
+  }
+  
+  public getProjectStoriesFromCache() {
+    return this.stories_project;
+  }
+  
+  
+  public addTopStoriesToCache(stories:any) {
+    this.stories_top = stories;
+  }
+  
+  public getTopStoriesFromCache() {
+    return this.stories_top;
+  }
+  
+  public addStoryToCache(story:any) {
+    this.story[story.id] = story;
+  }
+
+  public getStoryFromCache(id:string) {
+    return this.story[id];
+  }
 }

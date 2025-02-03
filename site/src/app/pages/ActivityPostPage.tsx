@@ -132,20 +132,26 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
   }
 
   async getStory() {
-    let post = await getDataFromAO(this.process, 'GetStories', { id: this.postId });
+    let post = Server.service.getStoryFromCache(this.postId);
+    if (!post) {
+      post = await getDataFromAO(this.process, 'GetStories', { id: this.postId });
+      if (post.length == 0) {
+        this.setState({ alert: 'Story not found.' });
+        return;
+      } else {
+        let data = { id: this.postId, address: this.address }
+        let isLiked = await getDataFromAO(this.process, 'GetLike', data);
+        if (isLiked.length > 0) {
+          post[0].isLiked = true;
+        }
+
+        post = post[0];
+        Server.service.addStoryToCache(post);
+      }
+    }
     // console.log("story post:", post)
-    if (post.length == 0) {
-      this.setState({ alert: 'Story not found.' });
-      return;
-    }
 
-    let data = { id: this.postId, address: this.address }
-    let isLiked = await getDataFromAO(this.process, 'GetLike', data);
-    if (isLiked.length > 0) {
-      post[0].isLiked = true;
-    }
-
-    this.setState({ post: post[0], loading: false, message: '' });
+    this.setState({ post, loading: false, message: '' });
     this.getReplies();
 
     let txid = await getDataFromAO(this.process, 'GetTxid', { id: this.postId });
@@ -186,6 +192,7 @@ class ActivityPostPage extends React.Component<ActivityPostPageProps, ActivityPo
 
     let resp = isBookmarked(bookmarks, post.id);
     post.isBookmarked = resp;
+    Server.service.addPostToCache(post);
   }
 
   async getPostById(id: string) {

@@ -79,8 +79,7 @@ class StoryPage extends React.Component<{}, StoryPageState> {
 
   onOpen() {
     // TEMP
-    // messageToAO(AO_STORY, {}, 'AlterTable');
-    // messageToAO(AO_STORY, '40b17e5a-c36a-409d-8fa6-c3085f8190fb', 'UpdateRecord');
+    // messageToAO(AO_STORY, '', 'DeleteRecord');
     // return
 
     this.setState({ open: true });
@@ -91,18 +90,66 @@ class StoryPage extends React.Component<{}, StoryPageState> {
     if (data) {
       this.filterSelected = 2; // All New tab
       Server.service.setStoryTab(2);
-      this.getStory();
+      this.getStory(null, true);
       this.setState({ isAll: false });
     }
   }
 
-  async getStory(category?: string) {
+  getDataFromCache() {
+    let data;
+
+    if (this.filterSelected === 0) { // Hot Projects
+      data = Server.service.getProjectStoriesFromCache();
+    }
+    else if (this.filterSelected === 1) { // Top Story
+      data = Server.service.getTopStoriesFromCache();
+    }
+    else if (this.filterSelected === 2) { // All New
+      data = Server.service.getAllStoriesFromCache();
+    }
+
+    return data;
+  }
+
+  addDataToCache(data: any) {
+    if (this.filterSelected === 0) { // Hot Projects
+      Server.service.addProjectStoriesToCache(data);
+    }
+    else if (this.filterSelected === 1) { // Top Story
+      Server.service.addTopStoriesToCache(data);
+    }
+    else if (this.filterSelected === 2) { // All New
+      Server.service.addAllStoriesToCache(data);
+    }
+  }
+
+  dataOfQuery(offset: any) {
+    let data;
+
+    if (this.filterSelected === 0) { // Hot Projects
+      data = { category: 'project', offset };
+    }
+    else if (this.filterSelected === 1) { // Top Story
+      data = { category: 'top', offset };
+    }
+    else if (this.filterSelected === 2) { // All New
+      data = { category: null, offset };
+    }
+
+    return data;
+  }
+
+  async getStory(category?: string, new_post?: boolean) {
     this.setState({ loading: true, isAll: false });
 
-    let data = { category, offset: 0 };
-    let posts = await getDataFromAO(AO_STORY, 'GetStories', data);
-    // console.log("stories:", posts)
+    let posts = this.getDataFromCache();
 
+    if (!posts || new_post) {
+      let data = { category, offset: 0 };
+      posts = await getDataFromAO(AO_STORY, 'GetStories', data);
+      this.addDataToCache(posts);
+    }
+    // console.log("stories:", posts)
     if (posts.length < PAGE_SIZE)
       this.setState({ isAll: true })
 
@@ -112,28 +159,17 @@ class StoryPage extends React.Component<{}, StoryPageState> {
 
   async nextPage() {
     this.setState({ loadNextPage: true });
-    let offset = this.state.posts.length.toString();
-    let data;
-    switch (this.filterSelected) {
-      case 0:
-        data = { category: 'project', offset };
-        break;
-      case 1:
-        data = { category: 'top', offset };
-        break;
-      case 2:
-        data = { category: null, offset };
-        break;
-    }
 
+    let offset = this.state.posts.length.toString();
+    let data = this.dataOfQuery(offset);
     let posts = await getDataFromAO(AO_STORY, 'GetStories', data);
     // console.log("nextPage --> stories:", posts)
     if (posts.length < PAGE_SIZE)
       this.setState({ isAll: true })
 
     let total = this.state.posts.concat(posts);
+    this.addDataToCache(total);
 
-    // Server.service.addPostsToCache(posts);
     this.setState({ posts: total, loadNextPage: false });
     this.getStats(posts);
   }

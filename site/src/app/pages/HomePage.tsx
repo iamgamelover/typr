@@ -185,7 +185,6 @@ class HomePage extends React.Component<{}, HomePageState> {
     for (let i = 0; i < posts.length; i++) {
       let resp = isBookmarked(bookmarks, posts[i].id);
       posts[i].isBookmarked = resp;
-      Server.service.addPostToCache(posts[i]);
     }
 
     Server.service.addPostsToCache(posts);
