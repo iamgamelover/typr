@@ -17,12 +17,11 @@ import { subscribe } from '../util/event';
 import { Tooltip } from 'react-tooltip'
 import BountyModal from '../modals/BountyModal';
 import { FaCheckCircle, FaCoins } from 'react-icons/fa';
-import { AO_STORY, AO_TWITTER, STORY_INCOME, TIP_CONN, TIP_IMG, TIP_VOTE } from '../util/consts';
+import { AO_STORY, AO_TWITTER, STORY_INCOME, TIP_CONN, TIP_VOTE } from '../util/consts';
 import MessageModal from '../modals/MessageModal';
 import BountyRecordsModal from '../modals/BountyRecordsModal';
 import { HiOutlineLockClosed } from "react-icons/hi2";
 import ExternalEmbed from './externalEmbed';
-import { FaRegCircleCheck } from "react-icons/fa6";
 
 interface ActivityPostProps {
   data: any;
@@ -47,6 +46,7 @@ interface ActivityPostState {
   tokenLogo: string;
   tokenName: string;
   tokenTicker: string;
+  tokenDeno: string;
   pollOptions: any;
   votedOptionId: string;
   loading: boolean;
@@ -90,6 +90,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
       tokenLogo: '',
       tokenName: '',
       tokenTicker: '',
+      tokenDeno: '',
       pollOptions: [],
       votedOptionId: '',
       loading: true,
@@ -180,17 +181,16 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
     let info = await getTokenInfo(this.props.data.poll_token_process);
     // console.log("token info:", info)
+
+    let tokenName, tokenTicker, tokenLogo, tokenDeno;
     for (let i = 0; i < info.length; i++) {
-      if (info[i].name == 'Name') {
-        this.setState({ tokenName: info[i].value });
-      }
-      if (info[i].name == 'Ticker') {
-        this.setState({ tokenTicker: info[i].value });
-      }
-      if (info[i].name == 'Logo') {
-        this.setState({ tokenLogo: info[i].value });
-      }
+      if (info[i].name == 'Name') tokenName = info[i].value;
+      if (info[i].name == 'Ticker') tokenTicker = info[i].value;
+      if (info[i].name == 'Logo') tokenLogo = info[i].value;
+      if (info[i].name == 'Denomination') tokenDeno = info[i].value;
     }
+
+    this.setState({ tokenName, tokenTicker, tokenLogo, tokenDeno });
   }
 
   async getPostContent() {
@@ -456,7 +456,8 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
         <div>•</div>
         <div className='poll-token-name'>{this.state.tokenName} ({this.state.tokenTicker})</div>
         <div>•</div>
-        <div>{this.props.data.poll_token_amount} unit</div>
+        <div>{this.props.data.poll_token_amount / 10 ** Number(this.state.tokenDeno)}</div>
+        {/* <div>{this.props.data.poll_token_amount} unit</div> */}
       </div>
     )
   }
