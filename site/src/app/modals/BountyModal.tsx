@@ -82,12 +82,12 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
   }
 
   renderTokens() {
-    let tokens = ['Wrapped AR', 'TRUNK'];
-    let icons = ['./logo-war.png', './logo-trunk.png'];
+    let tokens = ['AO', 'wAR', 'TRUNK'];
+    let icons = ['./logo-ao-token.png', './logo-war.png', './logo-trunk.png'];
 
     let bal_war = Server.service.getBalanceOfWAR();
     let bal_trunk = Server.service.getBalanceOfTRUNK();
-    let bal_aot = Server.service.getBalanceOfAOT();
+    let bal_ao = Server.service.getBalanceOfAO();
     let bal_0rbit = Server.service.getBalanceOf0rbit();
     let bal_usda = Server.service.getBalanceOfUSDA();
 
@@ -150,8 +150,9 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
   async onBounty() {
     let bal_tokens = new Map([
-      [0, Server.service.getBalanceOfWAR()],
-      [1, Server.service.getBalanceOfTRUNK()]
+      [0, Server.service.getBalanceOfAO()],
+      [1, Server.service.getBalanceOfWAR()],
+      [2, Server.service.getBalanceOfTRUNK()]
     ]);
 
     this.setState({ message: 'Bounty...' });

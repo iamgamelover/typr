@@ -72,10 +72,6 @@ class SitePage extends React.Component<{}, SitePageState> {
     // getting notifications.
     setInterval(() => this.getNotis(), 20000); // 20 seconds
 
-    // let bal_aot = await getTokenBalance(AOT_TEST, process);
-    // console.log("bal_aot:", bal_aot)
-    // Server.service.setBalanceOfAOT(bal_aot);
-
     let bal_trunk = await getTokenBalance(TRUNK, process);
     // bal_trunk = formatBalance(bal_trunk, 3);
     // console.log("bal_trunk:", bal_trunk)
