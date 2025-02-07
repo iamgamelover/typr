@@ -1,12 +1,11 @@
 import React from 'react';
 import './TokenPage.css';
 import {
-  getTokenBalance, getDefaultProcess, getWalletAddress,
-  numberWithCommas, transferToken, uploadCodeToProcess, spawnProcess,
-  formatBalance
+  getTokenBalance, getWalletAddress,
+  uploadCodeToProcess, spawnProcess,
+  getTokenDenomination
 } from '../util/util';
-import { AOT_TEST, TRUNK, LUA, WAR, AR_DEC, TIP_CONN, ORBT, USDA } from '../util/consts';
-import { dryrun } from "@permaweb/aoconnect/browser";
+import { TRUNK, LUA, WAR, TIP_CONN, AO } from '../util/consts';
 import MessageModal from '../modals/MessageModal';
 import { Server } from '../../server/server';
 import Loading from '../elements/Loading';
@@ -22,7 +21,7 @@ interface TokenPageState {
   process: string;
   hasAOT: boolean;
   isLoaded: boolean;
-  balOfAOT: number;
+  balOfAO: number;
   balOfTRUNK: number;
   balOfWAR: number;
   balOf0rbit: number;
@@ -42,7 +41,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
       process: '',
       hasAOT: true,
       isLoaded: false,
-      balOfAOT: 0,
+      balOfAO: 0,
       balOfTRUNK: 0,
       balOfWAR: 0,
       balOf0rbit: 0,
@@ -55,63 +54,82 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   }
 
   async start() {
+
+    // Connect to the extension and request access to the ACCESS_TOKENS permission
+// await window.arweaveWallet.connect(["ACCESS_TOKENS"]);
+
+// Retrieve the list of tokens owned by the user
+// const tokens = await window.arweaveWallet.userTokens();
+// console.log("Tokens owned by the user:", tokens);
+
+// try {
+//   // Retrieve the balance of a user token
+//   const tokenId = tokens[0].processId
+//   const balance = await window.arweaveWallet.tokenBalance(tokenId);
+//   console.log(`Balance of the token with ID ${tokenId}:`, balance);
+// } catch (error) {
+//   console.error("Error fetching token balance:", error);
+// }
+
+
     let address = await getWalletAddress();
-    let process = await getDefaultProcess(address);
-    this.setState({ address, process });
+    console.log("address:", address)
+    this.setState({ address });
+    // let process = await getDefaultProcess(address);
+    // this.setState({ address, process });
 
-    if (!process) {
-      this.setState({ loading: false });
-      return;
-    }
+    // if (!process) {
+    //   this.setState({ loading: false });
+    //   return;
+    // }
 
-    let balOfTRUNK = await getTokenBalance(TRUNK, process);
-    // balOfTRUNK = formatBalance(balOfTRUNK, 3);
+    let balOfAO = await getTokenBalance(AO, address);
+    let deno = await getTokenDenomination(AO);
+    console.log("deno:", deno)
+    balOfAO = balOfAO / 10 ** deno;
+    Server.service.setBalanceOfAO(balOfAO);
+
+    let balOfTRUNK = await getTokenBalance(TRUNK, address);
+    deno = await getTokenDenomination(TRUNK);
+    balOfTRUNK = balOfTRUNK / 10 ** deno;
+    // console.log("balOfTRUNK:", balOfTRUNK)
     Server.service.setBalanceOfTRUNK(balOfTRUNK);
 
-    let balOfWAR = await getTokenBalance(WAR, process);
-    balOfWAR = balOfWAR / AR_DEC;
+    let balOfWAR = await getTokenBalance(WAR, address);
+    deno = await getTokenDenomination(WAR);
+    balOfWAR = balOfWAR / 10 ** deno;
     // console.log("balOfWAR:", balOfWAR)
     Server.service.setBalanceOfWAR(balOfWAR);
 
-    // let balOf0rbit = await getTokenBalance(ORBT, process);
-    // balOf0rbit = balOf0rbit / AR_DEC;
-    // console.log("balOf0rbit:", balOf0rbit)
-    // Server.service.setBalanceOf0rbit(balOf0rbit);
-
-    // let balOfUSDA = await getTokenBalance(USDA, process);
-    // balOfUSDA = balOfUSDA / AR_DEC;
-    // console.log("balOfUSDA:", balOfUSDA)
-    // Server.service.setBalanceOfUSDA(balOfUSDA);
-
-    this.setState({ balOfTRUNK, balOfWAR, loading: false });
+    this.setState({ balOfAO, balOfTRUNK, balOfWAR, loading: false });
     // this.displayAOT(process);
   }
 
-  async displayAOT(address: string) {
-    let balOfAOT = await getTokenBalance(AOT_TEST, address);
-    // console.log("balOfAOT:", balOfAOT)
-    Server.service.setBalanceOfAOT(balOfAOT);
-    this.setState({ balOfAOT, loading: false });
+  // async displayAOT(address: string) {
+  //   let balOfAOT = await getTokenBalance(AOT_TEST, address);
+  //   // console.log("balOfAOT:", balOfAOT)
+  //   Server.service.setBalanceOfAOT(balOfAOT);
+  //   this.setState({ balOfAOT, loading: false });
 
-    // You can only get token-test once
-    let balances = await this.getBalances(AOT_TEST);
-    if (balances.indexOf(address) != -1)
-      this.setState({ hasAOT: true });
-    else
-      this.setState({ hasAOT: false });
-  }
+  //   // You can only get token-test once
+  //   let balances = await this.getBalances(AOT_TEST);
+  //   if (balances.indexOf(address) != -1)
+  //     this.setState({ hasAOT: true });
+  //   else
+  //     this.setState({ hasAOT: false });
+  // }
 
-  async getBalances(process: string) {
-    const result = await dryrun({
-      process: process,
-      tags: [
-        { name: 'Action', value: 'Balances' },
-      ],
-    });
+  // async getBalances(process: string) {
+  //   const result = await dryrun({
+  //     process: process,
+  //     tags: [
+  //       { name: 'Action', value: 'Balances' },
+  //     ],
+  //   });
 
-    // console.log("getBalances:", result)
-    return result.Messages[0].Data;
-  }
+  //   // console.log("getBalances:", result)
+  //   return result.Messages[0].Data;
+  // }
 
   async spawn() {
     this.setState({ message: 'Spawn...' });
@@ -132,24 +150,24 @@ class TokenPage extends React.Component<{}, TokenPageState> {
     this.setState({ isLoaded: true, message: '' });
   }
 
-  async getAOT() {
-    let address = this.state.process;
-    this.setState({ message: 'Get AOT-Test...' });
-    await transferToken(AOT_TEST, address, '10000');
-    await this.displayAOT(address);
-    this.setState({ message: '' });
-  }
+  // async getAOT() {
+  //   let address = this.state.process;
+  //   this.setState({ message: 'Get AOT-Test...' });
+  //   await transferToken(AOT_TEST, address, '10000');
+  //   await this.displayAOT(address);
+  //   this.setState({ message: '' });
+  // }
 
   renderTokens() {
-    let tokens = ['Wrapped AR', 'TRUNK'];
-    let icons = ['./logo-war.png', './logo-trunk.png'];
-    let bals = [this.state.balOfWAR, this.state.balOfTRUNK];
+    let tokens = ['AO', 'wAR', 'TRUNK'];
+    let icons = ['./logo-ao-token.png', './logo-war.png', './logo-trunk.png'];
+    let bals = [this.state.balOfAO, this.state.balOfWAR, this.state.balOfTRUNK];
 
     let divs = [];
     for (let i = 0; i < tokens.length; i++) {
       divs.push(
         <div key={i} className='token-page-card'>
-          <img className={`token-page-icon ${i !== 2 && 'cred'} ${i == 3 && 'circle'}`} src={icons[i]} />
+          <img className='token-page-icon' src={icons[i]} />
           <div>
             <div className='token-page-title'>{tokens[i]}</div>
             {this.state.loading
@@ -166,17 +184,17 @@ class TokenPage extends React.Component<{}, TokenPageState> {
 
   render() {
     let isLoggedIn = Server.service.isLoggedIn();
-    let process = this.state.process;
-    if (!process) process = 'No process yet, tap on the spawn button.';
-    if (!isLoggedIn) process = TIP_CONN;
+    let address = this.state.address;
+    // if (!process) process = 'No process yet, tap on the spawn button.';
+    if (!isLoggedIn) address = TIP_CONN;
 
     return (
       <div className='token-page'>
         <div className='token-page-card process'>
-          <div className='token-page-title'>Your Process ID</div>
+          <div className='token-page-title'>Active wallet address</div>
           {this.state.loading
             ? <Loading marginTop='5px' />
-            : <div className='token-page-text'>{process}</div>
+            : <div className='token-page-text'>{address}</div>
           }
         </div>
 

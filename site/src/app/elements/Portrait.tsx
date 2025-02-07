@@ -1,7 +1,7 @@
 import React from 'react';
 import './Portrait.css';
 import { publish, subscribe } from '../util/event';
-import { AOT_TEST, AO_STORY, AO_TWITTER, LUA } from '../util/consts';
+import { AO_STORY, AO_TWITTER, LUA } from '../util/consts';
 import {
   browserDetect,
   connectArConnectWallet, createArweaveWallet, uploadCodeToProcess, getDefaultProcess, getProfile, getTokenBalance,
@@ -161,10 +161,6 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
       let messageId = await uploadCodeToProcess(process, LUA);
       // console.log("uploadCodeToProcess -->", messageId)
     }, 10000);
-
-    let bal_aot = await getTokenBalance(AOT_TEST, process);
-    // console.log("bal_aot:", bal_aot)
-    Server.service.setBalanceOfAOT(bal_aot);
   }
 
   async register(address: string, othent?: any) {

@@ -6,19 +6,20 @@ export const regexPatterns = {
 };
 
 export const AO_TWITTER = "8s1ZpAx_NueKS4N2ZOMYWCkl5qVcGkgnBFSnqSVX9Fo";
-
 export const AO_STORY = "AAwa2zqVLSMvxOPMjhUVtPHS_SN1ObbsaY27X9OPCbw";
 // export const AO_STORY = "HvIVoTF2Z-UaIYxHaFLWnMj5qXcwD3pKS2YI74xwZR0";
-
 export const STORY_INCOME = "LsNy8F1GSkGvE0IJ6g1RFpHHjKE6tmtXUT91WIv3PMQ";
+
+export const AO = "m3PaWzK4PTG9lAaqYQPaPdOcXdO8hYqi5Fe9NWqXd0w";
 export const TRUNK = "wOrb8b_V8QixWyXZub48Ki5B6OIDyf_p1ngoonsaRpQ";
 export const WAR = "xU9zFkq3X2ZQ6olwNVvr1vUWIjc3kXTWr7xKQD6dh10";
 export const WUSDC = "7zH9dlMNoxprab9loshv3Y7WG45DOny_Vrq9KrXObdQ";
 export const BP = "_HbnZH5blAZH0CNT1k_dpRrGXWCzBg34hjMUkoDrXr0";
 export const ORBT = "BUhZLMwQ6yZHguLtJYA5lLUa9LQzLXMXRfaq9FVcPJc";
 export const USDA = "GcFxqTQnKHcr304qnOcq00ZqbaYGDn4Wbb0DHAM-wvU";
-export const AOT_TEST = "UabERwDSwechOsHg9M1N6qTk2O7EXPf63qABDTAj_Vs";
+
 export const CHATROOM = "F__i_YGIUOGw43zyqLY9dEKNNEhB_uTqzL9tOTWJ-KA";
+
 export const TIP_IMG = "Got an issue, images in the post can be up to ~500KB.";
 export const TIP_VOTE = "Vote failed. Please try again."
 export const ICON_SIZE = 28;
@@ -32,16 +33,17 @@ export const MODULE = "GYrbbe0VbHim_7Hi6zrOpHQXrSQz07XNtwCnfbFo2I0"
 export const AOS_V2_MODULE = "GuzQrkf50rBUqz3uUgjOIFOL1XmW9nSNysTBC-wyiWM"
 export const MU = "fcoN_xJeisVsPXA-trzVAuIiqO3ydLQxM-L4XbrQKzY"
 export const SCHEDULER = "_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA"
+
 export const ARWEAVE_GATEWAY = "https://arweave.net/";
 
-export const TOKEN_PID = new Map([[0, WAR], [1, TRUNK]]);
-export const TOKEN_NAME = new Map([[0, 'wAR'], [1, 'TRUNK']]);
+export const TOKEN_PID = new Map([[0, AO], [1, WAR], [2, TRUNK]]);
+export const TOKEN_NAME = new Map([[0, 'AO'], [1, 'wAR'], [2, 'TRUNK']]);
 export const TOKEN_ICON = new Map([
+  ['AO', './logo-ao-token.png'],
   ['wAR', './logo-war.png'],
   ['WAR', './logo-war.png'],
   ['TRUNK', './logo-trunk.png'],
-  ['AOT_TEST', './logo.png'],
-  ['TYPR', './logo.png'],
+  ['TYPR', './logo-typr.png'],
   ['0RBT', './logo-0rbit.jpg'],
   ['USDA-TST', './logo-usda.png'],
 ]);

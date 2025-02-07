@@ -597,7 +597,6 @@ export async function getTokenBalance(process: string, address: string) {
       tags: [
         { name: 'Action', value: 'Balance' },
         { name: 'Target', value: address },
-        { name: 'Recipient', value: address },
       ],
     });
     // console.log("result:", process, result)
@@ -622,6 +621,20 @@ export async function getTokenInfo(process: string) {
     console.log("getTokenInfo -> Error: ", error)
     return '';
   }
+}
+
+export async function getTokenDenomination(process: string) {
+  let info = await getTokenInfo(process);
+  console.log("token info:", info)
+  if (!info) return 1;
+
+  for (let i = 0; i < info.length; i++) {
+    if (info[i].name == 'Denomination') {
+      return Number(info[i].value);
+    }
+  }
+
+  return 1;
 }
 
 export function formatBalance(str: string, len: number) {

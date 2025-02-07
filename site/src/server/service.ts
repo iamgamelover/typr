@@ -14,7 +14,8 @@ export class Service {
   protected addrLogIn:string;
   protected activeAddress:string;
   protected defaultProcess:string;
-  protected balanceOfAOT:number;
+
+  protected balanceOfAO:number;
   protected balanceOfTRUNK:number;
   protected balanceOfWAR:number;
   protected balanceOf0rbit:number;
@@ -101,12 +102,12 @@ export class Service {
     return this.defaultProcess;
   }
   
-  public setBalanceOfAOT(bal:number) {
-    this.balanceOfAOT = bal;
+  public setBalanceOfAO(bal:number) {
+    this.balanceOfAO = bal;
   }
 
-  public getBalanceOfAOT() {
-    return this.balanceOfAOT;
+  public getBalanceOfAO() {
+    return this.balanceOfAO;
   }
   
   public setBalanceOfTRUNK(bal:number) {
