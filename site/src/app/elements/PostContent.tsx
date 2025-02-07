@@ -62,6 +62,7 @@ class PostContent extends React.Component<PostContentProps, PostContentState> {
 
     this.onTitleChange = this.onTitleChange.bind(this);
     this.onContentChange = this.onContentChange.bind(this);
+    this.onRangeChange = this.onRangeChange.bind(this);
     this.onCategoryChange = this.onCategoryChange.bind(this);
     this.onQuestionYes = this.onQuestionYes.bind(this);
     this.onQuestionNo = this.onQuestionNo.bind(this);
@@ -144,9 +145,6 @@ class PostContent extends React.Component<PostContentProps, PostContentState> {
   };
 
   confirmTokenAward() {
-    // messageToAO(AO_TWITTER, {}, 'AlterTable');
-    // return
-
     if (this.state.openPoll) {
       let tokenProcess = this.state.poll_token_process.trim();
       let tokenAmount = this.state.poll_token_amount.trim();
@@ -233,7 +231,6 @@ class PostContent extends React.Component<PostContentProps, PostContentState> {
         awardAmount = Number(this.state.poll_token_amount.trim());
         // console.log("awardAmount:", awardAmount)
         if (awardAmount) {
-          // test...
           let info = await getTokenInfo(tokenProcess);
           // console.log("token info:", info)
           for (let i = 0; i < info.length; i++) {
