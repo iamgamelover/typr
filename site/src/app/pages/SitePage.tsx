@@ -7,10 +7,12 @@ import {
 } from 'react-icons/bs';
 import {
   getDataFromAO, getDefaultProcess,
-  getTokenBalance, isLoggedIn,
-  messageToAO
+  getTokenBalance, getTokenBalanceWithWalletApi, getUserTokensInWallet, isLoggedIn,
+  isLoggedInWithArConnect,
+  messageToAO,
+  wait
 } from '../util/util';
-import { AO_TWITTER, AR_DEC, ICON_SIZE, TRUNK, WAR } from '../util/consts';
+import { AO, AO_TWITTER, AR_DEC, ICON_SIZE, TRUNK, WAR } from '../util/consts';
 import { Server } from '../../server/server';
 import Portrait from '../elements/Portrait';
 import { publish, subscribe } from '../util/event';
@@ -46,8 +48,9 @@ class SitePage extends React.Component<{}, SitePageState> {
     this.onClose = this.onClose.bind(this);
 
     subscribe('wallet-events', () => {
-      let address = Server.service.isLoggedIn();
-      this.setState({ address })
+      // let address = Server.service.isLoggedIn();
+      // this.setState({ address })
+      this.start();
     });
   }
 
@@ -57,7 +60,7 @@ class SitePage extends React.Component<{}, SitePageState> {
 
   async start() {
     let address = await isLoggedIn();
-    // console.log("site page -> address:", address)
+    console.log("site page -> address:", address)
 
     Server.service.setIsLoggedIn(address);
     Server.service.setActiveAddress(address);
@@ -72,24 +75,7 @@ class SitePage extends React.Component<{}, SitePageState> {
     // getting notifications.
     setInterval(() => this.getNotis(), 20000); // 20 seconds
 
-    let bal_trunk = await getTokenBalance(TRUNK, process);
-    // bal_trunk = formatBalance(bal_trunk, 3);
-    // console.log("bal_trunk:", bal_trunk)
-    Server.service.setBalanceOfTRUNK(bal_trunk);
-
-    let bal_war = await getTokenBalance(WAR, process);
-    // console.log("bal_war:", bal_war)
-    Server.service.setBalanceOfWAR(bal_war / AR_DEC);
-
-    // let bal_0rbit = await getTokenBalance(ORBT, process);
-    // console.log("bal_0rbit:", bal_0rbit)
-    // Server.service.setBalanceOf0rbit(bal_0rbit / AR_DEC);
-
-    // let bal_usda = await getTokenBalance(USDA, process);
-    // console.log("bal_usda:", bal_usda)
-    // Server.service.setBalanceOfUSDA(bal_usda / AR_DEC);
-
-    publish('get-bal-done');
+    this.setBalances(address);
 
     window.addEventListener("walletSwitch", (e: any) => {
       const newAddress = e.detail.address;
@@ -99,6 +85,25 @@ class SitePage extends React.Component<{}, SitePageState> {
       localStorage.setItem('owner', newAddress);
       publish('wallet-events');
     });
+  }
+
+  async setBalances(address: string) {
+    // temp for ao token
+    let balOfAO = await getTokenBalanceWithWalletApi(AO);
+    console.log("sitepage -> balOfAO:", balOfAO)
+    Server.service.setBalanceOfAO(Number(balOfAO));
+    // --> should use this way
+    // let balOfAO = await getTokenBalance(AO, address);
+
+    let balOfTRUNK = await getTokenBalance(TRUNK, address);
+    console.log("sitepage -> balOfTRUNK:", balOfTRUNK)
+    Server.service.setBalanceOfTRUNK(balOfTRUNK);
+
+    let balOfWAR = await getTokenBalance(WAR, address);
+    console.log("sitepage -> balOfWAR:", balOfWAR)
+    Server.service.setBalanceOfWAR(balOfWAR);
+
+    publish('get-bal-done');
   }
 
   onOpen() {

@@ -110,7 +110,7 @@
   display: flex;
   align-items: center;
   column-gap: 8px;
-  padding: 5px 9px;
+  padding: 1px 9px;
   border-radius: 5px;
   cursor: pointer;
   background-color: var(--section-color);
@@ -127,8 +127,7 @@
 }
 
 .bounty-modal-token-balance {
-  /* font-size: 15px; */
-  color: gray;
+  margin-top: -5px;
 }
 
 .bounty-modal-token-icon {

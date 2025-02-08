@@ -486,7 +486,7 @@ export async function connectArConnectWallet() {
     // connect to the ArConnect browser extension
     await window.arweaveWallet.connect(
       // request permissions
-      ["ACCESS_ADDRESS", "ACCESS_ALL_ADDRESSES", "SIGN_TRANSACTION"],
+      ["ACCESS_ADDRESS", "ACCESS_ALL_ADDRESSES", "SIGN_TRANSACTION", "ACCESS_TOKENS"],
     );
   } catch (error) {
     alert('You should connect to ArConnect browser extension.');
@@ -497,14 +497,12 @@ export async function connectArConnectWallet() {
 }
 
 export async function getWalletAddress() {
-  let address;
   try {
-    address = await window.arweaveWallet.getActiveAddress();
+    let address = await window.arweaveWallet.getActiveAddress();
+    return address;
   } catch (error) {
     return localStorage.getItem('owner');
   }
-
-  return address;
 }
 
 export async function isLoggedIn() {
@@ -590,17 +588,22 @@ export async function downloadFromArweave(txid: string) {
 //   localStorage.setItem('your_posts', JSON.stringify(list))
 // }
 
-export async function getTokenBalance(process: string, address: string) {
+export async function getTokenBalance(tokenId: string, address: string) {
+  if (!address) return '';
+
   try {
     const result = await dryrun({
-      process: process,
+      process: tokenId,
       tags: [
         { name: 'Action', value: 'Balance' },
         { name: 'Target', value: address },
       ],
     });
     // console.log("result:", process, result)
-    return result.Messages[0]?.Data;
+    let balance = result.Messages[0]?.Data;
+    let deno = await getTokenDenomination(tokenId);
+    balance = balance / 10 ** deno;
+    return balance;
   } catch (error) {
     console.log("getTokenBalance -> Error: ", error)
     return '';
@@ -625,7 +628,6 @@ export async function getTokenInfo(process: string) {
 
 export async function getTokenDenomination(process: string) {
   let info = await getTokenInfo(process);
-  console.log("token info:", info)
   if (!info) return 1;
 
   for (let i = 0; i < info.length; i++) {
@@ -635,6 +637,33 @@ export async function getTokenDenomination(process: string) {
   }
 
   return 1;
+}
+
+/**
+ * Get user tokens in ArConnect(Wander) Wallet
+ */
+export async function getUserTokensInWallet() {
+  // Connect to the extension and request access to the ACCESS_TOKENS permission
+  await window.arweaveWallet.connect(["ACCESS_TOKENS"]);
+
+  // Retrieve the list of tokens owned by the user
+  const tokens = await window.arweaveWallet.userTokens({ fetchBalance: true });
+  console.log("Tokens owned by the user:", tokens);
+  return tokens;
+}
+
+export async function getTokenBalanceWithWalletApi(tokenId: string) {
+  // Connect to the extension and request access to the ACCESS_TOKENS permission
+  await window.arweaveWallet.connect(["ACCESS_TOKENS"]);
+  try {
+    // Retrieve the balance of a user token
+    const balance = await window.arweaveWallet.tokenBalance(tokenId);
+    console.log(`Balance of the token with ID ${tokenId}:`, balance);
+    return balance;
+  } catch (error) {
+    console.error("Error fetching token balance:", error);
+    return '';
+  }
 }
 
 export function formatBalance(str: string, len: number) {
@@ -709,15 +738,13 @@ export function trimDecimal(num: number, digits: number) {
 }
 
 export async function isLoggedInWithArConnect() {
-  let address;
   try {
-    address = await window.arweaveWallet.getActiveAddress();
+    let address = await window.arweaveWallet.getActiveAddress();
+    return address;
   } catch (error) {
     console.log("isLoggedInWithArConnect -> ERR:", error);
     return '';
   }
-
-  return address;
 }
 
 export async function getSigner() {

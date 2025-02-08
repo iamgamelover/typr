@@ -8,7 +8,7 @@ import { formatBalance, getDefaultProcess, getTokenBalance, messageToAO, numberW
 import { MdOutlineToken } from "react-icons/md";
 import { AiOutlineFire } from 'react-icons/ai';
 import { Server } from '../../server/server';
-import { AO_STORY, AO_TWITTER, AR_DEC, TOKEN_NAME, TOKEN_PID, TRUNK } from '../util/consts';
+import { AO_STORY, AO_TWITTER, AR_DEC, TOKEN_ICON, TOKEN_NAME, TOKEN_PID } from '../util/consts';
 import Loading from '../elements/Loading';
 import { subscribe } from '../util/event';
 
@@ -26,7 +26,6 @@ interface BountyModalState {
   alert: string;
   bounty: number;
   loading: boolean;
-  unit: string;
 }
 
 class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
@@ -35,13 +34,11 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
   constructor(props: BountyModalProps) {
     super(props);
-
     this.state = {
       message: '',
       alert: '',
       bounty: 1,
       loading: false,
-      unit: 'unit'
     }
 
     this.onClose = this.onClose.bind(this);
@@ -71,58 +68,40 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
   onFilter(index: number) {
     if (this.tokenPicked === index) return;
-
     this.tokenPicked = index;
-    this.renderTokens();
-    // this.forceUpdate();
-    if (index == 5)
-      this.setState({ unit: 'winston' });
-    else
-      this.setState({ unit: 'unit' });
+    // this.renderTokens();
+    this.forceUpdate();
   }
 
   renderTokens() {
-    let tokens = ['AO', 'wAR', 'TRUNK'];
-    let icons = ['./logo-ao-token.png', './logo-war.png', './logo-trunk.png'];
-
     let bal_war = Server.service.getBalanceOfWAR();
     let bal_trunk = Server.service.getBalanceOfTRUNK();
     let bal_ao = Server.service.getBalanceOfAO();
-    let bal_0rbit = Server.service.getBalanceOf0rbit();
-    let bal_usda = Server.service.getBalanceOfUSDA();
 
     if (!this.state.loading) {
-      if (bal_war)
-        bal_war = Number(trimDecimal(bal_war, 5));
-      else
-        bal_war = 0;
-
-      if (bal_0rbit)
-        bal_0rbit = Number(trimDecimal(bal_0rbit, 5));
-      else
-        bal_0rbit = 0;
-
-      if (bal_usda)
-        bal_usda = Number(trimDecimal(bal_usda, 5));
-      else
-        bal_usda = 0;
+      bal_ao = Number(trimDecimal(bal_ao, 5));
+      bal_war = Number(trimDecimal(bal_war, 5));
+      bal_trunk = Number(trimDecimal(bal_trunk, 5));
     }
 
-    let balances = [bal_war, bal_trunk];
+    let balances = [bal_ao, bal_war, bal_trunk];
 
     let divs = [];
-    for (let i = 0; i < tokens.length; i++) {
+    for (let i = 0; i < balances.length; i++) {
+      let tokenName = TOKEN_NAME.get(i);
+      let tokenIcon = TOKEN_ICON.get(tokenName);
+
       divs.push(
         <div
           key={i}
           className={`bounty-modal-token-card ${this.tokenPicked == i ? 'picked' : ''}`}
           onClick={() => this.onFilter(i)}
         >
-          <img className={`bounty-modal-token-icon ${(i == 0 || i == 3) && 'cred'} ${i == 4 && 'circle'}`} src={icons[i]} />
+          <img className='bounty-modal-token-icon' src={tokenIcon} />
           <div>
-            {/* <div className='bounty-modal-token-name'>{tokens[i]}</div> */}
+            <div className='bounty-modal-token-name'>{tokenName}</div>
             {this.state.loading
-              ? <Loading marginTop='10px' />
+              ? <Loading marginTop='2px' />
               : <div className='bounty-modal-token-balance'>{balances[i]}</div>
             }
           </div>
@@ -279,8 +258,6 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
               value={this.state.bounty}
               onChange={this.onChangeBounty}
             />
-
-            <div className='bounty-modal-label-unit'>{this.state.unit}</div>
 
             {!this.state.loading &&
               <div className='bounty-modal-token bounty' onClick={() => this.onBounty()}>
