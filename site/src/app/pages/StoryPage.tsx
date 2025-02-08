@@ -38,10 +38,6 @@ class StoryPage extends React.Component<{}, StoryPageState> {
     this.onClose = this.onClose.bind(this);
     this.atBottom = this.atBottom.bind(this);
     this.onCategoryChange = this.onCategoryChange.bind(this);
-
-    // subscribe('wallet-events', () => {
-    //   this.forceUpdate();
-    // });
   }
 
   componentDidMount() {

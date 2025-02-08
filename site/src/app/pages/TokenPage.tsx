@@ -3,12 +3,14 @@ import './TokenPage.css';
 import {
   getTokenBalance, getWalletAddress,
   uploadCodeToProcess, spawnProcess,
-  getTokenDenomination
+  getTokenDenomination,
+  getTokenBalanceWithWalletApi
 } from '../util/util';
-import { TRUNK, LUA, WAR, TIP_CONN, AO } from '../util/consts';
+import { TRUNK, LUA, WAR, TIP_CONN, AO, TOKEN_NAME, TOKEN_ICON } from '../util/consts';
 import MessageModal from '../modals/MessageModal';
 import { Server } from '../../server/server';
 import Loading from '../elements/Loading';
+import { subscribe } from '../util/event';
 
 declare var window: any;
 
@@ -16,16 +18,16 @@ interface TokenPageState {
   question: string;
   alert: string;
   message: string;
-  loading: boolean;
+  // loading: boolean;
   address: string;
   process: string;
   hasAOT: boolean;
   isLoaded: boolean;
-  balOfAO: number;
-  balOfTRUNK: number;
-  balOfWAR: number;
-  balOf0rbit: number;
-  balOfUSDA: number;
+  balOfAO: string;
+  balOfTRUNK: string;
+  balOfWAR: string;
+  balOf0rbit: string;
+  balOfUSDA: string;
 }
 
 class TokenPage extends React.Component<{}, TokenPageState> {
@@ -36,17 +38,21 @@ class TokenPage extends React.Component<{}, TokenPageState> {
       question: '',
       alert: '',
       message: '',
-      loading: true,
+      // loading: false,
       address: '',
       process: '',
       hasAOT: true,
       isLoaded: false,
-      balOfAO: 0,
-      balOfTRUNK: 0,
-      balOfWAR: 0,
-      balOf0rbit: 0,
-      balOfUSDA: 0,
+      balOfAO: '--',
+      balOfTRUNK: '--',
+      balOfWAR: '--',
+      balOf0rbit: '--',
+      balOfUSDA: '--',
     };
+
+    subscribe('wallet-events', () => {
+      this.start();
+    });
   }
 
   componentDidMount() {
@@ -54,55 +60,24 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   }
 
   async start() {
-
-    // Connect to the extension and request access to the ACCESS_TOKENS permission
-// await window.arweaveWallet.connect(["ACCESS_TOKENS"]);
-
-// Retrieve the list of tokens owned by the user
-// const tokens = await window.arweaveWallet.userTokens();
-// console.log("Tokens owned by the user:", tokens);
-
-// try {
-//   // Retrieve the balance of a user token
-//   const tokenId = tokens[0].processId
-//   const balance = await window.arweaveWallet.tokenBalance(tokenId);
-//   console.log(`Balance of the token with ID ${tokenId}:`, balance);
-// } catch (error) {
-//   console.error("Error fetching token balance:", error);
-// }
-
-
     let address = await getWalletAddress();
-    console.log("address:", address)
+    // console.log("address:", address)
     this.setState({ address });
-    // let process = await getDefaultProcess(address);
-    // this.setState({ address, process });
-
-    // if (!process) {
-    //   this.setState({ loading: false });
-    //   return;
-    // }
-
-    let balOfAO = await getTokenBalance(AO, address);
-    let deno = await getTokenDenomination(AO);
-    console.log("deno:", deno)
-    balOfAO = balOfAO / 10 ** deno;
-    Server.service.setBalanceOfAO(balOfAO);
 
     let balOfTRUNK = await getTokenBalance(TRUNK, address);
-    deno = await getTokenDenomination(TRUNK);
-    balOfTRUNK = balOfTRUNK / 10 ** deno;
-    // console.log("balOfTRUNK:", balOfTRUNK)
     Server.service.setBalanceOfTRUNK(balOfTRUNK);
 
     let balOfWAR = await getTokenBalance(WAR, address);
-    deno = await getTokenDenomination(WAR);
-    balOfWAR = balOfWAR / 10 ** deno;
-    // console.log("balOfWAR:", balOfWAR)
     Server.service.setBalanceOfWAR(balOfWAR);
 
-    this.setState({ balOfAO, balOfTRUNK, balOfWAR, loading: false });
-    // this.displayAOT(process);
+    // temp for ao token
+    let balOfAO = await getTokenBalanceWithWalletApi(AO);
+    console.log("balOfAO:", balOfAO)
+    Server.service.setBalanceOfAO(Number(balOfAO));
+    // --> should use this way
+    // let balOfAO = await getTokenBalance(AO, address);
+
+    this.setState({ balOfAO, balOfTRUNK, balOfWAR });
   }
 
   // async displayAOT(address: string) {
@@ -137,7 +112,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
     let new_process = await spawnProcess();
     // console.log("Spawn --> new_process:", new_process)
 
-    this.setState({ message: '', loading: true });
+    this.setState({ message: '' });
     this.start();
   }
 
@@ -159,27 +134,24 @@ class TokenPage extends React.Component<{}, TokenPageState> {
   // }
 
   renderTokens() {
-    let tokens = ['AO', 'wAR', 'TRUNK'];
-    let icons = ['./logo-ao-token.png', './logo-war.png', './logo-trunk.png'];
-    let bals = [this.state.balOfAO, this.state.balOfWAR, this.state.balOfTRUNK];
-
     let divs = [];
-    for (let i = 0; i < tokens.length; i++) {
+    let balances = [this.state.balOfAO, this.state.balOfWAR, this.state.balOfTRUNK];
+
+    for (let i = 0; i < balances.length; i++) {
+      let tokenName = TOKEN_NAME.get(i);
+      let tokenIcon = TOKEN_ICON.get(tokenName);
       divs.push(
         <div key={i} className='token-page-card'>
-          <img className='token-page-icon' src={icons[i]} />
+          <img className='token-page-icon' src={tokenIcon} />
           <div>
-            <div className='token-page-title'>{tokens[i]}</div>
-            {this.state.loading
-              ? <Loading marginTop='5px' />
-              : <div className='token-page-text balance'>{bals[i]}</div>
-            }
+            <div className='token-page-title'>{tokenName}</div>
+            <div className='token-page-text balance'>{balances[i]}</div>
           </div>
         </div>
       )
     }
 
-    return divs
+    return divs;
   }
 
   render() {
@@ -192,10 +164,7 @@ class TokenPage extends React.Component<{}, TokenPageState> {
       <div className='token-page'>
         <div className='token-page-card process'>
           <div className='token-page-title'>Active wallet address</div>
-          {this.state.loading
-            ? <Loading marginTop='5px' />
-            : <div className='token-page-text'>{address}</div>
-          }
+          <div className='token-page-text'>{address}</div>
         </div>
 
         {/* {!this.state.loading && isLoggedIn &&
