@@ -200,8 +200,8 @@ class PostContent extends React.Component<PostContentProps, PostContentState> {
           }
         }
 
-        if (poll_option.length > 25) {
-          this.setState({ alert: "Poll option can be up to 25 characters long.", message: '' });
+        if (poll_option.length > 50) {
+          this.setState({ alert: "Poll option can be up to 50 characters long.", message: '' });
           return
         }
 

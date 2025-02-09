@@ -117,12 +117,19 @@
 .activity-post-content {
   display: flex;
   flex-direction: column;
-  row-gap: 15px;
+  /* row-gap: 15px; */
   padding-left: 55px;
   padding-right: 15px;
   margin-bottom: 10px;
   color: rgb(78, 68, 68);
   overflow-wrap: break-word;
+}
+
+.activity-post-poll-container {
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+  margin-top: 10px;
 }
 
 .activity-post-nickname {

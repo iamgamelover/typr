@@ -405,7 +405,6 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     let total_votes = this.getTotalVotes(data);
 
     for (let i = 0; i < data.length; i++) {
-      // 计算每个选项的宽度（以百分比表示）
       let percentage = total_votes > 0 ? (data[i].vote_count / total_votes) * 100 : 0;
       percentage = Math.round(percentage)
       // console.log("percentage:", percentage)
@@ -612,11 +611,14 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
 
         <div className='activity-post-content'>
           {parse(this.state.content, this.parseOptions)}
-          {!this.state.loading && data.option_count > 0 &&
-            (this.state.votedOptionId || pollTimeLeft == "Final results"
-              ? this.renderResultsOfVoting() : this.renderPollOptions())
-          }
-          {data.poll_token_process && this.renderTokenAward()}
+
+          <div className='activity-post-poll-container'>
+            {!this.state.loading && data.option_count > 0 &&
+              (this.state.votedOptionId || pollTimeLeft == "Final results"
+                ? this.renderResultsOfVoting() : this.renderPollOptions())
+            }
+            {data.poll_token_process && this.renderTokenAward()}
+          </div>
         </div>
 
         {this.renderActionsRow(data)}
