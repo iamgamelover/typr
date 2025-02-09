@@ -4,11 +4,11 @@ import AlertModal from './AlertModal';
 import './Modal.css'
 import './BountyModal.css'
 import MessageModal from './MessageModal';
-import { formatBalance, getDefaultProcess, getTokenBalance, messageToAO, numberWithCommas, timeOfNow, transferToken, trimDecimal } from '../util/util';
+import { formatBalance, getDefaultProcess, getTokenBalance, messageToAO, numberWithCommas, updateTokenBalances, timeOfNow, transferToken, transferTokenAward, trimDecimal } from '../util/util';
 import { MdOutlineToken } from "react-icons/md";
 import { AiOutlineFire } from 'react-icons/ai';
 import { Server } from '../../server/server';
-import { AO_STORY, AO_TWITTER, AR_DEC, TOKEN_ICON, TOKEN_NAME, TOKEN_PID } from '../util/consts';
+import { AO_STORY, AO_TWITTER, AR_DEC, TOKEN_DENO, TOKEN_ICON, TOKEN_NAME, TOKEN_PID } from '../util/consts';
 import Loading from '../elements/Loading';
 import { subscribe } from '../util/event';
 
@@ -31,6 +31,7 @@ interface BountyModalState {
 class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
   tokenPicked = 0;
+  balances: any[] = [];
 
   constructor(props: BountyModalProps) {
     super(props);
@@ -74,9 +75,9 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
   }
 
   renderTokens() {
+    let bal_ao = Server.service.getBalanceOfAO();
     let bal_war = Server.service.getBalanceOfWAR();
     let bal_trunk = Server.service.getBalanceOfTRUNK();
-    let bal_ao = Server.service.getBalanceOfAO();
 
     if (!this.state.loading) {
       bal_ao = Number(trimDecimal(bal_ao, 5));
@@ -84,10 +85,10 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
       bal_trunk = Number(trimDecimal(bal_trunk, 5));
     }
 
-    let balances = [bal_ao, bal_war, bal_trunk];
+    this.balances = [bal_ao, bal_war, bal_trunk];
 
     let divs = [];
-    for (let i = 0; i < balances.length; i++) {
+    for (let i = 0; i < this.balances.length; i++) {
       let tokenName = TOKEN_NAME.get(i);
       let tokenIcon = TOKEN_ICON.get(tokenName);
 
@@ -102,7 +103,7 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
             <div className='bounty-modal-token-name'>{tokenName}</div>
             {this.state.loading
               ? <Loading marginTop='2px' />
-              : <div className='bounty-modal-token-balance'>{balances[i]}</div>
+              : <div className='bounty-modal-token-balance'>{this.balances[i]}</div>
             }
           </div>
         </div>
@@ -114,12 +115,13 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
   renderTokenLabel() {
     let divs = [];
-    let qty = [2, 5, 10, 50, 100];
+    let qty = [0.1, 0.5, 1, 2, 5, 10];
 
     for (let i = 0; i < qty.length; i++) {
       divs.push(
         <div key={i} className='bounty-modal-token' onClick={() => this.fillQty(qty[i])}>
-          <MdOutlineToken size={20} />{qty[i]}
+          {/* <MdOutlineToken size={20} />{qty[i]} */}
+          {qty[i]}
         </div>
       )
     }
@@ -128,42 +130,27 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
   }
 
   async onBounty() {
-    let bal_tokens = new Map([
-      [0, Server.service.getBalanceOfAO()],
-      [1, Server.service.getBalanceOfWAR()],
-      [2, Server.service.getBalanceOfTRUNK()]
-    ]);
-
     this.setState({ message: 'Bounty...' });
 
-    // your own process 
-    let from = Server.service.getDefaultProcess();
-    // console.log("from:", from)
+    // your own active address 
+    let from = Server.service.getActiveAddress();
+    console.log("from:", from)
 
-    // the user's process to tranfer a bounty
-    let to = await getDefaultProcess(this.props.data.address);
-    // console.log("to:", to)
+    // the wallet address of post to tranfer a bounty
+    let to = this.props.data.address;
+    console.log("to:", to)
 
     let alert;
-    let bal = bal_tokens.get(this.tokenPicked);
+    let bal = this.balances[this.tokenPicked];
+    console.log("bal:", bal)
     if (!bal) bal = 0;
 
-    // Wrapped AR or 0rbit or USDA
-    if (this.tokenPicked == 0 || this.tokenPicked == 4 || this.tokenPicked == 5) {
-      bal = bal * AR_DEC;
-    }
-    // console.log("bal:", bal)
+    let qty = Math.abs(this.state.bounty);
+    console.log("qty:", qty)
 
-    let qty = Math.abs(this.state.bounty).toString();
-    // console.log("qty:", qty)
-
-    if (!to)
-      alert = 'Has not a default process to transfer bounty.';
-    if (qty == '0')
+    if (qty == 0)
       alert = 'Bounty is zero.';
-    if (!Number.isInteger(Number(qty)))
-      alert = 'Must be an integer and > 1.';
-    if (Number(qty) > bal)
+    if (qty > bal)
       alert = 'Insufficient balance.';
 
     if (alert) {
@@ -172,27 +159,26 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     }
 
     let target = TOKEN_PID.get(this.tokenPicked);
-    // console.log("target:", target)
+    console.log("target:", target)
 
-    await transferToken(from, to, qty, target);
+    // formating the qty
+    let fQty = qty * 10 ** TOKEN_DENO.get(this.tokenPicked);
+    console.log("formating qty:", fQty)
+
+    // await transferToken(from, to, qty, target);
+    let response = await transferTokenAward(target, to, fQty.toString());
+    if (!response) {
+      this.setState({ alert: 'You cancelled the bounty.', message: '' });
+      return;
+    }
 
     this.onClose();
     this.setState({ message: '' });
+    updateTokenBalances(from);
 
     // refreshing the number that displayed on the post.
-    let quantity = Number(this.props.data.coins) + Number(qty);
+    let quantity = Number(this.props.data.coins) + qty;
     this.props.onBounty(quantity.toString());
-
-    let bal_new = bal - Number(qty);
-    switch (this.tokenPicked) {
-      case 0:
-        bal_new = bal_new / AR_DEC;
-        Server.service.setBalanceOfWAR(bal_new);
-        break;
-      case 1:
-        Server.service.setBalanceOfTRUNK(bal_new);
-        break;
-    }
 
     // update the bounty (coins)
     let data = { id: this.props.data.id, coins: qty };
@@ -207,9 +193,9 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     // add the record of a bounty
     let records = {
       id: data.id,
-      address: Server.service.getActiveAddress(),
+      address: from,
       token_name: TOKEN_NAME.get(this.tokenPicked),
-      quantity: Number(qty),
+      quantity: qty,
       time: timeOfNow()
     };
     // console.log("records:", records)
@@ -229,10 +215,6 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
           <div className='bounty-modal-header-row'>
             <div className="bounty-modal-header-title">Bounty</div>
-            {/* <div className='bounty-modal-header-balance'>
-              <MdOutlineToken size={20} />
-              {numberWithCommas(Number(Server.service.getBalanceOfAOT()))}
-            </div> */}
           </div>
 
           <div className='bounty-modal-header-line' />

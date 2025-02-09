@@ -10,6 +10,7 @@ import {
   getTokenBalance, getTokenBalanceWithWalletApi, getUserTokensInWallet, isLoggedIn,
   isLoggedInWithArConnect,
   messageToAO,
+  updateTokenBalances,
   wait
 } from '../util/util';
 import { AO, AO_TWITTER, AR_DEC, ICON_SIZE, TRUNK, WAR } from '../util/consts';
@@ -75,7 +76,7 @@ class SitePage extends React.Component<{}, SitePageState> {
     // getting notifications.
     setInterval(() => this.getNotis(), 20000); // 20 seconds
 
-    this.setBalances(address);
+    updateTokenBalances(address);
 
     window.addEventListener("walletSwitch", (e: any) => {
       const newAddress = e.detail.address;
@@ -87,24 +88,24 @@ class SitePage extends React.Component<{}, SitePageState> {
     });
   }
 
-  async setBalances(address: string) {
-    // temp for ao token
-    let balOfAO = await getTokenBalanceWithWalletApi(AO);
-    console.log("sitepage -> balOfAO:", balOfAO)
-    Server.service.setBalanceOfAO(Number(balOfAO));
-    // --> should use this way
-    // let balOfAO = await getTokenBalance(AO, address);
+  // async setBalances(address: string) {
+  //   // temp for ao token
+  //   let balOfAO = await getTokenBalanceWithWalletApi(AO);
+  //   console.log("sitepage -> balOfAO:", balOfAO)
+  //   Server.service.setBalanceOfAO(Number(balOfAO));
+  //   // --> should use this way
+  //   // let balOfAO = await getTokenBalance(AO, address);
 
-    let balOfTRUNK = await getTokenBalance(TRUNK, address);
-    console.log("sitepage -> balOfTRUNK:", balOfTRUNK)
-    Server.service.setBalanceOfTRUNK(balOfTRUNK);
+  //   let balOfTRUNK = await getTokenBalance(TRUNK, address);
+  //   console.log("sitepage -> balOfTRUNK:", balOfTRUNK)
+  //   Server.service.setBalanceOfTRUNK(balOfTRUNK);
 
-    let balOfWAR = await getTokenBalance(WAR, address);
-    console.log("sitepage -> balOfWAR:", balOfWAR)
-    Server.service.setBalanceOfWAR(balOfWAR);
+  //   let balOfWAR = await getTokenBalance(WAR, address);
+  //   console.log("sitepage -> balOfWAR:", balOfWAR)
+  //   Server.service.setBalanceOfWAR(balOfWAR);
 
-    publish('get-bal-done');
-  }
+  //   publish('get-bal-done');
+  // }
 
   onOpen() {
     this.setState({ open: true });

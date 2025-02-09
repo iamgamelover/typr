@@ -46,7 +46,6 @@
 
 .bounty-modal-token-row.bounty {
   margin: 5px 0;
-  /* align-items: flex-end; */
 }
 
 .bounty-modal-token-row.choose {
@@ -65,14 +64,14 @@
   align-items: center;
   justify-content: center;
   column-gap: 5px;
-  padding: 2px 10px;
+  padding: 2px 15px;
   color: white;
   cursor: pointer;
   background-color: var(--section-header-color);
 }
 
 .bounty-modal-input {
-  width: 150px;
+  width: 180px;
   text-align: center;
   font-size: 20px;
 }
@@ -93,6 +92,7 @@
 
 .bounty-modal-token.bounty {
   border-radius: 5px;
+  margin-left: 5px;
   background-color: var(--fire-color);
 }
 
@@ -155,10 +155,10 @@
 
   .bounty-modal-token {
     column-gap: 5px;
-    padding: 2px 8px;
+    padding: 2px 15px;
   }
 
   .bounty-modal-input {
-    width: 135px;
+    width: 178px;
   }
 }
