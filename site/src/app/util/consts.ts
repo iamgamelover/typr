@@ -36,6 +36,8 @@ export const SCHEDULER = "_GQ33BkPtZrqxA84vM8Zk-N2aO0toNNu_C-l-rawrBA"
 
 export const ARWEAVE_GATEWAY = "https://arweave.net/";
 
+// Denomination: AO is 12, wAR is 12, TRUNK is 3.
+export const TOKEN_DENO = new Map([[0, 12], [1, 12], [2, 3]]);
 export const TOKEN_PID = new Map([[0, AO], [1, WAR], [2, TRUNK]]);
 export const TOKEN_NAME = new Map([[0, 'AO'], [1, 'wAR'], [2, 'TRUNK']]);
 export const TOKEN_ICON = new Map([

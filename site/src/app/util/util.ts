@@ -1,16 +1,18 @@
 import { createDataItemSigner, dryrun, message, monitor, spawn, unmonitor } from "@permaweb/aoconnect/browser";
-import { AO_TWITTER, ARWEAVE_GATEWAY, MODULE, AOS_V2_MODULE, SCHEDULER, regexPatterns, MU } from "./consts";
+import {
+  AO_TWITTER, ARWEAVE_GATEWAY, AOS_V2_MODULE, SCHEDULER,
+  regexPatterns, MU, AO, TRUNK, WAR
+} from "./consts";
 import { Server } from "../../server/server";
 import { createAvatar } from '@dicebear/core';
 import { micah } from '@dicebear/collection';
 import * as Othent from "@othent/kms";
 import { ArweaveSigner } from "arseeding-arbundles/src/signing";
 import { createData } from "arseeding-arbundles";
-// import { Web3Provider } from 'arseeding-arbundles/node_modules/@ethersproject/providers'
-import { InjectedEthereumSigner } from 'arseeding-arbundles/src/signing';
 import { JWKInterface } from "arseeding-arbundles/src/interface-jwk";
 import { CreateWalletReturnProps } from "arweavekit/dist/types/wallet";
 import { createWallet } from "arweavekit/wallet";
+import { publish } from "./event";
 
 declare var window: any;
 
@@ -658,7 +660,7 @@ export async function getTokenBalanceWithWalletApi(tokenId: string) {
   try {
     // Retrieve the balance of a user token
     const balance = await window.arweaveWallet.tokenBalance(tokenId);
-    console.log(`Balance of the token with ID ${tokenId}:`, balance);
+    // console.log(`Balance of the token with ID ${tokenId}:`, balance);
     return balance;
   } catch (error) {
     console.error("Error fetching token balance:", error);
@@ -1209,4 +1211,23 @@ export function isValidPositiveNumber(input: any) {
     return true;
   }
   return false;
+}
+
+export async function updateTokenBalances(address: string) {
+  // temp for ao token
+  let balOfAO = await getTokenBalanceWithWalletApi(AO);
+  console.log("sitepage -> balOfAO:", balOfAO)
+  Server.service.setBalanceOfAO(Number(balOfAO));
+  // --> should use this way
+  // let balOfAO = await getTokenBalance(AO, address);
+
+  let balOfWAR = await getTokenBalance(WAR, address);
+  console.log("sitepage -> balOfWAR:", balOfWAR)
+  Server.service.setBalanceOfWAR(balOfWAR);
+
+  let balOfTRUNK = await getTokenBalance(TRUNK, address);
+  console.log("sitepage -> balOfTRUNK:", balOfTRUNK)
+  Server.service.setBalanceOfTRUNK(balOfTRUNK);
+
+  publish('get-bal-done');
 }
