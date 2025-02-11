@@ -32,6 +32,8 @@ class BountyRecordsModal extends React.Component<BountyRecordsModalProps, {}> {
       return <div>No record.</div>
       
     for (let i = 0; i < data.length; i++) {
+      let formattedNum = data[i].quantity.toFixed(12).replace(/\.?0+$/, "");
+      
       divs.push(
         <div key={i} className='br-modal'>
           <NavLink className='br-modal-user' to={'/user/' + data[i].address}>
@@ -46,7 +48,7 @@ class BountyRecordsModal extends React.Component<BountyRecordsModalProps, {}> {
             <img className='br-modal-icon' src={TOKEN_ICON.get(data[i].token_name)} />
             <div>
               <div className='br-modal-address'>{data[i].token_name}</div>
-              <div className='br-modal-quantity'>{data[i].quantity}</div>
+              <div className='br-modal-quantity'>{formattedNum}</div>
             </div>
           </div>
 
@@ -70,17 +72,10 @@ class BountyRecordsModal extends React.Component<BountyRecordsModalProps, {}> {
           <button className="modal-close-button" onClick={this.onClose}>
             <BsFillXCircleFill />
           </button>
-
           <div className='bounty-modal-header-row'>
             <div className="bounty-modal-header-title">Bounty Records</div>
-            {/* <div className='bounty-modal-header-balance'>
-              <MdOutlineToken size={20} />
-              {numberWithCommas(Number(Server.service.getBalanceOfAOT()))}
-            </div> */}
           </div>
-
           <div className='bounty-modal-header-line' />
-
           {this.renderRecords()}
         </div>
       </div>

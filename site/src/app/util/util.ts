@@ -630,6 +630,7 @@ export async function getTokenInfo(process: string) {
 
 export async function getTokenDenomination(process: string) {
   let info = await getTokenInfo(process);
+  // console.log("getTokenInfo:", info)
   if (!info) return 1;
 
   for (let i = 0; i < info.length; i++) {
@@ -721,6 +722,8 @@ export function shortAddr(str: string, num: number) {
 }
 
 export function trimDecimal(num: number, digits: number) {
+  if (num < 1) return num;
+
   const numStr = num.toString();
   const dotIndex = numStr.indexOf('.');
   if (dotIndex === -1) {
@@ -1203,10 +1206,7 @@ export function tokenAwardLuaCode(data: any) {
 }
 
 export function isValidPositiveNumber(input: any) {
-  // 将输入转换为数字
   const number = parseFloat(input);
-
-  // 检查是否为有效的数字且大于零
   if (!isNaN(number) && number > 0) {
     return true;
   }
@@ -1214,19 +1214,19 @@ export function isValidPositiveNumber(input: any) {
 }
 
 export async function updateTokenBalances(address: string) {
-  // temp for ao token
-  let balOfAO = await getTokenBalanceWithWalletApi(AO);
-  console.log("sitepage -> balOfAO:", balOfAO)
-  Server.service.setBalanceOfAO(Number(balOfAO));
+  // get ao token balance with the Wander wallet
+  // let balOfAO = await getTokenBalanceWithWalletApi(AO);
   // --> should use this way
-  // let balOfAO = await getTokenBalance(AO, address);
+  let balOfAO = await getTokenBalance(AO, address);
+  console.log("balOfAO:", balOfAO)
+  Server.service.setBalanceOfAO(balOfAO);
 
   let balOfWAR = await getTokenBalance(WAR, address);
-  console.log("sitepage -> balOfWAR:", balOfWAR)
+  console.log("balOfWAR:", balOfWAR)
   Server.service.setBalanceOfWAR(balOfWAR);
 
   let balOfTRUNK = await getTokenBalance(TRUNK, address);
-  console.log("sitepage -> balOfTRUNK:", balOfTRUNK)
+  console.log("balOfTRUNK:", balOfTRUNK)
   Server.service.setBalanceOfTRUNK(balOfTRUNK);
 
   publish('get-bal-done');

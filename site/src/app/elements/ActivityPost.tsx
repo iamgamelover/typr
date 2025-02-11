@@ -2,8 +2,7 @@ import React from 'react';
 import { BsBookmark, BsBookmarkFill, BsChat, BsHeart, BsHeartFill } from 'react-icons/bs';
 import {
   convertUrlsToLinks, getDataFromAO, getDefaultProcess, getTokenInfo, getWalletAddress, messageToAO,
-  numberWithCommas, randomAvatar, shortAddr, timeLeftUntil, timeOfNow, transferToken,
-  uuid
+  numberWithCommas, randomAvatar, shortAddr, timeLeftUntil, timeOfNow, transferToken, uuid
 } from '../util/util';
 import { formatTimestamp } from '../util/util';
 import './ActivityPost.css';

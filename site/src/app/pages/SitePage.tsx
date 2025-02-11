@@ -61,7 +61,7 @@ class SitePage extends React.Component<{}, SitePageState> {
 
   async start() {
     let address = await isLoggedIn();
-    console.log("site page -> address:", address)
+    // console.log("site page -> address:", address)
 
     Server.service.setIsLoggedIn(address);
     Server.service.setActiveAddress(address);
@@ -80,32 +80,13 @@ class SitePage extends React.Component<{}, SitePageState> {
 
     window.addEventListener("walletSwitch", (e: any) => {
       const newAddress = e.detail.address;
-      // console.log("newAddress:", newAddress)
+      console.log("walletSwitch --> newAddress:", newAddress)
       Server.service.setIsLoggedIn(newAddress);
       Server.service.setActiveAddress(newAddress);
       localStorage.setItem('owner', newAddress);
       publish('wallet-events');
     });
   }
-
-  // async setBalances(address: string) {
-  //   // temp for ao token
-  //   let balOfAO = await getTokenBalanceWithWalletApi(AO);
-  //   console.log("sitepage -> balOfAO:", balOfAO)
-  //   Server.service.setBalanceOfAO(Number(balOfAO));
-  //   // --> should use this way
-  //   // let balOfAO = await getTokenBalance(AO, address);
-
-  //   let balOfTRUNK = await getTokenBalance(TRUNK, address);
-  //   console.log("sitepage -> balOfTRUNK:", balOfTRUNK)
-  //   Server.service.setBalanceOfTRUNK(balOfTRUNK);
-
-  //   let balOfWAR = await getTokenBalance(WAR, address);
-  //   console.log("sitepage -> balOfWAR:", balOfWAR)
-  //   Server.service.setBalanceOfWAR(balOfWAR);
-
-  //   publish('get-bal-done');
-  // }
 
   onOpen() {
     this.setState({ open: true });
