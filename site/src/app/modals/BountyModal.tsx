@@ -4,11 +4,10 @@ import AlertModal from './AlertModal';
 import './Modal.css'
 import './BountyModal.css'
 import MessageModal from './MessageModal';
-import { formatBalance, getDefaultProcess, getTokenBalance, messageToAO, numberWithCommas, updateTokenBalances, timeOfNow, transferToken, transferTokenAward, trimDecimal } from '../util/util';
-import { MdOutlineToken } from "react-icons/md";
+import { messageToAO, updateTokenBalances, timeOfNow, transferTokenAward, trimDecimal, isValidPositiveNumber } from '../util/util';
 import { AiOutlineFire } from 'react-icons/ai';
 import { Server } from '../../server/server';
-import { AO_STORY, AO_TWITTER, AR_DEC, TOKEN_DENO, TOKEN_ICON, TOKEN_NAME, TOKEN_PID } from '../util/consts';
+import { AO_STORY, AO_TWITTER, TOKEN_DENO, TOKEN_ICON, TOKEN_NAME, TOKEN_PID } from '../util/consts';
 import Loading from '../elements/Loading';
 import { subscribe } from '../util/event';
 
@@ -145,9 +144,11 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
     console.log("bal:", bal)
     if (!bal) bal = 0;
 
-    let qty = Math.abs(this.state.bounty);
+    let qty = this.state.bounty;
     console.log("qty:", qty)
 
+    if (!isValidPositiveNumber(qty))
+      alert = 'Bounty must be a valid positive non-zero number.';
     if (qty == 0)
       alert = 'Bounty is zero.';
     if (qty > bal)
@@ -178,7 +179,7 @@ class BountyModal extends React.Component<BountyModalProps, BountyModalState> {
 
     // refreshing the number that displayed on the post.
     let quantity = Number(this.props.data.coins) + qty;
-    this.props.onBounty(quantity.toString());
+    this.props.onBounty(quantity.toFixed(3));
 
     // update the bounty (coins)
     let data = { id: this.props.data.id, coins: qty };
