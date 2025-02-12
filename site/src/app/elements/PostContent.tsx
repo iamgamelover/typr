@@ -224,7 +224,7 @@ class PostContent extends React.Component<PostContentProps, PostContentState> {
         let tokenBalance = await getTokenBalance(tokenProcess, address);
         // console.log("tokenBalance:", tokenBalance)
         if (!tokenBalance) {
-          this.setState({ alert: "The token process is invaild.", message: '' });
+          this.setState({ alert: "No balance in your wallet.", message: '' });
           return;
         }
 
@@ -248,7 +248,7 @@ class PostContent extends React.Component<PostContentProps, PostContentState> {
           }
 
           if (awardAmount > Number(tokenBalance)) {
-            this.setState({ alert: "Insufficient Poll Award Token Balance!", message: '' });
+            this.setState({ alert: "Insufficient balance of poll award tokens!", message: '' });
             return;
           }
         } else {
