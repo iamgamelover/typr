@@ -4,7 +4,7 @@ import { publish, subscribe } from '../util/event';
 import { AO_STORY, AO_TWITTER, LUA } from '../util/consts';
 import {
   browserDetect,
-  connectArConnectWallet, createArweaveWallet, uploadCodeToProcess, getDefaultProcess, getProfile, getTokenBalance,
+  connectArConnectWallet, createArweaveWallet, uploadCodeToProcess, getDefaultProcess, getProfile, 
   getWalletAddress, isLoggedIn, messageToAO, randomAvatar, shortAddr, shortStr, spawnProcess, timeOfNow
 } from '../util/util';
 import { Server } from '../../server/server';
@@ -14,17 +14,11 @@ import { BsToggleOn, BsWallet2 } from 'react-icons/bs';
 import * as Othent from "@othent/kms";
 import MessageModal from '../modals/MessageModal';
 import { ethers } from 'ethers';
-import { createWallet } from 'arweavekit/wallet'
-import { ArConnect } from 'arweavekit/auth'
 
 import {
   connect,
-  disconnect,
-  getActiveAddress,
 } from "@othent/kms";
 import AlertModal from '../modals/AlertModal';
-import { createDataItemSigner, message } from '@permaweb/aoconnect/browser';
-import { readFileSync } from 'fs';
 
 declare var window: any;
 

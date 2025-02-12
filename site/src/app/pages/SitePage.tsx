@@ -7,13 +7,10 @@ import {
 } from 'react-icons/bs';
 import {
   getDataFromAO, getDefaultProcess,
-  getTokenBalance, getTokenBalanceWithWalletApi, getUserTokensInWallet, isLoggedIn,
-  isLoggedInWithArConnect,
+  isLoggedIn,
   messageToAO,
-  updateTokenBalances,
-  wait
-} from '../util/util';
-import { AO, AO_TWITTER, AR_DEC, ICON_SIZE, TRUNK, WAR } from '../util/consts';
+  updateTokenBalances} from '../util/util';
+import { AO_TWITTER, ICON_SIZE } from '../util/consts';
 import { Server } from '../../server/server';
 import Portrait from '../elements/Portrait';
 import { publish, subscribe } from '../util/event';

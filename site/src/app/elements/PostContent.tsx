@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   calculateDeadlineTimestamp, checkContent, createTokenAwardProcess,
-  getTokenBalance, getTokenInfo, getWalletAddress, isValidPositiveNumber,
+  getTokenBalance, getTokenDenomination, getTokenInfo, getWalletAddress, isValidPositiveNumber,
   messageToAO, monitorCronProcess, timeOfNow, transferTokenAward, uuid
 } from '../util/util';
 import './PostContent.css';
@@ -228,16 +228,20 @@ class PostContent extends React.Component<PostContentProps, PostContentState> {
           return;
         }
 
-        awardAmount = Number(this.state.poll_token_amount.trim());
-        // console.log("awardAmount:", awardAmount)
-        if (awardAmount) {
+        let inputAmt = Number(this.state.poll_token_amount.trim());
+        // console.log("inputAmt:", inputAmt)
+        if (inputAmt) {
+          let deno = await getTokenDenomination(tokenProcess);
+          awardAmount = inputAmt * 10 ** deno;
+          // console.log("will be transfer awardAmount:", awardAmount)
+
           // Quantity must be a valid positive non-zero number.
           if (!isValidPositiveNumber(awardAmount)) {
             this.setState({ alert: "Award amount must be a valid positive non-zero number.", message: '' });
             return;
           }
 
-          if (awardAmount > tokenBalance) {
+          if (inputAmt > tokenBalance) {
             this.setState({ alert: "Insufficient balance of poll award tokens!", message: '' });
             return;
           }
@@ -271,7 +275,7 @@ class PostContent extends React.Component<PostContentProps, PostContentState> {
       poll_token_process: this.state.poll_token_process.trim(),
       poll_token_amount: awardAmount.toString()
     };
-    // console.log("dataOfStory:", dataOfStory)
+    // console.log("dataOfStory:", data)
 
     let response;
     if (this.props.isStory)
@@ -307,7 +311,6 @@ class PostContent extends React.Component<PostContentProps, PostContentState> {
           option_text: option_texts[i],
           vote_count: 0
         };
-        // console.log("dataOfPollOption:", data)
 
         let response = await messageToAO(this.props.isStory ? AO_STORY : AO_TWITTER, param, 'AddPollOption');
         if (!response) {
