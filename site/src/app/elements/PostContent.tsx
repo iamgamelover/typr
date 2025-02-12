@@ -231,23 +231,13 @@ class PostContent extends React.Component<PostContentProps, PostContentState> {
         awardAmount = Number(this.state.poll_token_amount.trim());
         // console.log("awardAmount:", awardAmount)
         if (awardAmount) {
-          let info = await getTokenInfo(tokenProcess);
-          // console.log("token info:", info)
-          for (let i = 0; i < info.length; i++) {
-            if (info[i].name == 'Denomination') {
-              awardAmount = awardAmount * 10 ** Number(info[i].value);
-              // console.log("will be transfer awardAmount:", awardAmount)
-              break;
-            }
-          }
-
           // Quantity must be a valid positive non-zero number.
           if (!isValidPositiveNumber(awardAmount)) {
             this.setState({ alert: "Award amount must be a valid positive non-zero number.", message: '' });
             return;
           }
 
-          if (awardAmount > Number(tokenBalance)) {
+          if (awardAmount > tokenBalance) {
             this.setState({ alert: "Insufficient balance of poll award tokens!", message: '' });
             return;
           }
