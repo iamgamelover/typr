@@ -167,9 +167,21 @@
   background-color: lightgray;
 }
 
+.poll-option-percentage-area {
+  display: flex;
+  column-gap: 5px;
+}
+
 .poll-option-percentage {
   position: relative;
-  font-weight: 600;
+  /* font-weight: 600; */
+  font-size: 15px;
+}
+
+.poll-option-count {
+  position: relative;
+  color: gray;
+  font-size: 13px;
 }
 
 .poll-option-bottom {

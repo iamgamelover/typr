@@ -403,22 +403,30 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
     let data = this.state.pollOptions;
     let total_votes = this.getTotalVotes(data);
 
+    let percentage = [];
     for (let i = 0; i < data.length; i++) {
-      let percentage = total_votes > 0 ? (data[i].vote_count / total_votes) * 100 : 0;
-      percentage = Math.round(percentage)
-      // console.log("percentage:", percentage)
+      let val = total_votes > 0 ? (data[i].vote_count / total_votes) * 100 : 0;
+      percentage.push(parseFloat(val.toFixed(2)));
+    }
+    // console.log("percentage:", percentage)
+    let maxNum = Math.max(...percentage);
+    let indexMaxNum = percentage.indexOf(maxNum);
 
+    for (let i = 0; i < data.length; i++) {
       divs.push(
         <div key={i} className='poll-option-row'>
           <div
-            className={`poll-option-progress ${percentage == 0 && 'zero'}`}
-            style={{ width: `${percentage == 0 ? '1.5' : percentage}%` }}
+            className={`poll-option-progress ${i !== indexMaxNum && 'zero'}`}
+            style={{ width: `${percentage[i] == 0 ? '1.5' : percentage[i]}%` }}
           />
           <div className="poll-option-text">
             {data[i].option_text}
             {this.state.votedOptionId == data[i].option_id && <FaCheckCircle />}
           </div>
-          <div className="poll-option-percentage">{percentage}%</div>
+          <div className='poll-option-percentage-area'>
+            <div className="poll-option-percentage">{percentage[i]}%</div>
+            <div className="poll-option-count">({data[i].vote_count})</div>
+          </div>
         </div>
       )
     }
@@ -438,7 +446,7 @@ class ActivityPost extends React.Component<ActivityPostProps, ActivityPostState>
   renderVoteStas(total_votes: number, divs: any) {
     divs.push(
       <div key={uuid()} className='poll-option-bottom'>
-        {total_votes} votes
+        {numberWithCommas(total_votes)} votes
         &nbsp;&nbsp;·&nbsp;&nbsp;
         {timeLeftUntil(this.props.data.expires_at)}
       </div>
