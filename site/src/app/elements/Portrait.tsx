@@ -141,20 +141,20 @@ class Portrait extends React.Component<PortraitProps, PortraitState> {
       this.register(address, othent);
 
     // your own process 
-    let process = await getDefaultProcess(address);
+    // let process = await getDefaultProcess(address);
     // console.log("Your process:", process)
 
     // Spawn a new process
-    if (!process) {
-      process = await spawnProcess();
+    // if (!process) {
+      // process = await spawnProcess();
       // console.log("Spawn --> processId:", process)
-    }
+    // }
 
-    setTimeout(async () => {
+    // setTimeout(async () => {
       // load lua code into the process
-      let messageId = await uploadCodeToProcess(process, LUA);
+      // let messageId = await uploadCodeToProcess(process, LUA);
       // console.log("uploadCodeToProcess -->", messageId)
-    }, 10000);
+    // }, 10000);
   }
 
   async register(address: string, othent?: any) {
