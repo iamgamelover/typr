@@ -920,7 +920,8 @@ export async function spawnCronProcess(cronInterval: string) {
         tags: [
           { name: "Authority", value: MU },
           { name: "Cron-Interval", value: cronInterval },
-          { name: "Cron-Tag-Action", value: "Cron" }
+          { name: "Cron-Tag-Action", value: "Cron" },
+          { name: "p-name", value: "poll-award-process" }
         ]
       });
 
@@ -1032,7 +1033,7 @@ export async function unmonitorCronProcess(process: string) {
 }
 
 export async function createTokenAwardProcess(data: any) {
-  let process = await spawnCronProcess("10-seconds");
+  let process = await spawnCronProcess("5-minutes");
 
   // check the process if already on-chain (exist on Arweave)
   let check = true;
