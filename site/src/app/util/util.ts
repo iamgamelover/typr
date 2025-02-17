@@ -1127,6 +1127,7 @@ export function tokenAwardLuaCode(data: any) {
   const CODE =
     `
     local json          = require("json")
+    local isTransfered  = false
     local STORY_PROCESS = '${data.story_process}'
     local TOKEN_PROCESS = '${data.token_process}'
     local token_amount  = ${data.token_amount}
@@ -1153,51 +1154,58 @@ export function tokenAwardLuaCode(data: any) {
       end
     )
 
-    Handlers.once(
+    Handlers.add(
       "transferAward",
-      { Action = "TransferAward" },
+      Handlers.utils.hasMatchingTag("Action", "TransferAward"),
       function(msg)
-        local response = Send({ Target = STORY_PROCESS, Action = "GetVoteAddress", Data = data }).receive().Data
-        print("getVoteAddress: " .. response)
+        print('msg.From --> ' .. msg.From)
+        print('ao.id --> ' .. ao.id)
 
-        local address  = json.decode(response)
+        if msg.From == ao.id and not isTransfered then
+          local response = Send({ Target = STORY_PROCESS, Action = "GetVoteAddress", Data = data }).receive().Data
+          print("getVoteAddress: " .. response)
 
-        if type(address) ~= "table" or #address == 0 then
-          -- if no one to vote then transfer token back to Owner
-          response = Send({
-            Target = TOKEN_PROCESS,
-            Action = "Transfer",
-            Recipient = Owner,
-            Quantity = tostring(token_amount)
-          }).receive().Data
-          print("Returned all token to Owner: " .. response)
-        else
-          local quantity = math.floor(token_amount / #address)
-          local remainder = token_amount % #address
-          print("votes: " .. #address)
-          print("quantity per voter: " .. quantity)
-          print("remainder: " .. remainder)
+          local address  = json.decode(response)
 
-          for _, value in ipairs(address) do
-            response = Send({
-              Target = TOKEN_PROCESS,
-              Action = "Transfer",
-              Recipient = value.address,
-              Quantity = tostring(quantity)
-            }).receive().Data
-            print(response)
-          end
-
-          -- 将余数返还给 Owner
-          if remainder > 0 then
+          if type(address) ~= "table" or #address == 0 then
+            -- if no one to vote then transfer token back to Owner
             response = Send({
               Target = TOKEN_PROCESS,
               Action = "Transfer",
               Recipient = Owner,
-              Quantity = tostring(remainder)
+              Quantity = tostring(token_amount)
             }).receive().Data
-            print("Returned remainder: " .. response)
+            print("Returned all token to Owner: " .. response)
+          else
+            local quantity = math.floor(token_amount / #address)
+            local remainder = token_amount % #address
+            print("votes: " .. #address)
+            print("quantity per voter: " .. quantity)
+            print("remainder: " .. remainder)
+
+            for _, value in ipairs(address) do
+              response = Send({
+                Target = TOKEN_PROCESS,
+                Action = "Transfer",
+                Recipient = value.address,
+                Quantity = tostring(quantity)
+              }).receive().Data
+              print(response)
+            end
+
+            -- 将余数返还给 Owner
+            if remainder > 0 then
+              response = Send({
+                Target = TOKEN_PROCESS,
+                Action = "Transfer",
+                Recipient = Owner,
+                Quantity = tostring(remainder)
+              }).receive().Data
+              print("Returned remainder: " .. response)
+            end
           end
+
+          isTransfered = true
         end
       end
     )

@@ -75,7 +75,8 @@ class StoryPage extends React.Component<{}, StoryPageState> {
 
   onOpen() {
     // TEMP
-    // messageToAO(AO_STORY, '', 'UpdateRecord');
+    // messageToAO(AO_STORY, 'a93b62a5-27b5-4f29-9eff-2dbda9d84241', 'DeleteRecord');
+    // messageToAO('N1Kqa0tMiTXmTIeOmNZlJ8AGP9xLeFB6L5l2WZWwSTA', '', 'TransferAward');
     // return
 
     this.setState({ open: true });
