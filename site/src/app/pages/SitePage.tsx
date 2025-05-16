@@ -64,16 +64,16 @@ class SitePage extends React.Component<{}, SitePageState> {
     Server.service.setActiveAddress(address);
     this.setState({ address })
 
-    let process = await getDefaultProcess(address);
-    Server.service.setDefaultProcess(process);
+    // let process = await getDefaultProcess(address);
+    // Server.service.setDefaultProcess(process);
 
-    this.getStatus();
-    setInterval(() => this.getStatus(), 60000); // 1 min
+    // this.getStatus();
+    // setInterval(() => this.getStatus(), 60000); // 1 min
 
     // getting notifications.
-    setInterval(() => this.getNotis(), 20000); // 20 seconds
+    // setInterval(() => this.getNotis(), 20000); // 20 seconds
 
-    updateTokenBalances(address);
+    // updateTokenBalances(address);
 
     window.addEventListener("walletSwitch", (e: any) => {
       const newAddress = e.detail.address;
@@ -212,11 +212,11 @@ class SitePage extends React.Component<{}, SitePageState> {
             <img className='app-logo' src='./logo.png' />
           </NavLink>
 
-          <div className='app-status-row'>
+          {/* <div className='app-status-row'>
             <div className='app-status-data'><BsPeopleFill />{this.state.users}</div>
             <div className='app-status-data'><BsSendFill />{this.state.posts}</div>
             <div className='app-status-data'><BsReplyFill />{this.state.replies}</div>
-          </div>
+          </div> */}
         </div>
 
         {/* FOR MOBILE */}
